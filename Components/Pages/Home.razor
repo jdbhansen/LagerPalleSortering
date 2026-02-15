@@ -1,0 +1,251 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IWarehouseDataService DataService
+@inject IJSRuntime JS
+
+<PageTitle>Palle Sortering</PageTitle>
+
+<h1>Palle sortering</h1>
+<p>Scan eller indtast vare + holdbarhed. Appen foreslår automatisk destinationspalle.</p>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-outline-success" href="/export/csv">Eksport CSV</a>
+    <a class="btn btn-outline-success" href="/export/excel">Eksport Excel</a>
+</div>
+
+<EditForm Model="form" OnValidSubmit="RegisterColliAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <label class="form-label">Varenummer</label>
+            <InputText id="productInput" class="form-control" @bind-Value="form.ProductNumber" />
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label">Holdbarhed (YYYYMMDD)</label>
+            <InputText id="expiryInput" class="form-control" @bind-Value="form.ExpiryDateRaw" />
+        </div>
+        <div class="col-12 col-md-2">
+            <label class="form-label">Antal kolli</label>
+            <InputNumber id="quantityInput" class="form-control" @bind-Value="form.Quantity" />
+        </div>
+        <div class="col-12 col-md-2 d-grid align-items-end">
+            <button id="registerButton" class="btn btn-primary mt-4" type="submit">Registrer</button>
+        </div>
+    </div>
+</EditForm>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-md-6">
+        <label class="form-label">Scan palle-stregkode (bekræft flyt)</label>
+        <InputText id="palletScanInput" class="form-control" @bind-Value="scannedPalletCode" />
+    </div>
+    <div class="col-12 col-md-2 d-grid align-items-end">
+        <button id="confirmMoveButton" class="btn btn-outline-primary mt-4" @onclick="ConfirmMoveAsync">Bekræft flyt</button>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="alert @statusCss mb-4" role="alert">@statusMessage</div>
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-7">
+        <div class="card">
+            <div class="card-header">Åbne paller</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Palle</th>
+                            <th>Varenummer</th>
+                            <th>Holdbarhed</th>
+                            <th>Kolli</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (openPallets.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-muted">Ingen åbne paller endnu.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var pallet in openPallets)
+                            {
+                                <tr>
+                                    <td><strong>@pallet.PalletId</strong></td>
+                                    <td>@pallet.ProductNumber</td>
+                                    <td>@pallet.ExpiryDate</td>
+                                    <td>@pallet.TotalQuantity</td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-primary me-2" href="@($"/print-label/{pallet.PalletId}")" target="_blank">Print</a>
+                                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => ClosePalletAsync(pallet.PalletId)">Luk</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Seneste registreringer</span>
+                <button class="btn btn-sm btn-outline-danger" disabled="@(entries.Count == 0)" @onclick="UndoLastAsync">Fortryd seneste</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tid</th>
+                            <th>Vare</th>
+                            <th>Dato</th>
+                            <th>Kolli</th>
+                            <th>Palle</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (entries.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-muted">Ingen registreringer endnu.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var entry in entries)
+                            {
+                                <tr>
+                                    <td>@entry.Timestamp.ToLocalTime().ToString("HH:mm:ss")</td>
+                                    <td>@entry.ProductNumber</td>
+                                    <td>@entry.ExpiryDate</td>
+                                    <td>@entry.Quantity</td>
+                                    <td>@entry.PalletId</td>
+                                    <td>
+                                        @if (entry.ConfirmedMoved)
+                                        {
+                                            <span class="text-success">Bekræftet</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">Afventer scan</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly HomeFormModel form = new() { Quantity = 1 };
+    private readonly List<PalletRecord> openPallets = new();
+    private readonly List<ScanEntryRecord> entries = new();
+    private string? statusMessage;
+    private string statusCss = "alert-info";
+    private string scannedPalletCode = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadDataAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("lagerScanner.init", "productInput", "expiryInput", "quantityInput", "registerButton");
+            await JS.InvokeVoidAsync("lagerScanner.initPalletConfirm", "palletScanInput", "confirmMoveButton");
+            await FocusProductAsync();
+        }
+    }
+
+    private async Task RegisterColliAsync()
+    {
+        var result = await DataService.RegisterColliAsync(form.ProductNumber ?? string.Empty, form.ExpiryDateRaw, form.Quantity);
+
+        if (!result.Success)
+        {
+            SetStatus(result.Message, isError: true);
+            await FocusProductAsync();
+            return;
+        }
+
+        SetStatus(result.Message, isError: false);
+        form.ProductNumber = string.Empty;
+        form.ExpiryDateRaw = string.Empty;
+        form.Quantity = 1;
+
+        await ReloadDataAsync();
+        await FocusProductAsync();
+    }
+
+    private async Task ConfirmMoveAsync()
+    {
+        var result = await DataService.ConfirmMoveByPalletScanAsync(scannedPalletCode);
+        SetStatus(result.Message, isError: !result.Success);
+        if (result.Success)
+        {
+            scannedPalletCode = string.Empty;
+            await ReloadDataAsync();
+        }
+
+        await JS.InvokeVoidAsync("lagerScanner.focus", "palletScanInput");
+    }
+
+    private async Task ClosePalletAsync(string palletId)
+    {
+        await DataService.ClosePalletAsync(palletId);
+        SetStatus($"Palle {palletId} er lukket.", isError: false);
+        await ReloadDataAsync();
+        await FocusProductAsync();
+    }
+
+    private async Task UndoLastAsync()
+    {
+        var undo = await DataService.UndoLastAsync();
+        if (undo is null)
+        {
+            SetStatus("Der er intet at fortryde.", isError: true);
+            await FocusProductAsync();
+            return;
+        }
+
+        SetStatus($"Fortrudt: {undo.Quantity} kolli fjernet fra {undo.PalletId}.", isError: false);
+        await ReloadDataAsync();
+        await FocusProductAsync();
+    }
+
+    private async Task ReloadDataAsync()
+    {
+        openPallets.Clear();
+        openPallets.AddRange(await DataService.GetOpenPalletsAsync());
+
+        entries.Clear();
+        entries.AddRange(await DataService.GetRecentEntriesAsync(WarehouseConstants.DefaultRecentEntries));
+    }
+
+    private void SetStatus(string message, bool isError)
+    {
+        statusMessage = message;
+        statusCss = isError ? "alert-danger" : "alert-success";
+    }
+
+    private async Task FocusProductAsync()
+    {
+        await JS.InvokeVoidAsync("lagerScanner.focus", "productInput");
+    }
+}

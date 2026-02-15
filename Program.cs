@@ -1,0 +1,58 @@
+using LagerPalleSortering.Components;
+using LagerPalleSortering.Application.Abstractions;
+using LagerPalleSortering.Application.Services;
+using LagerPalleSortering.Infrastructure.Repositories;
+using LagerPalleSortering.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+builder.Services.AddSingleton<IWarehouseRepository, SqliteWarehouseRepository>();
+builder.Services.AddSingleton<IWarehouseDataService, WarehouseDataService>();
+builder.Services.AddSingleton<IWarehouseExportService, WarehouseExportService>();
+builder.Services.AddSingleton<BarcodeService>();
+
+var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dataService = scope.ServiceProvider.GetRequiredService<IWarehouseDataService>();
+    await dataService.InitializeAsync();
+}
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseHttpsRedirection();
+
+app.UseAntiforgery();
+
+app.MapStaticAssets();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+app.MapGet("/export/csv", async (IWarehouseExportService exportService) =>
+{
+    var file = await exportService.ExportCsvAsync();
+    var fileName = $"lager-export-{DateTime.Now:yyyyMMdd-HHmm}.csv";
+    return Results.File(file, "text/csv; charset=utf-8", fileName);
+});
+
+app.MapGet("/export/excel", async (IWarehouseExportService exportService) =>
+{
+    var file = await exportService.ExportExcelAsync();
+    var fileName = $"lager-export-{DateTime.Now:yyyyMMdd-HHmm}.xlsx";
+    return Results.File(
+        file,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        fileName);
+});
+
+app.Run();

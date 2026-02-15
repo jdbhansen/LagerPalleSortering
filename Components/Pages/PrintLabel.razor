@@ -1,0 +1,59 @@
+@page "/print-label/{PalletId}"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@inject IWarehouseDataService DataService
+@inject BarcodeService BarcodeService
+
+<PageTitle>Print Palle Label</PageTitle>
+
+<div class="label-page">
+    <div class="label-card">
+        <div class="label-title">PALLE</div>
+        <div class="label-id">@PalletId</div>
+        @if (!string.IsNullOrWhiteSpace(barcodeSvg))
+        {
+            <div class="label-barcode">@((MarkupString)barcodeSvg)</div>
+        }
+        <div class="label-barcode-text">@PalletId</div>
+        @if (pallet is not null)
+        {
+            <div class="label-meta">Vare: @pallet.ProductNumber</div>
+            <div class="label-meta">Holdbarhed: @pallet.ExpiryDate</div>
+            <div class="label-meta">Kolli: @pallet.TotalQuantity</div>
+        }
+        <div class="label-date">Udskrevet: @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</div>
+    </div>
+
+    <div class="screen-only mt-3 d-flex gap-2 justify-content-center">
+        <button class="btn btn-primary" @onclick="PrintNow">Print igen</button>
+        <a class="btn btn-outline-secondary" href="/">Tilbage</a>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string PalletId { get; set; } = string.Empty;
+    private PalletRecord? pallet;
+    private string barcodeSvg = string.Empty;
+    private string barcodeText = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        pallet = await DataService.GetPalletForPrintAsync(PalletId);
+        barcodeText = WarehouseBarcode.CreatePalletCode(PalletId);
+        barcodeSvg = BarcodeService.GenerateCode128Svg(barcodeText);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await PrintNow();
+        }
+    }
+
+    private async Task PrintNow()
+    {
+        await JS.InvokeVoidAsync("print");
+    }
+}
