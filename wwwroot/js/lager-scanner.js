@@ -66,6 +66,76 @@ window.lagerScanner = {
             });
         }
     },
+    initHotkeys: function (options) {
+        if (!options) {
+            return;
+        }
+
+        const byId = function (id) {
+            if (!id) {
+                return null;
+            }
+
+            return document.getElementById(id);
+        };
+
+        if (window.__lagerHotkeysHandler) {
+            document.removeEventListener("keydown", window.__lagerHotkeysHandler, true);
+        }
+
+        const handler = function (event) {
+            const key = (event.key || "").toLowerCase();
+            const alt = event.altKey === true;
+            // Alt+1: fokus varenummer
+            if (alt && key === "1") {
+                event.preventDefault();
+                byId(options.productInputId)?.focus();
+                byId(options.productInputId)?.select?.();
+                return;
+            }
+
+            // Alt+2: fokus palle-scan
+            if (alt && key === "2") {
+                event.preventDefault();
+                byId(options.palletInputId)?.focus();
+                byId(options.palletInputId)?.select?.();
+                return;
+            }
+
+            // Alt+R: registrer kolli
+            if (alt && key === "r") {
+                event.preventDefault();
+                byId(options.registerButtonId)?.click();
+                return;
+            }
+
+            // Alt+B: bekræft flyt
+            if (alt && key === "b") {
+                event.preventDefault();
+                byId(options.confirmButtonId)?.click();
+                return;
+            }
+
+            // Alt+U: fortryd seneste
+            if (alt && key === "u") {
+                event.preventDefault();
+                byId(options.undoButtonId)?.click();
+                return;
+            }
+
+            // Esc: annuller ryd database advarsel
+            if (key === "escape") {
+                const cancelBtn = byId(options.clearCancelButtonId);
+                if (cancelBtn) {
+                    event.preventDefault();
+                    cancelBtn.click();
+                }
+            }
+        };
+
+        window.__lagerHotkeysHandler = handler;
+        document.addEventListener("keydown", handler, true);
+    },
     focus: function (elementId) {
         const el = document.getElementById(elementId);
         if (!el) {

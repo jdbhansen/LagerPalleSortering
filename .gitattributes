@@ -1,0 +1,32 @@
+* text=auto
+
+# C# / web source
+*.cs text
+*.csproj text
+*.sln text
+*.razor text
+*.css text
+*.js text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+*.xml text
+*.ps1 text
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+
+# Common binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.xlsx binary
+*.dll binary
+*.exe binary
+*.pdb binary
+*.db binary

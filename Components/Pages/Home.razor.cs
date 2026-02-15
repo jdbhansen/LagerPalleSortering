@@ -34,6 +34,15 @@ public partial class Home
 
         await JS.InvokeVoidAsync("lagerScanner.init", "productInput", "expiryInput", "quantityInput", "registerButton");
         await JS.InvokeVoidAsync("lagerScanner.initPalletConfirm", "palletScanInput", "confirmMoveButton", "confirmCountInput");
+        await JS.InvokeVoidAsync("lagerScanner.initHotkeys", new
+        {
+            productInputId = "productInput",
+            palletInputId = "palletScanInput",
+            registerButtonId = "registerButton",
+            confirmButtonId = "confirmMoveButton",
+            undoButtonId = "undoLastButton",
+            clearCancelButtonId = "clearCancelButton"
+        });
         await FocusProductAsync();
     }
 

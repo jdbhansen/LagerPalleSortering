@@ -11,10 +11,22 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
   - maks 4 vare+dato-varianter pr. palle.
   - samme stregkode med forskellig holdbarhed må ikke blandes på samme palle.
 - Print af pallelabel med Code128 stregkode (`PALLET:P-001`).
+- Print af palleindhold med scanbare produkt-stregkoder, holdbarhedsdato og antal.
 - Flyttebekræftelse via palle-scan med kolli-tæller (`ConfirmedQuantity/Quantity`).
 - Persistens i SQLite (`App_Data/lager.db`).
 - Eksport til CSV og Excel.
 - Scanner-optimeret inputflow (Enter-baseret).
+
+## Tastaturgenveje
+- `Enter` i varenummer: flytter fokus til holdbarhed.
+- `Enter` i holdbarhed/antal: registrerer kolli.
+- `Enter` i palle-scan/antal at bekræfte: bekræfter flyt.
+- `Alt+1`: fokus på varenummer.
+- `Alt+2`: fokus på palle-scan.
+- `Alt+R`: registrer kolli.
+- `Alt+B`: bekræft flyt.
+- `Alt+U`: fortryd seneste.
+- `Esc`: annuller "ryd database"-advarsel (når den vises).
 
 ## Barcode support
 - Varekoder: EAN-8, EAN-13, UPC-A.
