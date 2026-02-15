@@ -157,6 +157,35 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         }
     }
 
+    public async Task ClearAllDataAsync(CancellationToken cancellationToken = default)
+    {
+        await writeLock.WaitAsync(cancellationToken);
+        try
+        {
+            await using var connection = OpenConnection();
+            await connection.OpenAsync(cancellationToken);
+            using var tx = connection.BeginTransaction();
+
+            await using (var cmd = connection.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = """
+                    DELETE FROM ScanEntries;
+                    DELETE FROM PalletItems;
+                    DELETE FROM Pallets;
+                    DELETE FROM sqlite_sequence WHERE name IN ('ScanEntries', 'PalletItems');
+                    """;
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            await tx.CommitAsync(cancellationToken);
+        }
+        finally
+        {
+            writeLock.Release();
+        }
+    }
+
     public async Task<List<PalletRecord>> GetOpenPalletsAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = OpenConnection();
@@ -206,6 +235,32 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         while (await reader.ReadAsync(cancellationToken))
         {
             list.Add(ReadEntry(reader));
+        }
+
+        return list;
+    }
+
+    public async Task<List<PalletContentItemRecord>> GetPalletContentsAsync(string palletId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = OpenConnection();
+        await connection.OpenAsync(cancellationToken);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT ProductNumber, ExpiryDate, Quantity
+            FROM PalletItems
+            WHERE PalletId = $id
+            ORDER BY ProductNumber, ExpiryDate;
+            """;
+        cmd.Parameters.AddWithValue("$id", palletId);
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+
+        var list = new List<PalletContentItemRecord>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            list.Add(new PalletContentItemRecord(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt32(2)));
         }
 
         return list;

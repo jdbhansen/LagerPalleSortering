@@ -50,4 +50,21 @@ public sealed class SanityTests
         Assert.NotEqual(a.PalletId, e.PalletId);
         Assert.NotEqual(x1.PalletId, x2.PalletId);
     }
+
+    [Fact]
+    [Trait("Category", "Sanity")]
+    public async Task FinishedPallet_ContentRows_AreReadyForPrintWithExpiry()
+    {
+        await using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringSanity");
+
+        var first = await fixture.Service.RegisterColliAsync("5701234567892", "20261230", 2);
+        await fixture.Service.RegisterColliAsync("73513537", "20270115", 1);
+        await fixture.Service.ClosePalletAsync(first.PalletId!);
+
+        var contents = await fixture.Service.GetPalletContentsAsync(first.PalletId!);
+
+        Assert.Equal(2, contents.Count);
+        Assert.Contains(contents, x => x.ProductNumber == "5701234567892" && x.ExpiryDate == "20261230" && x.Quantity == 2);
+        Assert.Contains(contents, x => x.ProductNumber == "73513537" && x.ExpiryDate == "20270115" && x.Quantity == 1);
+    }
 }

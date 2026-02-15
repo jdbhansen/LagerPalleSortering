@@ -9,6 +9,11 @@ public sealed record PalletRecord(
     bool IsClosed,
     DateTime CreatedAt);
 
+public sealed record PalletContentItemRecord(
+    string ProductNumber,
+    string ExpiryDate,
+    int Quantity);
+
 public sealed record ScanEntryRecord(
     long Id,
     DateTime Timestamp,

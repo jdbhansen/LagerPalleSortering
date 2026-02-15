@@ -6,6 +6,9 @@ namespace LagerPalleSortering.Components.Pages;
 
 public partial class Home
 {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
     private readonly HomeFormModel form = new() { Quantity = 1 };
     private readonly List<PalletRecord> openPallets = new();
     private readonly List<ScanEntryRecord> entries = new();
@@ -15,6 +18,7 @@ public partial class Home
     private string? lastSuggestedPalletId;
     private bool keepExpiryBetweenScans = true;
     private int confirmScanCount = 1;
+    private bool showClearDatabaseWarning;
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,6 +118,17 @@ public partial class Home
         await FocusProductAsync();
     }
 
+    private async Task CloseAndPrintContentsAsync(string palletId)
+    {
+        await DataService.ClosePalletAsync(palletId);
+        SetStatus($"Palle {palletId} er lukket. Printer indholdsliste.", isError: false);
+        await ReloadDataAsync();
+
+        var url = Navigation.ToAbsoluteUri($"/print-pallet-contents/{palletId}").ToString();
+        await JS.InvokeVoidAsync("open", url, "_blank");
+        await FocusProductAsync();
+    }
+
     private async Task UndoLastAsync()
     {
         var undo = await DataService.UndoLastAsync();
@@ -126,6 +141,37 @@ public partial class Home
 
         SetStatus($"Fortrudt: {undo.Quantity} kolli fjernet fra {undo.PalletId}.", isError: false);
         await ReloadDataAsync();
+        await FocusProductAsync();
+    }
+
+    private void ShowClearDatabaseWarning()
+    {
+        showClearDatabaseWarning = true;
+        SetStatus("Bekræft at databasen skal ryddes.", isError: true);
+    }
+
+    private void CancelClearDatabase()
+    {
+        showClearDatabaseWarning = false;
+        SetStatus("Ryd database annulleret.", isError: false);
+    }
+
+    private async Task ClearDatabaseAsync()
+    {
+        await DataService.ClearAllDataAsync();
+        showClearDatabaseWarning = false;
+        lastSuggestedPalletId = null;
+        scannedPalletCode = string.Empty;
+        confirmScanCount = 1;
+        form.ProductNumber = string.Empty;
+        form.Quantity = 1;
+        if (!keepExpiryBetweenScans)
+        {
+            form.ExpiryDateRaw = string.Empty;
+        }
+
+        await ReloadDataAsync();
+        SetStatus("Databasen er ryddet.", isError: false);
         await FocusProductAsync();
     }
 

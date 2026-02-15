@@ -25,6 +25,47 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task GetPalletContentsAsync_ReturnsProductExpiryAndQuantityRows()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var first = await fixture.Service.RegisterColliAsync("item-01", "20260101", 2);
+        await fixture.Service.RegisterColliAsync("item-02", "20260202", 1);
+
+        var contents = await fixture.Service.GetPalletContentsAsync(first.PalletId!);
+
+        Assert.Equal(2, contents.Count);
+        Assert.Contains(contents, x => x.ProductNumber == "ITEM-01" && x.ExpiryDate == "20260101" && x.Quantity == 2);
+        Assert.Contains(contents, x => x.ProductNumber == "ITEM-02" && x.ExpiryDate == "20260202" && x.Quantity == 1);
+    }
+
+    [Fact]
+    public async Task GetPalletContentsAsync_WhenPalletIsClosed_StillReturnsRows()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var register = await fixture.Service.RegisterColliAsync("item-10", "20260303", 3);
+        await fixture.Service.ClosePalletAsync(register.PalletId!);
+
+        var contents = await fixture.Service.GetPalletContentsAsync(register.PalletId!);
+
+        Assert.Single(contents);
+        Assert.Equal("ITEM-10", contents[0].ProductNumber);
+        Assert.Equal("20260303", contents[0].ExpiryDate);
+        Assert.Equal(3, contents[0].Quantity);
+    }
+
+    [Fact]
+    public async Task GetPalletContentsAsync_UnknownPallet_ReturnsEmpty()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var contents = await fixture.Service.GetPalletContentsAsync("P-999");
+
+        Assert.Empty(contents);
+    }
+
+    [Fact]
     public async Task RegisterColliAsync_DifferentExpiry_CreatesDifferentPallet()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
@@ -80,6 +121,40 @@ public sealed class WarehouseDataServiceTests
         Assert.NotNull(undo);
         Assert.Empty(openPallets);
         Assert.Empty(entries);
+    }
+
+    [Fact]
+    public async Task ClearAllDataAsync_RemovesAllRows_AndResetsPalletSequence()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
+        await fixture.Service.RegisterColliAsync("item-02", "20260101", 1);
+
+        await fixture.Service.ClearAllDataAsync();
+
+        var openPallets = await fixture.Service.GetOpenPalletsAsync();
+        var entries = await fixture.Service.GetRecentEntriesAsync(10);
+        var firstAfterClear = await fixture.Service.RegisterColliAsync("item-99", "20261224", 1);
+
+        Assert.Empty(openPallets);
+        Assert.Empty(entries);
+        Assert.True(firstAfterClear.Success);
+        Assert.Equal("P-001", firstAfterClear.PalletId);
+    }
+
+    [Fact]
+    public async Task ClearAllDataAsync_RemovesPalletContents()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var created = await fixture.Service.RegisterColliAsync("item-20", "20261111", 2);
+        var before = await fixture.Service.GetPalletContentsAsync(created.PalletId!);
+        await fixture.Service.ClearAllDataAsync();
+        var after = await fixture.Service.GetPalletContentsAsync(created.PalletId!);
+
+        Assert.Single(before);
+        Assert.Empty(after);
     }
 
     [Fact]

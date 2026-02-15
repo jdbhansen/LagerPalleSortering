@@ -9,7 +9,9 @@ public interface IWarehouseRepository
     Task ClosePalletAsync(string palletId, CancellationToken cancellationToken = default);
     Task<long?> ConfirmLatestUnconfirmedByPalletIdAsync(string palletId, DateTime confirmedAtUtc, CancellationToken cancellationToken = default);
     Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default);
+    Task ClearAllDataAsync(CancellationToken cancellationToken = default);
     Task<List<PalletRecord>> GetOpenPalletsAsync(CancellationToken cancellationToken = default);
+    Task<List<PalletContentItemRecord>> GetPalletContentsAsync(string palletId, CancellationToken cancellationToken = default);
     Task<List<ScanEntryRecord>> GetRecentEntriesAsync(int maxEntries, CancellationToken cancellationToken = default);
     Task<PalletRecord?> GetPalletByIdAsync(string palletId, CancellationToken cancellationToken = default);
 }

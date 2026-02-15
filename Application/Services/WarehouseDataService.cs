@@ -66,7 +66,11 @@ public sealed class WarehouseDataService : IWarehouseDataService
 
     public Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default) => repository.UndoLastAsync(cancellationToken);
 
+    public Task ClearAllDataAsync(CancellationToken cancellationToken = default) => repository.ClearAllDataAsync(cancellationToken);
+
     public Task<List<PalletRecord>> GetOpenPalletsAsync(CancellationToken cancellationToken = default) => repository.GetOpenPalletsAsync(cancellationToken);
+
+    public Task<List<PalletContentItemRecord>> GetPalletContentsAsync(string palletId, CancellationToken cancellationToken = default) => repository.GetPalletContentsAsync(palletId, cancellationToken);
 
     public Task<List<ScanEntryRecord>> GetRecentEntriesAsync(int maxEntries, CancellationToken cancellationToken = default) => repository.GetRecentEntriesAsync(maxEntries, cancellationToken);
 
