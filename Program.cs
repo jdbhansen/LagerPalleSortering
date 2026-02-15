@@ -19,7 +19,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dataService = scope.ServiceProvider.GetRequiredService<IWarehouseDataService>();
-    await dataService.InitializeAsync();
+    await dataService.InitializeAsync(app.Lifetime.ApplicationStopping);
 }
 
 // Configure the HTTP request pipeline.
@@ -38,16 +38,16 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapGet("/export/csv", async (IWarehouseExportService exportService) =>
+app.MapGet("/export/csv", async (IWarehouseExportService exportService, CancellationToken cancellationToken) =>
 {
-    var file = await exportService.ExportCsvAsync();
+    var file = await exportService.ExportCsvAsync(cancellationToken);
     var fileName = $"lager-export-{DateTime.Now:yyyyMMdd-HHmm}.csv";
     return Results.File(file, "text/csv; charset=utf-8", fileName);
 });
 
-app.MapGet("/export/excel", async (IWarehouseExportService exportService) =>
+app.MapGet("/export/excel", async (IWarehouseExportService exportService, CancellationToken cancellationToken) =>
 {
-    var file = await exportService.ExportExcelAsync();
+    var file = await exportService.ExportExcelAsync(cancellationToken);
     var fileName = $"lager-export-{DateTime.Now:yyyyMMdd-HHmm}.xlsx";
     return Results.File(
         file,

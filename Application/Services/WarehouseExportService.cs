@@ -15,9 +15,9 @@ public sealed class WarehouseExportService : IWarehouseExportService
         this.repository = repository;
     }
 
-    public async Task<byte[]> ExportCsvAsync()
+    public async Task<byte[]> ExportCsvAsync(CancellationToken cancellationToken = default)
     {
-        var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows);
+        var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
         var sb = new StringBuilder();
         sb.AppendLine("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,ConfirmedQuantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc");
 
@@ -39,10 +39,10 @@ public sealed class WarehouseExportService : IWarehouseExportService
         return Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
     }
 
-    public async Task<byte[]> ExportExcelAsync()
+    public async Task<byte[]> ExportExcelAsync(CancellationToken cancellationToken = default)
     {
-        var openPallets = await repository.GetOpenPalletsAsync();
-        var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows);
+        var openPallets = await repository.GetOpenPalletsAsync(cancellationToken);
+        var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
 
         using var wb = new XLWorkbook();
         var palletSheet = wb.Worksheets.Add("OpenPallets");

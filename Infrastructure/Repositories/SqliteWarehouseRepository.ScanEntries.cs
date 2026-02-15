@@ -6,7 +6,7 @@ namespace LagerPalleSortering.Infrastructure.Repositories;
 
 public sealed partial class SqliteWarehouseRepository
 {
-    private static async Task InsertScanEntryAsync(SqliteConnection connection, SqliteTransaction tx, ScanEntryRecord entry)
+    private static async Task InsertScanEntryAsync(SqliteConnection connection, SqliteTransaction tx, ScanEntryRecord entry, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
@@ -24,10 +24,10 @@ public sealed partial class SqliteWarehouseRepository
         cmd.Parameters.AddWithValue("$confirmedQty", entry.ConfirmedQuantity);
         cmd.Parameters.AddWithValue("$confirmed", entry.ConfirmedMoved ? 1 : 0);
         cmd.Parameters.AddWithValue("$confirmedAt", entry.ConfirmedAt?.ToString("O", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
-        await cmd.ExecuteNonQueryAsync();
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    private static async Task<ScanEntryRecord?> GetLatestUnconfirmedEntryForPalletAsync(SqliteConnection connection, SqliteTransaction tx, string palletId)
+    private static async Task<ScanEntryRecord?> GetLatestUnconfirmedEntryForPalletAsync(SqliteConnection connection, SqliteTransaction tx, string palletId, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
@@ -39,8 +39,8 @@ public sealed partial class SqliteWarehouseRepository
             LIMIT 1;
             """;
         cmd.Parameters.AddWithValue("$palletId", palletId);
-        await using var reader = await cmd.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
         {
             return null;
         }
@@ -48,7 +48,7 @@ public sealed partial class SqliteWarehouseRepository
         return ReadEntry(reader);
     }
 
-    private static async Task MarkEntryConfirmedAsync(SqliteConnection connection, SqliteTransaction tx, long entryId, DateTime confirmedAt)
+    private static async Task MarkEntryConfirmedAsync(SqliteConnection connection, SqliteTransaction tx, long entryId, DateTime confirmedAt, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
@@ -69,10 +69,10 @@ public sealed partial class SqliteWarehouseRepository
             """;
         cmd.Parameters.AddWithValue("$confirmedAt", confirmedAt.ToString("O", CultureInfo.InvariantCulture));
         cmd.Parameters.AddWithValue("$id", entryId);
-        await cmd.ExecuteNonQueryAsync();
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    private static async Task<ScanEntryRecord?> GetLastEntryAsync(SqliteConnection connection, SqliteTransaction tx)
+    private static async Task<ScanEntryRecord?> GetLastEntryAsync(SqliteConnection connection, SqliteTransaction tx, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
@@ -82,8 +82,8 @@ public sealed partial class SqliteWarehouseRepository
             ORDER BY Id DESC
             LIMIT 1;
             """;
-        await using var reader = await cmd.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
         {
             return null;
         }
@@ -91,12 +91,12 @@ public sealed partial class SqliteWarehouseRepository
         return ReadEntry(reader);
     }
 
-    private static async Task DeleteEntryAsync(SqliteConnection connection, SqliteTransaction tx, long id)
+    private static async Task DeleteEntryAsync(SqliteConnection connection, SqliteTransaction tx, long id, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = "DELETE FROM ScanEntries WHERE Id = $id;";
         cmd.Parameters.AddWithValue("$id", id);
-        await cmd.ExecuteNonQueryAsync();
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 }

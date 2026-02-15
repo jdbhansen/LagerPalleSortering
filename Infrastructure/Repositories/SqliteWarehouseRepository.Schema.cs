@@ -5,10 +5,10 @@ namespace LagerPalleSortering.Infrastructure.Repositories;
 
 public sealed partial class SqliteWarehouseRepository
 {
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = OpenConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         var sql = """
             CREATE TABLE IF NOT EXISTS Pallets (
@@ -51,23 +51,23 @@ public sealed partial class SqliteWarehouseRepository
 
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
-        await cmd.ExecuteNonQueryAsync();
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
 
-        await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedMoved", "INTEGER NOT NULL DEFAULT 0");
-        await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedAt", "TEXT NULL");
-        await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedQuantity", "INTEGER NOT NULL DEFAULT 0");
-        await MigrateLegacyConfirmedQuantityAsync(connection);
-        await MigrateLegacyPalletRowsToPalletItemsAsync(connection);
+        await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedMoved", "INTEGER NOT NULL DEFAULT 0", cancellationToken);
+        await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedAt", "TEXT NULL", cancellationToken);
+        await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedQuantity", "INTEGER NOT NULL DEFAULT 0", cancellationToken);
+        await MigrateLegacyConfirmedQuantityAsync(connection, cancellationToken);
+        await MigrateLegacyPalletRowsToPalletItemsAsync(connection, cancellationToken);
     }
 
-    private static async Task EnsureColumnExistsAsync(SqliteConnection connection, string table, string column, string definitionSql)
+    private static async Task EnsureColumnExistsAsync(SqliteConnection connection, string table, string column, string definitionSql, CancellationToken cancellationToken)
     {
         await using var check = connection.CreateCommand();
         check.CommandText = $"PRAGMA table_info({table});";
-        await using var reader = await check.ExecuteReaderAsync();
+        await using var reader = await check.ExecuteReaderAsync(cancellationToken);
 
         var found = false;
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             if (string.Equals(reader.GetString(1), column, StringComparison.OrdinalIgnoreCase))
             {
@@ -83,10 +83,10 @@ public sealed partial class SqliteWarehouseRepository
 
         await using var alter = connection.CreateCommand();
         alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {column} {definitionSql};";
-        await alter.ExecuteNonQueryAsync();
+        await alter.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    private static async Task MigrateLegacyConfirmedQuantityAsync(SqliteConnection connection)
+    private static async Task MigrateLegacyConfirmedQuantityAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """
@@ -97,14 +97,14 @@ public sealed partial class SqliteWarehouseRepository
             END
             WHERE ConfirmedQuantity = 0;
             """;
-        await cmd.ExecuteNonQueryAsync();
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    private static async Task MigrateLegacyPalletRowsToPalletItemsAsync(SqliteConnection connection)
+    private static async Task MigrateLegacyPalletRowsToPalletItemsAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
         await using var countCmd = connection.CreateCommand();
         countCmd.CommandText = "SELECT COUNT(1) FROM PalletItems;";
-        var itemCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+        var itemCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
         if (itemCount > 0)
         {
             return;
@@ -117,6 +117,6 @@ public sealed partial class SqliteWarehouseRepository
             FROM Pallets
             WHERE ProductNumber IS NOT NULL AND ProductNumber <> '';
             """;
-        await migrateCmd.ExecuteNonQueryAsync();
+        await migrateCmd.ExecuteNonQueryAsync(cancellationToken);
     }
 }
