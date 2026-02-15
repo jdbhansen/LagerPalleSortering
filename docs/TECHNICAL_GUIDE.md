@@ -1,51 +1,46 @@
 # Teknisk Guide
 
-## Arkitektur
-- `Domain/`: kontrakter, konstanter og barcode-parser.
-- `Application/`: use-cases og service-abstraktioner.
-- `Infrastructure/`: SQLite repository og SQL.
-- `Components/`: Blazor UI.
-
-## Centrale services
-- `IWarehouseDataService` / `WarehouseDataService`
-  Ansvar: registrering, validering, pallelukning, fortryd, flyttebekræftelse.
-- `IWarehouseExportService` / `WarehouseExportService`
-  Ansvar: CSV/Excel eksport.
-- `IWarehouseRepository` / `SqliteWarehouseRepository`
-  Ansvar: al persistence og query-logik.
-- `BarcodeService`
-  Ansvar: generere Code128 SVG til printlabel.
+## Arkitekturoversigt
+- `Domain/`
+  - `WarehouseContracts`: delte DTO/records.
+  - `WarehouseConstants`: centrale konstanter.
+  - `ProductBarcodeParser`: normalisering og checkdigit-logik.
+  - `WarehouseBarcode`: pallelabel format/parsing.
+- `Application/`
+  - `WarehouseDataService`: forretningsflow (registrering, bekræftelse, undo).
+  - `WarehouseExportService`: CSV/Excel eksport.
+  - Abstractions i `Application/Abstractions`.
+- `Infrastructure/`
+  - `SqliteWarehouseRepository` (partials):
+    - `Schema`: schema + migration.
+    - `Pallets`: palle- og palleitem-query/commands.
+    - `ScanEntries`: scanentry- og bekræftelsesquery/commands.
+    - `Common`: mapping/helpers.
+- `Components/`
+  - Blazor UI (`Home`, `PrintLabel`, layout).
 
 ## Datamodel (SQLite)
 - `Pallets`
-  Kolonner: `PalletId`, `GroupKey`, `ProductNumber`, `ExpiryDate`, `TotalQuantity`, `IsClosed`, `CreatedAt`
+  - `PalletId`, `GroupKey`, `ProductNumber`, `ExpiryDate`, `TotalQuantity`, `IsClosed`, `CreatedAt`
 - `PalletItems`
-  Kolonner: `PalletId`, `ProductNumber`, `ExpiryDate`, `Quantity`
-  Constraint: unik kombination af palle + vare + dato.
+  - `PalletId`, `ProductNumber`, `ExpiryDate`, `Quantity`
+  - Unik: `(PalletId, ProductNumber, ExpiryDate)`
 - `ScanEntries`
-  Kolonner: registreringshistorik inkl. `ConfirmedMoved`, `ConfirmedAt`.
+  - `Timestamp`, `ProductNumber`, `ExpiryDate`, `Quantity`, `PalletId`, `CreatedNewPallet`,
+    `ConfirmedQuantity`, `ConfirmedMoved`, `ConfirmedAt`
 
-## Pallevalgsregler
-1. Åbne paller evalueres.
-2. Paller med samme stregkode men anden holdbarhed udelukkes.
-3. Hvis vare+dato findes på palle, genbruges den palle.
-4. Hvis ikke, må palle kun vælges hvis den har færre end 4 varianter.
-5. Ellers oprettes ny palle.
-
-## Stregkode-normalisering
-- `ProductBarcodeParser.Normalize` håndterer:
-  - EAN-8
-  - EAN-13
-  - UPC-A -> EAN-13 (foran med `0`)
-  - scanner symbology prefix (`]E0`)
-- `WarehouseBarcode` håndterer palleformat:
-  - Oprettelse: `PALLET:P-001`
-  - Parsing: `PALLET:*` (samt bagudkompatibel `P-*`)
+## Kritiske forretningsregler
+1. Åben palle med matchende vare+dato prioriteres.
+2. Palle med samme vare men anden holdbarhed afvises.
+3. Ny variant må kun tilføjes når palle har under 4 varianter.
+4. Flyttebekræftelse er per kolli (`ConfirmedQuantity` stiger med 1 per scan).
+5. Fuldt bekræftet når `ConfirmedQuantity >= Quantity`.
 
 ## Endpoints
 - `GET /export/csv`
 - `GET /export/excel`
 
-## Testpakker
-- Fuld suite: `dotnet test LagerPalleSortering.slnx`
-- Sanity/smoke: `dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"`
+## Teststrategi
+- `WarehouseDataServiceTests`: funktions- og regeltests.
+- `SanityTests`: hurtig smoke-verifikation af kritiske flows.
+- Fælles fixture i `tests/.../TestInfrastructure`.

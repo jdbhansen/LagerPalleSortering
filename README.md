@@ -1,55 +1,53 @@
 # LagerPalleSortering
 
-Blazor Web App i C# til at holde styr på destinationpaller ved varemodtagelse.
+Intern Blazor-app til varemodtagelse og palle-styring i lagerdrift.
 
-## Funktioner
+## Formål
+Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, label-print og flyttebekræftelse med scan.
 
-- Registrer varenummer, holdbarhed (YYYYMMDD) og antal kolli.
-- Automatisk pallevalg baseret på `varenummer + holdbarhed`.
-- Opretter ny palle (`P-001`, `P-002`, ...) ved ny kombination.
-- Viser åbne paller og total kolli per palle.
-- Luk palle manuelt, så nye kolli i samme gruppe går til en ny palle.
-- Fortryd seneste registrering.
-- Persistens i SQLite (`App_Data/lager.db`), så data bevares efter genstart.
-- Eksport af data til både CSV og Excel (`.xlsx`).
-- Scanner-optimeret flow: Enter hopper felter og kan registrere uden mus.
-- Print-label med skanbar stregkode (Code128) for pallens ID.
-- Scan palle-stregkode i appen for at bekræfte, at kolli er flyttet.
-  Format på nye labels: `PALLET:P-001`.
-- Op til 4 forskellige vare+dato-varianter pr. palle.
-- Samme stregkode med forskellig holdbarhed må aldrig blandes på samme palle.
-- Varescanning understøtter EAN-8, EAN-13 og UPC-A (UPC-A normaliseres til EAN-13).
+## Nøglefunktioner
+- Registrering af `varenummer`, `holdbarhed (YYYYMMDD)` og `antal kolli`.
+- Automatisk pallevalg med guardrails:
+  - maks 4 vare+dato-varianter pr. palle.
+  - samme stregkode med forskellig holdbarhed må ikke blandes på samme palle.
+- Print af pallelabel med Code128 stregkode (`PALLET:P-001`).
+- Flyttebekræftelse via palle-scan med kolli-tæller (`ConfirmedQuantity/Quantity`).
+- Persistens i SQLite (`App_Data/lager.db`).
+- Eksport til CSV og Excel.
+- Scanner-optimeret inputflow (Enter-baseret).
+
+## Barcode support
+- Varekoder: EAN-8, EAN-13, UPC-A.
+- UPC-A normaliseres internt til EAN-13.
+- Scanner-symbology prefix (fx `]E0`) håndteres.
 
 ## Arkitektur
+- `Domain/`: kontrakter, regler og barcode-normalisering.
+- `Application/`: use-cases og serviceabstraktioner.
+- `Infrastructure/`: SQLite repository + migration/query-logik.
+- `Components/`: Blazor UI.
 
-- `Application/`: use-case logik og service-abstraktioner.
-  Eksport ligger i separat `WarehouseExportService`.
-- `Infrastructure/`: SQLite repository og databaseadgang.
-- `Domain/`: kontrakter, result-typer og konstanter.
-
-## Dokumentation
-
-- Brugerguide: `docs/USER_GUIDE.md`
-- Teknisk guide: `docs/TECHNICAL_GUIDE.md`
-- Drift/fejlsøgning: `docs/OPERATIONS.md`
-
-## Kør lokalt
+## Hurtig start
+Forudsætning: .NET SDK 10.
 
 ```powershell
 dotnet run
 ```
 
-Åbn derefter URL'en fra terminalen i browseren.
+Appen starter på lokal URL vist i terminalen.
 
-## Eksport
-
-- CSV: `/export/csv`
-- Excel: `/export/excel`
-
-## Tests
+## Verificering
+Anbefalet kommando (byg + test, inkl. håndtering af testhost fil-lock):
 
 ```powershell
-dotnet test LagerPalleSortering.slnx
+.\scripts\verify.ps1
+```
+
+Alternativt:
+
+```powershell
+dotnet build LagerPalleSortering.slnx
+dotnet test LagerPalleSortering.slnx --no-build
 ```
 
 Kun sanity/smoke tests:
@@ -58,3 +56,11 @@ Kun sanity/smoke tests:
 dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
 ```
 
+## Eksport
+- CSV: `GET /export/csv`
+- Excel: `GET /export/excel`
+
+## Dokumentation
+- Brugerguide: `docs/USER_GUIDE.md`
+- Teknisk guide: `docs/TECHNICAL_GUIDE.md`
+- Drift/fejlsøgning: `docs/OPERATIONS.md`

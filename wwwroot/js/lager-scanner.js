@@ -37,9 +37,10 @@ window.lagerScanner = {
             registerButton.click();
         });
     },
-    initPalletConfirm: function (palletInputId, confirmButtonId) {
+    initPalletConfirm: function (palletInputId, confirmButtonId, confirmCountInputId) {
         const palletInput = document.getElementById(palletInputId);
         const confirmButton = document.getElementById(confirmButtonId);
+        const confirmCountInput = document.getElementById(confirmCountInputId);
 
         if (!palletInput || !confirmButton) {
             return;
@@ -53,6 +54,17 @@ window.lagerScanner = {
             event.preventDefault();
             confirmButton.click();
         });
+
+        if (confirmCountInput) {
+            confirmCountInput.addEventListener("keydown", function (event) {
+                if (event.key !== "Enter") {
+                    return;
+                }
+
+                event.preventDefault();
+                confirmButton.click();
+            });
+        }
     },
     focus: function (elementId) {
         const el = document.getElementById(elementId);

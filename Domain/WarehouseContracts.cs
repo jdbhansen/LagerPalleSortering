@@ -18,6 +18,7 @@ public sealed record ScanEntryRecord(
     string PalletId,
     string GroupKey,
     bool CreatedNewPallet,
+    int ConfirmedQuantity,
     bool ConfirmedMoved,
     DateTime? ConfirmedAt);
 

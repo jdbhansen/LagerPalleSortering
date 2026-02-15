@@ -14,7 +14,7 @@ public static class ProductBarcodeParser
         {
             if (value.Length == 12 && IsValidCheckDigit(value))
             {
-                // UPC-A is compatible with EAN-13 by adding a leading zero.
+                // Normalize UPC-A to EAN-13 so equivalent scans group consistently.
                 return $"0{value}";
             }
 
@@ -58,6 +58,7 @@ public static class ProductBarcodeParser
 
     private static bool IsValidCheckDigit(string code)
     {
+        // Generic EAN/UPC check-digit validation.
         var sum = 0;
         var isEvenFromRight = true;
 

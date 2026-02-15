@@ -1,8 +1,5 @@
 using System.Text;
-using LagerPalleSortering.Application.Services;
-using LagerPalleSortering.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
+using LagerPalleSortering.Tests.TestInfrastructure;
 
 namespace LagerPalleSortering.Tests;
 
@@ -12,7 +9,7 @@ public sealed class SanityTests
     [Trait("Category", "Sanity")]
     public async Task EmptyDatabase_HasNoOpenPallets()
     {
-        await using var fixture = await SanityFixture.CreateAsync();
+        await using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringSanity");
         var pallets = await fixture.Service.GetOpenPalletsAsync();
         Assert.Empty(pallets);
     }
@@ -21,7 +18,7 @@ public sealed class SanityTests
     [Trait("Category", "Sanity")]
     public async Task HappyPath_RegisterConfirmAndExportCsv_Works()
     {
-        await using var fixture = await SanityFixture.CreateAsync();
+        await using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringSanity");
 
         var register = await fixture.Service.RegisterColliAsync("SANITY-1", "20261231", 2);
         var confirm = await fixture.Service.ConfirmMoveByPalletScanAsync($"PALLET:{register.PalletId}");
@@ -37,7 +34,7 @@ public sealed class SanityTests
     [Trait("Category", "Sanity")]
     public async Task Guardrails_MaxFourVariants_AndBarcodeDateConflict_AreEnforced()
     {
-        await using var fixture = await SanityFixture.CreateAsync();
+        await using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringSanity");
 
         var a = await fixture.Service.RegisterColliAsync("A", "20260101", 1);
         var b = await fixture.Service.RegisterColliAsync("B", "20260101", 1);
@@ -52,63 +49,5 @@ public sealed class SanityTests
         Assert.Equal(a.PalletId, d.PalletId);
         Assert.NotEqual(a.PalletId, e.PalletId);
         Assert.NotEqual(x1.PalletId, x2.PalletId);
-    }
-
-    private sealed class SanityFixture : IAsyncDisposable
-    {
-        private readonly string rootPath;
-        public WarehouseDataService Service { get; }
-        public WarehouseExportService ExportService { get; }
-
-        private SanityFixture(string rootPath, WarehouseDataService service, WarehouseExportService exportService)
-        {
-            this.rootPath = rootPath;
-            Service = service;
-            ExportService = exportService;
-        }
-
-        public static async Task<SanityFixture> CreateAsync()
-        {
-            var root = Path.Combine(Path.GetTempPath(), "LagerPalleSorteringSanity", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(root);
-            var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(root));
-            var service = new WarehouseDataService(repository);
-            var exportService = new WarehouseExportService(repository);
-            await service.InitializeAsync();
-            return new SanityFixture(root, service, exportService);
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            try
-            {
-                Directory.Delete(rootPath, recursive: true);
-            }
-            catch
-            {
-            }
-
-            return ValueTask.CompletedTask;
-        }
-    }
-
-    private sealed class TestWebHostEnvironment : IWebHostEnvironment
-    {
-        public TestWebHostEnvironment(string rootPath)
-        {
-            ApplicationName = "LagerPalleSortering.Tests";
-            EnvironmentName = "Development";
-            ContentRootPath = rootPath;
-            WebRootPath = rootPath;
-            ContentRootFileProvider = new NullFileProvider();
-            WebRootFileProvider = new NullFileProvider();
-        }
-
-        public string ApplicationName { get; set; }
-        public IFileProvider WebRootFileProvider { get; set; }
-        public string WebRootPath { get; set; }
-        public string EnvironmentName { get; set; }
-        public string ContentRootPath { get; set; }
-        public IFileProvider ContentRootFileProvider { get; set; }
     }
 }

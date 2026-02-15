@@ -1,31 +1,37 @@
 # Brugerguide
 
-## Formål
-Appen hjælper med at styre, hvilken palle kolli skal flyttes til ved varemodtagelse.
+## Hvad appen bruges til
+LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert kolli skal flyttes til.
 
-## Dagligt flow
-1. Scan/indtast `Varenummer`, `Holdbarhed (YYYYMMDD)` og `Antal kolli`.
-2. Tryk `Registrer` (eller Enter via scanner-flow).
-3. Følg den foreslåede palle i statusbeskeden.
-4. Print label via `Print` på pallen.
-5. Scan pallelabel (`PALLET:P-xxx`) for at bekræfte flytning.
+## Standard workflow
+1. Registrer kolli
+   Scan/indtast `Varenummer`, `Holdbarhed (YYYYMMDD)` og `Antal kolli`.
+2. Flyt kolli
+   Følg foreslået palle i statusfeltet.
+3. Label og bekræft
+   Print pallelabel og scan label (`PALLET:P-xxx`) for at bekræfte fysisk flytning.
 
-## Vigtige regler
+## Regler i systemet
 - Maks 4 forskellige vare+dato-varianter pr. palle.
-- Samme stregkode med forskellig holdbarhed må aldrig blandes på samme palle.
-- Tom holdbarhed gemmes som `NOEXP`.
+- Samme stregkode med forskellig holdbarhed må aldrig placeres på samme palle.
+- Tom holdbarhed lagres som `NOEXP`.
 
-## Stregkoder
-- Varekoder: EAN-8, EAN-13, UPC-A.
-- UPC-A normaliseres til EAN-13 internt.
-- Scannerpræfiks som `]E0` håndteres automatisk.
-- Pallelabels bruger format: `PALLET:P-001`.
+## Scannerregler
+- Varescan: EAN-8, EAN-13, UPC-A.
+- UPC-A normaliseres automatisk til EAN-13.
+- Prefix fra scanner-symbologi (fx `]E0`) understøttes.
+- Pallelabels forventes i format `PALLET:P-001`.
 
-## Knapper og visninger
-- `Luk`: lukker pallen for nye kolli.
+## Funktioner i UI
+- `Registrer`: opretter/tilføjer til relevant palle.
+- `Print`: udskriver label for valgt palle.
+- `Bekræft`: bekræfter flytning via palle-scan.
+- `Luk`: lukker palle for yderligere tilføjelser.
 - `Fortryd seneste`: ruller sidste registrering tilbage.
-- `Eksport CSV` og `Eksport Excel`: henter datafiler.
+- `Eksport CSV` / `Eksport Excel`: henter driftsdata.
 
-## Fejlhåndtering
-- `Ugyldig pallestregkode`: scan en pallekode i format `PALLET:P-xxx`.
-- `Ingen u-bekræftede kolli`: pallen har ingen afventende flyt-bekræftelser.
+## Typiske fejlbeskeder
+- `Ugyldig pallestregkode...`
+  Scan en pallekode i format `PALLET:P-xxx`.
+- `Ingen u-bekræftede kolli...`
+  Alle registrerede kolli på pallen er allerede bekræftet.

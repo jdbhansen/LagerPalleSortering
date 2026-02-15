@@ -1,9 +1,6 @@
 using System.Text;
 using ClosedXML.Excel;
-using LagerPalleSortering.Application.Services;
-using LagerPalleSortering.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
+using LagerPalleSortering.Tests.TestInfrastructure;
 
 namespace LagerPalleSortering.Tests;
 
@@ -12,7 +9,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_SameProductAndExpiry_ReusesSamePallet()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var first = await fixture.Service.RegisterColliAsync("item-01", "20260101", 2);
         var second = await fixture.Service.RegisterColliAsync("item-01", "20260101", 3);
@@ -30,7 +27,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_DifferentExpiry_CreatesDifferentPallet()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var first = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
         var second = await fixture.Service.RegisterColliAsync("item-01", "20260102", 1);
@@ -45,7 +42,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_EmptyExpiry_UsesNoExpiryBucket()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var result = await fixture.Service.RegisterColliAsync("item-01", string.Empty, 1);
         var openPallets = await fixture.Service.GetOpenPalletsAsync();
@@ -58,7 +55,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task ClosePalletAsync_ThenRegisterSameGroup_CreatesNewPallet()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var first = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
         await fixture.Service.ClosePalletAsync(first.PalletId!);
@@ -72,7 +69,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task UndoLastAsync_WhenFirstEntry_RemovesPallet()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var register = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
         var undo = await fixture.Service.UndoLastAsync();
@@ -88,7 +85,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task DataPersistsAcrossServiceInstances()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var first = await fixture.Service.RegisterColliAsync("item-99", "20261224", 4);
         Assert.True(first.Success);
@@ -104,12 +101,12 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task ExportCsvAndExcel_ReturnExpectedContent()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
         await fixture.Service.RegisterColliAsync("csv-item", "20270101", 2);
 
         var csv = await fixture.ExportService.ExportCsvAsync();
         var csvText = Encoding.UTF8.GetString(csv);
-        Assert.Contains("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc", csvText);
+        Assert.Contains("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,ConfirmedQuantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc", csvText);
         Assert.Contains("csv-item", csvText, StringComparison.OrdinalIgnoreCase);
 
         var excel = await fixture.ExportService.ExportExcelAsync();
@@ -122,7 +119,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_InvalidExpiry_ReturnsValidationError()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var result = await fixture.Service.RegisterColliAsync("item-01", "2026-01-01", 1);
         var openPallets = await fixture.Service.GetOpenPalletsAsync();
@@ -135,7 +132,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_TrimsAndUppercasesProductNumber()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var result = await fixture.Service.RegisterColliAsync("  item-abc  ", "20260101", 1);
         var openPallets = await fixture.Service.GetOpenPalletsAsync();
@@ -148,7 +145,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task ConfirmMoveByPalletScanAsync_MarksLatestEntryConfirmed()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
         var register = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
 
         var confirm = await fixture.Service.ConfirmMoveByPalletScanAsync($"PALLET:{register.PalletId}");
@@ -157,13 +154,36 @@ public sealed class WarehouseDataServiceTests
         Assert.True(confirm.Success);
         Assert.Single(entries);
         Assert.True(entries[0].ConfirmedMoved);
+        Assert.Equal(1, entries[0].ConfirmedQuantity);
         Assert.NotNull(entries[0].ConfirmedAt);
+    }
+
+    [Fact]
+    public async Task ConfirmMoveByPalletScanAsync_QuantityTwo_RequiresTwoScans()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("item-02", "20260101", 2);
+
+        var firstConfirm = await fixture.Service.ConfirmMoveByPalletScanAsync($"PALLET:{register.PalletId}");
+        var afterFirst = await fixture.Service.GetRecentEntriesAsync(1);
+        var secondConfirm = await fixture.Service.ConfirmMoveByPalletScanAsync($"PALLET:{register.PalletId}");
+        var afterSecond = await fixture.Service.GetRecentEntriesAsync(1);
+
+        Assert.True(firstConfirm.Success);
+        Assert.Single(afterFirst);
+        Assert.False(afterFirst[0].ConfirmedMoved);
+        Assert.Equal(1, afterFirst[0].ConfirmedQuantity);
+
+        Assert.True(secondConfirm.Success);
+        Assert.Single(afterSecond);
+        Assert.True(afterSecond[0].ConfirmedMoved);
+        Assert.Equal(2, afterSecond[0].ConfirmedQuantity);
     }
 
     [Fact]
     public async Task ConfirmMoveByPalletScanAsync_InvalidCode_ReturnsError()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
         await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
 
         var result = await fixture.Service.ConfirmMoveByPalletScanAsync("ITEM:item-01");
@@ -175,7 +195,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_AllowsMaximumFourDifferentVariantsPerPallet()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var a = await fixture.Service.RegisterColliAsync("A", "20260101", 1);
         var b = await fixture.Service.RegisterColliAsync("B", "20260101", 1);
@@ -193,7 +213,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_DoesNotMixSameBarcodeWithDifferentExpiryOnSamePallet()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var first = await fixture.Service.RegisterColliAsync("BAR123", "20260101", 1);
         await fixture.Service.RegisterColliAsync("X1", "20260101", 1);
@@ -208,7 +228,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_Ean13WithScannerPrefix_IsNormalized()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var result = await fixture.Service.RegisterColliAsync("]E05701234567892", "20260101", 1);
         var pallets = await fixture.Service.GetOpenPalletsAsync();
@@ -221,7 +241,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_UpcA_AndEquivalentEan13_GroupTogether()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         // UPC-A: 036000291452 -> EAN-13 equivalent: 0036000291452
         var first = await fixture.Service.RegisterColliAsync("036000291452", "20260101", 1);
@@ -235,7 +255,7 @@ public sealed class WarehouseDataServiceTests
     [Fact]
     public async Task RegisterColliAsync_Ean8_IsAccepted()
     {
-        using var fixture = await TestFixture.CreateAsync();
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
 
         var result = await fixture.Service.RegisterColliAsync("73513537", "20260101", 1);
         var pallets = await fixture.Service.GetOpenPalletsAsync();
@@ -245,67 +265,4 @@ public sealed class WarehouseDataServiceTests
         Assert.Equal("73513537", pallets[0].ProductNumber);
     }
 
-    private sealed class TestFixture : IDisposable
-    {
-        private readonly string rootPath;
-        public WarehouseDataService Service { get; }
-        public WarehouseExportService ExportService { get; }
-
-        private TestFixture(string rootPath, WarehouseDataService service, WarehouseExportService exportService)
-        {
-            this.rootPath = rootPath;
-            Service = service;
-            ExportService = exportService;
-        }
-
-        public static async Task<TestFixture> CreateAsync()
-        {
-            var root = Path.Combine(Path.GetTempPath(), "LagerPalleSorteringTests", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(root);
-            var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(root));
-            var service = new WarehouseDataService(repository);
-            var exportService = new WarehouseExportService(repository);
-            await service.InitializeAsync();
-            return new TestFixture(root, service, exportService);
-        }
-
-        public async Task<WarehouseDataService> CreateNewServiceForSameStorageAsync()
-        {
-            var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(rootPath));
-            var service = new WarehouseDataService(repository);
-            await service.InitializeAsync();
-            return service;
-        }
-
-        public void Dispose()
-        {
-            try
-            {
-                Directory.Delete(rootPath, recursive: true);
-            }
-            catch
-            {
-            }
-        }
-    }
-
-    private sealed class TestWebHostEnvironment : IWebHostEnvironment
-    {
-        public TestWebHostEnvironment(string rootPath)
-        {
-            ApplicationName = "LagerPalleSortering.Tests";
-            EnvironmentName = "Development";
-            ContentRootPath = rootPath;
-            WebRootPath = rootPath;
-            ContentRootFileProvider = new NullFileProvider();
-            WebRootFileProvider = new NullFileProvider();
-        }
-
-        public string ApplicationName { get; set; }
-        public IFileProvider WebRootFileProvider { get; set; }
-        public string WebRootPath { get; set; }
-        public string EnvironmentName { get; set; }
-        public string ContentRootPath { get; set; }
-        public IFileProvider ContentRootFileProvider { get; set; }
-    }
 }

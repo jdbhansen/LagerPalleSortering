@@ -19,7 +19,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
     {
         var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows);
         var sb = new StringBuilder();
-        sb.AppendLine("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc");
+        sb.AppendLine("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,ConfirmedQuantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc");
 
         foreach (var entry in entries.OrderBy(e => e.Timestamp))
         {
@@ -29,6 +29,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
                 .Append(EscapeCsv(entry.ProductNumber)).Append(',')
                 .Append(EscapeCsv(entry.ExpiryDate)).Append(',')
                 .Append(entry.Quantity.ToString(CultureInfo.InvariantCulture)).Append(',')
+                .Append(entry.ConfirmedQuantity.ToString(CultureInfo.InvariantCulture)).Append(',')
                 .Append(entry.CreatedNewPallet ? "1" : "0").Append(',')
                 .Append(entry.ConfirmedMoved ? "1" : "0").Append(',')
                 .Append(EscapeCsv(entry.ConfirmedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty))
@@ -70,9 +71,10 @@ public sealed class WarehouseExportService : IWarehouseExportService
         entrySheet.Cell(1, 3).Value = "ProductNumber";
         entrySheet.Cell(1, 4).Value = "ExpiryDate";
         entrySheet.Cell(1, 5).Value = "Quantity";
-        entrySheet.Cell(1, 6).Value = "CreatedNewPallet";
-        entrySheet.Cell(1, 7).Value = "ConfirmedMoved";
-        entrySheet.Cell(1, 8).Value = "ConfirmedAtUtc";
+        entrySheet.Cell(1, 6).Value = "ConfirmedQuantity";
+        entrySheet.Cell(1, 7).Value = "CreatedNewPallet";
+        entrySheet.Cell(1, 8).Value = "ConfirmedMoved";
+        entrySheet.Cell(1, 9).Value = "ConfirmedAtUtc";
 
         row = 2;
         foreach (var entry in entries.OrderBy(e => e.Timestamp))
@@ -82,9 +84,10 @@ public sealed class WarehouseExportService : IWarehouseExportService
             entrySheet.Cell(row, 3).Value = entry.ProductNumber;
             entrySheet.Cell(row, 4).Value = entry.ExpiryDate;
             entrySheet.Cell(row, 5).Value = entry.Quantity;
-            entrySheet.Cell(row, 6).Value = entry.CreatedNewPallet ? 1 : 0;
-            entrySheet.Cell(row, 7).Value = entry.ConfirmedMoved ? 1 : 0;
-            entrySheet.Cell(row, 8).Value = entry.ConfirmedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty;
+            entrySheet.Cell(row, 6).Value = entry.ConfirmedQuantity;
+            entrySheet.Cell(row, 7).Value = entry.CreatedNewPallet ? 1 : 0;
+            entrySheet.Cell(row, 8).Value = entry.ConfirmedMoved ? 1 : 0;
+            entrySheet.Cell(row, 9).Value = entry.ConfirmedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty;
             row++;
         }
 
