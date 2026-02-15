@@ -36,6 +36,22 @@ dotnet run
 
 Appen starter på lokal URL vist i terminalen.
 
+## Tag med på arbejde (portable testpakke)
+Byg en transportabel Windows-pakke (self-contained) med startscript:
+
+```powershell
+.\scripts\package-work.ps1
+```
+
+Output:
+- Mappe: `..\LagerPalleSortering-work-package\app`
+- Zip: `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
+
+På arbejds-PC:
+1. Pak zip-filen ud.
+2. Kør `Start-Lager.cmd`.
+3. Appen starter på `http://127.0.0.1:5050`.
+
 ## Verificering
 Anbefalet kommando (byg + test, inkl. håndtering af testhost fil-lock):
 

@@ -5,6 +5,7 @@ using LagerPalleSortering.Infrastructure.Repositories;
 using LagerPalleSortering.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var disableHttpsRedirection = builder.Configuration.GetValue<bool>("DisableHttpsRedirection");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -30,7 +31,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
+if (!disableHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAntiforgery();
 
