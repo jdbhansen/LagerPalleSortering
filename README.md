@@ -58,6 +58,7 @@ Byg en transportabel Windows-pakke (self-contained) med startscript:
 Output:
 - Mappe: `..\LagerPalleSortering-work-package\app`
 - Zip: `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
+- Repo-download: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
 
 På arbejds-PC:
 1. Pak zip-filen ud.
