@@ -1,6 +1,7 @@
 param(
     [string]$OutputRoot = "",
-    [int]$Port = 5050
+    [int]$Port = 5050,
+    [bool]$SyncTrackedZip = $true
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +13,7 @@ if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
 
 $publishDir = Join-Path $OutputRoot "app"
 $zipPath = Join-Path $OutputRoot "LagerPalleSortering-work.zip"
+$trackedZipPath = Join-Path $projectRoot "work-package\LagerPalleSortering-work.zip"
 
 if (Test-Path $OutputRoot) {
     Remove-Item $OutputRoot -Recurse -Force
@@ -76,6 +78,12 @@ Data gemmes i App_Data\lager.db i samme mappe.
 Set-Content -Path (Join-Path $publishDir "README_WORK.txt") -Value $readme -Encoding UTF8
 
 Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
+
+if ($SyncTrackedZip) {
+    New-Item -ItemType Directory -Path (Split-Path $trackedZipPath -Parent) -Force | Out-Null
+    Copy-Item -Path $zipPath -Destination $trackedZipPath -Force
+    Write-Host "Tracked zip opdateret: $trackedZipPath"
+}
 
 Write-Host "Work package klar:"
 Write-Host "Folder: $publishDir"

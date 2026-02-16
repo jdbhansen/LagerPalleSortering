@@ -66,6 +66,7 @@ Output:
 - Mappe: `..\LagerPalleSortering-work-package\app`
 - Zip: `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
 - Repo-download: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
+- Scriptet synkroniserer automatisk den tracked zip i `work-package/` (Git LFS).
 
 På arbejds-PC:
 1. Pak zip-filen ud.
