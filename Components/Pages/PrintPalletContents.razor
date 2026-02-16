@@ -43,7 +43,7 @@
 
     <div class="screen-only mt-3 d-flex gap-2 justify-content-center">
         <button class="btn btn-primary" @onclick="PrintNow">Print igen</button>
-        <a class="btn btn-outline-secondary" href="/">Tilbage</a>
+        <button class="btn btn-outline-secondary" @onclick="BackNow">Tilbage</button>
     </div>
 </div>
 
@@ -70,5 +70,10 @@
     private async Task PrintNow()
     {
         await JS.InvokeVoidAsync("lagerPrint.printAndClose");
+    }
+
+    private async Task BackNow()
+    {
+        await JS.InvokeVoidAsync("lagerPrint.closeTabOrGoHome");
     }
 }

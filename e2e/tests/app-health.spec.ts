@@ -6,7 +6,6 @@ test("home page loads key operator sections", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Palle sortering" })).toBeVisible();
   await expect(page.getByText("Trin 1: Registrer kolli")).toBeVisible();
   await expect(page.getByText("Trin 2: Bekræft flyt")).toBeVisible();
-  await expect(page.getByText("Audit log (seneste 10)")).toBeVisible();
 });
 
 test("health and metrics endpoints are reachable", async ({ request }) => {

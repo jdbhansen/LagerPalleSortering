@@ -169,5 +169,13 @@ window.lagerPrint = {
             window.removeEventListener("afterprint", onAfterPrint);
             closeIfPopup();
         }, 1200);
+    },
+    closeTabOrGoHome: function () {
+        if (window.opener && !window.opener.closed) {
+            window.close();
+            return;
+        }
+
+        window.location.href = "/";
     }
 };

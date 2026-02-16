@@ -255,39 +255,4 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mt-3">
-        <div class="card-header bg-body fw-semibold">Audit log (seneste 10)</div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tid</th>
-                        <th>Handling</th>
-                        <th>Detaljer</th>
-                        <th>Maskine</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (auditEntries.Count == 0)
-                    {
-                        <tr>
-                            <td colspan="4" class="text-muted">Ingen audit entries endnu.</td>
-                        </tr>
-                    }
-                    else
-                    {
-                        @foreach (var audit in auditEntries)
-                        {
-                            <tr>
-                                <td>@audit.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@audit.Action</td>
-                                <td>@audit.Details</td>
-                                <td>@audit.MachineName</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
 </section>

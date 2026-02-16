@@ -35,7 +35,6 @@ test.describe("UI sanity", () => {
 
     await expect(page.locator(".card-header .fw-semibold", { hasText: "Åbne paller" })).toBeVisible();
     await expect(page.locator(".card-header .fw-semibold", { hasText: "Seneste registreringer" })).toBeVisible();
-    await expect(page.locator(".card-header", { hasText: "Audit log (seneste 10)" })).toBeVisible();
 
     await expect(page.locator("#exportCsvButton")).toBeVisible();
     await expect(page.locator("#exportExcelButton")).toBeVisible();

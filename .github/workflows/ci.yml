@@ -79,6 +79,7 @@ jobs:
         with:
           name: coverage
           path: artifacts/coverage/**
+          if-no-files-found: ignore
 
       - name: Upload E2E Report
         if: always()
@@ -86,6 +87,7 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/**
+          if-no-files-found: ignore
 
       - name: Upload Test Results
         if: always()
@@ -93,3 +95,4 @@ jobs:
         with:
           name: test-results
           path: artifacts/test-results/*.trx
+          if-no-files-found: ignore
