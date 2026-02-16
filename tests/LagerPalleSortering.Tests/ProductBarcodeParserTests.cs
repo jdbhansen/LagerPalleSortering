@@ -27,4 +27,20 @@ public sealed class ProductBarcodeParserTests
 
         Assert.Equal("ITEM-ABC", result);
     }
+
+    [Fact]
+    public void Normalize_WithInvalidUpcCheckDigit_DoesNotConvertToEan13()
+    {
+        var result = ProductBarcodeParser.Normalize("036000291453");
+
+        Assert.Equal("036000291453", result);
+    }
+
+    [Fact]
+    public void Normalize_WithWhitespace_ReturnsEmpty()
+    {
+        var result = ProductBarcodeParser.Normalize("   ");
+
+        Assert.Equal(string.Empty, result);
+    }
 }

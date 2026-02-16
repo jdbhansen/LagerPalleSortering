@@ -33,4 +33,15 @@ public sealed class WarehouseBarcodeTests
         Assert.False(success);
         Assert.Equal(string.Empty, palletId);
     }
+
+    [Theory]
+    [InlineData("p+001", "PALLET:P-001")]
+    [InlineData("P-00A1", "PALLET:P-00A1")]
+    [InlineData("  p-123  ", "PALLET:P-123")]
+    public void CreatePalletCode_NormalizesId(string palletId, string expectedCode)
+    {
+        var result = WarehouseBarcode.CreatePalletCode(palletId);
+
+        Assert.Equal(expectedCode, result);
+    }
 }
