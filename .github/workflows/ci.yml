@@ -35,6 +35,29 @@ jobs:
       - name: Build
         run: dotnet build LagerPalleSortering.slnx --configuration Release --no-restore
 
+      - name: Verify Work Package Sync
+        shell: pwsh
+        run: |
+          $outputRoot = Join-Path $env:RUNNER_TEMP "work-package-check"
+          .\scripts\package-work.ps1 -OutputRoot $outputRoot -SyncTrackedZip $true
+
+          $generatedZip = Join-Path $outputRoot "LagerPalleSortering-work.zip"
+          $trackedZip = Join-Path $PWD "work-package\LagerPalleSortering-work.zip"
+
+          if (!(Test-Path $generatedZip)) {
+            throw "Generated work package zip was not created: $generatedZip"
+          }
+
+          if (!(Test-Path $trackedZip)) {
+            throw "Tracked work package zip was not created: $trackedZip"
+          }
+
+          $generatedHash = (Get-FileHash $generatedZip -Algorithm SHA256).Hash
+          $trackedHash = (Get-FileHash $trackedZip -Algorithm SHA256).Hash
+          if ($generatedHash -ne $trackedHash) {
+            throw "Tracked work package zip is not in sync with generated zip."
+          }
+
       - name: Format Check
         run: dotnet format LagerPalleSortering.slnx --verify-no-changes --verbosity diagnostic
 
