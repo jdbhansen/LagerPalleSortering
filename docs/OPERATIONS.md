@@ -13,6 +13,7 @@ dotnet run
 - Health/metrics:
   - `GET /health`
   - `GET /metrics`
+- Restore-funktionen i UI ligger nederst på forsiden for at holde dagligt scan-flow adskilt fra driftsindgreb.
 
 ## Build og test (anbefalet)
 Brug projektets verifikationsscript:

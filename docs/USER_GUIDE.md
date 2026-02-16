@@ -32,9 +32,9 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - `Luk`: lukker palle for yderligere tilføjelser.
 - `Fortryd seneste`: ruller sidste registrering tilbage.
 - `Backup DB`: downloader en komplet database-backup (`.db`).
-- `Gendan database`: indlæs backupfil direkte i appen.
-- `Audit log`: viser seneste kritiske handlinger i UI.
+- `Gendan database`: indlæs backupfil direkte i appen (sektionen ligger nederst på siden).
 - `Eksport CSV` / `Eksport Excel`: henter driftsdata.
+- `Statusfelt`: vises tydeligt og centreret øverst på siden med succes/advarsels/fejlstatus.
 
 ## Typiske fejlbeskeder
 - `Scan ignoreret: samme palle blev allerede scannet lige før.`

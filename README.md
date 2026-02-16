@@ -16,10 +16,12 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - Double-scan guard mod utilsigtede hurtige dublet-scans (konfigurerbar).
 - Persistens i SQLite (`App_Data/lager.db`).
 - Backup (`/backup/db`) og restore direkte i UI.
-- Audit-log for kritiske handlinger (registrer, luk, bekræft, undo, clear, backup/restore).
+- Audit-log for kritiske handlinger (registrer, luk, bekræft, undo, clear, backup/restore) gemmes i databasen.
 - Eksport til CSV og Excel.
 - Drift endpoints: `/health` og `/metrics`.
 - Scanner-optimeret inputflow (Enter-baseret).
+- Operator-status vises med tydelig alert-styling i toppen af siden.
+- "Database restore" er placeret nederst på forsiden for at mindske fejlklik i primært scan-flow.
 
 ## Tastaturgenveje
 - `Enter` i varenummer: flytter fokus til holdbarhed.
@@ -45,6 +47,7 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - `Application/`: use-cases og serviceabstraktioner.
 - `Infrastructure/`: SQLite repository + migration/query-logik.
 - `Components/`: Blazor UI.
+- `Services/`: UI-nære services (fx `IBarcodeService` + `BarcodeService`).
 
 ## Hurtig start
 Forudsætning: .NET SDK 10.

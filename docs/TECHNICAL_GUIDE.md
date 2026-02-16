@@ -24,6 +24,9 @@
     - `Common`: mapping/helpers.
 - `Components/`
   - Blazor UI (`Home`, `PrintLabel`, layout).
+  - `Home` bruger ensartet status-hjælpermetoder (success/warning/error) for konsekvent operator-feedback.
+- `Services/`
+  - `IBarcodeService` + `BarcodeService` til Code128 SVG-generering i print-sider.
 
 ## Datamodel (SQLite)
 - `Pallets`
@@ -78,3 +81,4 @@
 - `WarehouseDataService` afhænger nu af barcode-interfaces i stedet for statiske helpers.
 - Ved scanner- eller barcode-migration kan du registrere nye implementeringer i `Program.cs` uden at ændre service-flow.
 - `WarehouseRules` i `appsettings` styrer centrale guardrails (max varianter, duplicate-scan vindue).
+- Print-sider afhænger af `IBarcodeService` via DI i stedet for konkret service-type.
