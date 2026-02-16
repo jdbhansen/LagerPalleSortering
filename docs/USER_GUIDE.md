@@ -5,7 +5,7 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 
 ## Standard workflow
 1. Registrer kolli
-   Scan/indtast `Varenummer`, `Holdbarhed (YYYYMMDD)` og `Antal kolli`.
+   Scan/indtast `Varenummer`, `Holdbarhed (YYYYMMDD, gyldig dato)` og `Antal kolli`.
 2. Flyt kolli
    Følg foreslået palle i statusfeltet.
 3. Label og bekræft
@@ -31,9 +31,13 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - `Bekræft`: bekræfter flytning via palle-scan.
 - `Luk`: lukker palle for yderligere tilføjelser.
 - `Fortryd seneste`: ruller sidste registrering tilbage.
+- `Backup DB`: downloader en komplet database-backup (`.db`).
+- `Gendan database`: indlæs backupfil direkte i appen.
 - `Eksport CSV` / `Eksport Excel`: henter driftsdata.
 
 ## Typiske fejlbeskeder
+- `Scan ignoreret: samme palle blev allerede scannet lige før.`
+  Samme palle blev scannet igen inden for guard-vinduet. Vent et øjeblik og scan igen.
 - `Ugyldig pallestregkode...`
   Scan en pallekode med palle-id (`P-xxx`) i data. Appen accepterer både `PALLET:P-xxx` og støjfyldte scans, så længe palle-id kan udtrækkes.
 - `Ingen u-bekræftede kolli...`

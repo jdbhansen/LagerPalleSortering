@@ -8,6 +8,7 @@ public sealed class BarcodeService
 {
     public string GenerateCode128Svg(string content, int width = 520, int height = 120)
     {
+        // Normalize to uppercase so printed text and encoded payload stay consistent.
         var value = (content ?? string.Empty).Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(value))
         {

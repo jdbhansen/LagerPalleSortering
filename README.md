@@ -6,15 +6,19 @@ Intern Blazor-app til varemodtagelse og palle-styring i lagerdrift.
 Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, label-print og flyttebekræftelse med scan.
 
 ## Nøglefunktioner
-- Registrering af `varenummer`, `holdbarhed (YYYYMMDD)` og `antal kolli`.
+- Registrering af `varenummer`, `holdbarhed (YYYYMMDD, gyldig dato)` og `antal kolli`.
 - Automatisk pallevalg med guardrails:
   - maks 4 vare+dato-varianter pr. palle.
   - samme stregkode med forskellig holdbarhed må ikke blandes på samme palle.
 - Print af pallelabel med Code128 stregkode (`PALLET:P-001`).
 - Print af palleindhold med scanbare produkt-stregkoder, holdbarhedsdato og antal.
 - Flyttebekræftelse via palle-scan med kolli-tæller (`ConfirmedQuantity/Quantity`).
+- Double-scan guard mod utilsigtede hurtige dublet-scans (konfigurerbar).
 - Persistens i SQLite (`App_Data/lager.db`).
+- Backup (`/backup/db`) og restore direkte i UI.
+- Audit-log for kritiske handlinger (registrer, luk, bekræft, undo, clear, backup/restore).
 - Eksport til CSV og Excel.
+- Drift endpoints: `/health` og `/metrics`.
 - Scanner-optimeret inputflow (Enter-baseret).
 
 ## Tastaturgenveje
@@ -93,6 +97,22 @@ CI i GitHub Actions kører restore + build + test på Windows for `push` til `ma
 ## Eksport
 - CSV: `GET /export/csv`
 - Excel: `GET /export/excel`
+- DB backup: `GET /backup/db`
+
+## Drift endpoints
+- Health: `GET /health`
+- Metrics: `GET /metrics`
+
+## Konfiguration
+`appsettings*.json`:
+
+```json
+"WarehouseRules": {
+  "MaxVariantsPerPallet": 4,
+  "EnableDuplicateScanGuard": true,
+  "DuplicateScanWindowMs": 1200
+}
+```
 
 ## Dokumentation
 - Brugerguide: `docs/USER_GUIDE.md`

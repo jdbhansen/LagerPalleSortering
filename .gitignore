@@ -32,3 +32,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# JavaScript / E2E tooling
+node_modules/
+test-results/
+playwright-report/

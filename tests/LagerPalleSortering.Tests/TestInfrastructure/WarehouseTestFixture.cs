@@ -1,6 +1,7 @@
 using LagerPalleSortering.Application.Services;
 using LagerPalleSortering.Domain;
 using LagerPalleSortering.Infrastructure.Repositories;
+using Microsoft.Extensions.Options;
 
 namespace LagerPalleSortering.Tests.TestInfrastructure;
 
@@ -27,7 +28,9 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
         var service = new WarehouseDataService(
             repository,
             new DefaultProductBarcodeNormalizer(),
-            new DefaultPalletBarcodeService());
+            new DefaultPalletBarcodeService(),
+            new OperationalMetricsService(),
+            Options.Create(new WarehouseRulesOptions { EnableDuplicateScanGuard = false }));
         var exportService = new WarehouseExportService(repository);
         await service.InitializeAsync();
 
@@ -40,7 +43,9 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
         var service = new WarehouseDataService(
             repository,
             new DefaultProductBarcodeNormalizer(),
-            new DefaultPalletBarcodeService());
+            new DefaultPalletBarcodeService(),
+            new OperationalMetricsService(),
+            Options.Create(new WarehouseRulesOptions { EnableDuplicateScanGuard = false }));
         await service.InitializeAsync();
         return service;
     }

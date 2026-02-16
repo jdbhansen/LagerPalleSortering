@@ -27,7 +27,7 @@
                     <div class="item-header">
                         <strong>Vare:</strong> @item.ProductNumber
                         <span class="item-sep">|</span>
-                        <strong>Holdbarhed:</strong> @item.ExpiryDate
+                        <strong>Holdbarhed:</strong> <span class="item-expiry">@item.ExpiryDate</span>
                         <span class="item-sep">|</span>
                         <strong>Antal:</strong> @item.Quantity
                     </div>
@@ -69,6 +69,6 @@
 
     private async Task PrintNow()
     {
-        await JS.InvokeVoidAsync("print");
+        await JS.InvokeVoidAsync("lagerPrint.printAndClose");
     }
 }

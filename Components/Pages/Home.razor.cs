@@ -1,5 +1,6 @@
 using LagerPalleSortering.Domain;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 namespace LagerPalleSortering.Components.Pages;
@@ -12,6 +13,7 @@ public partial class Home
     private readonly HomeFormModel form = new() { Quantity = 1 };
     private readonly List<PalletRecord> openPallets = new();
     private readonly List<ScanEntryRecord> entries = new();
+    private readonly List<AuditEntryRecord> auditEntries = new();
     private string? statusMessage;
     private string statusCss = "alert-info";
     private string scannedPalletCode = string.Empty;
@@ -19,6 +21,8 @@ public partial class Home
     private bool keepExpiryBetweenScans = true;
     private int confirmScanCount = 1;
     private bool showClearDatabaseWarning;
+    private IBrowserFile? restoreFile;
+    private string? selectedRestoreFileName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,6 +36,7 @@ public partial class Home
             return;
         }
 
+        // Register scanner-friendly keyboard behavior once on initial render.
         await JS.InvokeVoidAsync("lagerScanner.init", "productInput", "expiryInput", "quantityInput", "registerButton");
         await JS.InvokeVoidAsync("lagerScanner.initPalletConfirm", "palletScanInput", "confirmMoveButton", "confirmCountInput");
         await JS.InvokeVoidAsync("lagerScanner.initHotkeys", new
@@ -84,9 +89,10 @@ public partial class Home
         string lastMessage = string.Empty;
         string? palletId = null;
 
+        // Confirm one physical colli per iteration.
         for (var i = 0; i < confirmScanCount; i++)
         {
-            var result = await DataService.ConfirmMoveByPalletScanAsync(scannedPalletCode);
+            var result = await DataService.ConfirmMoveByPalletScanAsync(scannedPalletCode, bypassDuplicateGuard: i > 0);
             lastMessage = result.Message;
             palletId = result.PalletId;
             if (!result.Success)
@@ -184,13 +190,48 @@ public partial class Home
         await FocusProductAsync();
     }
 
+    private void OnRestoreFileSelected(InputFileChangeEventArgs args)
+    {
+        restoreFile = args.File;
+        selectedRestoreFileName = restoreFile?.Name;
+    }
+
+    private bool CanRestoreDatabase => restoreFile is not null;
+
+    private async Task RestoreDatabaseAsync()
+    {
+        if (restoreFile is null)
+        {
+            SetStatus("Vælg en backupfil først.", isError: true);
+            return;
+        }
+
+        try
+        {
+            await using var stream = restoreFile.OpenReadStream(maxAllowedSize: 128 * 1024 * 1024);
+            await DataService.RestoreDatabaseAsync(stream);
+            restoreFile = null;
+            selectedRestoreFileName = null;
+            await ReloadDataAsync();
+            SetStatus("Database gendannet fra backup.", isError: false);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Gendan fejlede: {ex.Message}", isError: true);
+        }
+    }
+
     private async Task ReloadDataAsync()
     {
+        // Reload both sections from source-of-truth after each mutation.
         openPallets.Clear();
         openPallets.AddRange(await DataService.GetOpenPalletsAsync());
 
         entries.Clear();
         entries.AddRange(await DataService.GetRecentEntriesAsync(WarehouseConstants.DefaultRecentEntries));
+
+        auditEntries.Clear();
+        auditEntries.AddRange(await DataService.GetRecentAuditEntriesAsync(10));
     }
 
     private void SetStatus(string message, bool isError)

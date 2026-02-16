@@ -34,6 +34,8 @@
 - `ScanEntries`
   - `Timestamp`, `ProductNumber`, `ExpiryDate`, `Quantity`, `PalletId`, `CreatedNewPallet`,
     `ConfirmedQuantity`, `ConfirmedMoved`, `ConfirmedAt`
+- `AuditEntries`
+  - `Timestamp`, `Action`, `Details`, `MachineName`
 
 ## Kritiske forretningsregler
 1. Åben palle med matchende vare+dato prioriteres.
@@ -42,10 +44,14 @@
 4. Flyttebekræftelse er per kolli (`ConfirmedQuantity` stiger med 1 per scan).
 5. Fuldt bekræftet når `ConfirmedQuantity >= Quantity`.
 6. Palle-scan parser udtrækker kun `P-<digits>` og ignorerer øvrig scanner-støj.
+7. Duplicate-scan guard kan afvise hurtige dublet-scans (konfigurerbar via `WarehouseRules`).
 
 ## Endpoints
 - `GET /export/csv`
 - `GET /export/excel`
+- `GET /backup/db`
+- `GET /health`
+- `GET /metrics`
 
 ## Teststrategi
 - `WarehouseDataServiceTests`: funktions- og regeltests.
@@ -64,3 +70,4 @@
 ## Migration note
 - `WarehouseDataService` afhænger nu af barcode-interfaces i stedet for statiske helpers.
 - Ved scanner- eller barcode-migration kan du registrere nye implementeringer i `Program.cs` uden at ændre service-flow.
+- `WarehouseRules` i `appsettings` styrer centrale guardrails (max varianter, duplicate-scan vindue).

@@ -3,6 +3,7 @@ namespace LagerPalleSortering.Domain;
 public static class WarehouseBarcode
 {
     public const string PalletPrefix = "PALLET:";
+    // Backward-compatible static wrapper used by older call-sites and tests.
     private static readonly IPalletBarcodeService DefaultService = new DefaultPalletBarcodeService();
 
     public static string CreatePalletCode(string palletId) => DefaultService.CreatePalletCode(palletId);

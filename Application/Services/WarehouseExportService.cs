@@ -6,6 +6,9 @@ using LagerPalleSortering.Domain;
 
 namespace LagerPalleSortering.Application.Services;
 
+/// <summary>
+/// Creates operational exports from repository snapshots.
+/// </summary>
 public sealed class WarehouseExportService : IWarehouseExportService
 {
     private const string ExportTimestampFormat = "yyyy-MM-dd HH:mm:ss";
@@ -19,6 +22,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
 
     public async Task<byte[]> ExportCsvAsync(CancellationToken cancellationToken = default)
     {
+        // Exports are ordered oldest->newest for better readability in spreadsheets.
         var entries = await _repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
         var sb = new StringBuilder();
         sb.AppendLine("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,ConfirmedQuantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc");
@@ -38,6 +42,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
                 .AppendLine();
         }
 
+        // BOM is included to ensure Danish characters render correctly in Excel.
         return Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
     }
 
@@ -103,6 +108,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
 
     private static string EscapeCsv(string value)
     {
+        // RFC4180-style escaping for comma, quote and line breaks.
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
         {
             return $"\"{value.Replace("\"", "\"\"")}\"";

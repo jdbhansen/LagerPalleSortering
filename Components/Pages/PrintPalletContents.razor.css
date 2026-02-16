@@ -16,6 +16,7 @@
     padding: 10mm;
     color: #000;
     background: #fff;
+    text-align: center;
 }
 
 .sheet-title {
@@ -41,8 +42,14 @@
 }
 
 .item-header {
-    font-size: 1.05rem;
+    font-size: 1.3rem;
     font-weight: 600;
+    line-height: 1.35;
+}
+
+.item-expiry {
+    font-size: 1.5rem;
+    font-weight: 800;
 }
 
 .item-sep {
@@ -52,11 +59,13 @@
 
 .item-barcode {
     margin-top: 0.25rem;
+    display: flex;
+    justify-content: center;
 }
 
 .item-code {
     margin-top: 0.2rem;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     letter-spacing: 0.06rem;
 }
 

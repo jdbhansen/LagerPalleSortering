@@ -35,6 +35,7 @@ public sealed partial class SqliteWarehouseRepository
             SELECT Id, Timestamp, ProductNumber, ExpiryDate, Quantity, PalletId, GroupKey, CreatedNewPallet, ConfirmedQuantity, ConfirmedMoved, ConfirmedAt
             FROM ScanEntries
             WHERE PalletId = $palletId AND ConfirmedQuantity < Quantity
+            -- Newest-first aligns with operator expectation: confirm latest placed colli first.
             ORDER BY Id DESC
             LIMIT 1;
             """;

@@ -15,6 +15,7 @@
         <div class="d-flex flex-wrap gap-2">
             <a id="exportCsvButton" class="btn btn-outline-success" href="/export/csv">Eksport CSV</a>
             <a id="exportExcelButton" class="btn btn-outline-success" href="/export/excel">Eksport Excel</a>
+            <a id="backupDbButton" class="btn btn-outline-secondary" href="/backup/db">Backup DB</a>
             <button id="clearDatabaseButton" class="btn btn-outline-danger" @onclick="ShowClearDatabaseWarning">Ryd database</button>
         </div>
     </div>
@@ -43,6 +44,25 @@
                     <div class="fs-3 fw-semibold">@entries.Sum(e => Math.Max(0, e.Quantity - e.ConfirmedQuantity))</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-body fw-semibold">Database restore</div>
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-8">
+                    <label class="form-label">Vælg backupfil (.db)</label>
+                    <InputFile OnChange="OnRestoreFileSelected" accept=".db,.sqlite,.sqlite3" />
+                </div>
+                <div class="col-12 col-md-4 d-grid">
+                    <button id="restoreDbButton" class="btn btn-outline-warning" disabled="@(!CanRestoreDatabase)" @onclick="RestoreDatabaseAsync">Gendan database</button>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(selectedRestoreFileName))
+            {
+                <div class="small text-muted mt-2">Valgt fil: @selectedRestoreFileName</div>
+            }
         </div>
     </div>
 
@@ -232,6 +252,42 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-header bg-body fw-semibold">Audit log (seneste 10)</div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tid</th>
+                        <th>Handling</th>
+                        <th>Detaljer</th>
+                        <th>Maskine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (auditEntries.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4" class="text-muted">Ingen audit entries endnu.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var audit in auditEntries)
+                        {
+                            <tr>
+                                <td>@audit.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@audit.Action</td>
+                                <td>@audit.Details</td>
+                                <td>@audit.MachineName</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </section>

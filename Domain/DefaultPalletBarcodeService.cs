@@ -1,5 +1,8 @@
 namespace LagerPalleSortering.Domain;
 
+/// <summary>
+/// Parses pallet scans with tolerance for common scanner noise.
+/// </summary>
 public sealed class DefaultPalletBarcodeService : IPalletBarcodeService
 {
     private const string PalletPrefix = "PALLET:";

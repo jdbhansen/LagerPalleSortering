@@ -1,6 +1,10 @@
 using System.Text;
 using ClosedXML.Excel;
+using LagerPalleSortering.Application.Services;
+using LagerPalleSortering.Domain;
+using LagerPalleSortering.Infrastructure.Repositories;
 using LagerPalleSortering.Tests.TestInfrastructure;
+using Microsoft.Extensions.Options;
 
 namespace LagerPalleSortering.Tests;
 
@@ -205,6 +209,39 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task RegisterColliAsync_InvalidCalendarExpiry_ReturnsValidationError()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var result = await fixture.Service.RegisterColliAsync("item-01", "20260230", 1);
+        var openPallets = await fixture.Service.GetOpenPalletsAsync();
+
+        Assert.False(result.Success);
+        Assert.Contains("YYYYMMDD", result.Message);
+        Assert.Empty(openPallets);
+    }
+
+    [Fact]
+    public async Task GetOpenPalletsAsync_SortsByNumericPalletNumber()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        for (var day = 1; day <= 12; day++)
+        {
+            var expiry = $"202601{day:00}";
+            await fixture.Service.RegisterColliAsync("ORDER-ITEM", expiry, 1);
+        }
+
+        var openPallets = await fixture.Service.GetOpenPalletsAsync();
+
+        Assert.Equal(12, openPallets.Count);
+        for (var index = 1; index <= openPallets.Count; index++)
+        {
+            Assert.Equal($"P-{index:000}", openPallets[index - 1].PalletId);
+        }
+    }
+
+    [Fact]
     public async Task RegisterColliAsync_TrimsAndUppercasesProductNumber()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
@@ -370,6 +407,86 @@ public sealed class WarehouseDataServiceTests
         Assert.True(result.Success);
         Assert.Single(pallets);
         Assert.Equal("73513537", pallets[0].ProductNumber);
+    }
+
+    [Fact]
+    public async Task BackupAndRestoreDatabase_RestoresOriginalState()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        await fixture.Service.RegisterColliAsync("BACKUP-1", "20261224", 2);
+        var backup = await fixture.Service.BackupDatabaseAsync();
+
+        await fixture.Service.ClearAllDataAsync();
+        var empty = await fixture.Service.GetOpenPalletsAsync();
+        Assert.Empty(empty);
+
+        await using var stream = new MemoryStream(backup);
+        await fixture.Service.RestoreDatabaseAsync(stream);
+        var restored = await fixture.Service.GetOpenPalletsAsync();
+
+        Assert.Single(restored);
+        Assert.Equal("BACKUP-1", restored[0].ProductNumber);
+    }
+
+    [Fact]
+    public async Task CriticalActions_WriteAuditEntries()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("AUDIT-1", "20261224", 1);
+
+        await fixture.Service.ClosePalletAsync(register.PalletId!);
+        await fixture.Service.UndoLastAsync();
+
+        var audits = await fixture.Service.GetRecentAuditEntriesAsync(20);
+        Assert.Contains(audits, x => x.Action == "REGISTER_COLLI");
+        Assert.Contains(audits, x => x.Action == "CLOSE_PALLET");
+        Assert.Contains(audits, x => x.Action == "UNDO_LAST");
+    }
+
+    [Fact]
+    public async Task ConfirmMoveByPalletScanAsync_DuplicateGuard_BlocksRapidDuplicateScan()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "LagerPalleSorteringTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var repository = new SqliteWarehouseRepository(
+                new TestWebHostEnvironment(root),
+                Options.Create(new WarehouseRulesOptions
+                {
+                    EnableDuplicateScanGuard = true,
+                    DuplicateScanWindowMs = 5_000
+                }));
+            var service = new WarehouseDataService(
+                repository,
+                new DefaultProductBarcodeNormalizer(),
+                new DefaultPalletBarcodeService(),
+                new OperationalMetricsService(),
+                Options.Create(new WarehouseRulesOptions
+                {
+                    EnableDuplicateScanGuard = true,
+                    DuplicateScanWindowMs = 5_000
+                }));
+            await service.InitializeAsync();
+            var register = await service.RegisterColliAsync("DUP-1", "20270101", 2);
+
+            var first = await service.ConfirmMoveByPalletScanAsync($"PALLET:{register.PalletId}");
+            var second = await service.ConfirmMoveByPalletScanAsync($"PALLET:{register.PalletId}");
+
+            Assert.True(first.Success);
+            Assert.False(second.Success);
+            Assert.Contains("ignoreret", second.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(root, recursive: true);
+            }
+            catch
+            {
+            }
+        }
     }
 
 }

@@ -9,6 +9,10 @@ dotnet run
 
 - Runtime data ligger i: `App_Data/lager.db`
 - Tag backup af `lager.db` før opgraderinger eller større driftstiltag.
+- Appen har også indbygget backup-download: `GET /backup/db`.
+- Health/metrics:
+  - `GET /health`
+  - `GET /metrics`
 
 ## Build og test (anbefalet)
 Brug projektets verifikationsscript:

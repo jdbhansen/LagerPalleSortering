@@ -1,5 +1,8 @@
 namespace LagerPalleSortering.Domain;
 
+/// <summary>
+/// Default EAN/UPC-aware normalizer for product scans.
+/// </summary>
 public sealed class DefaultProductBarcodeNormalizer : IProductBarcodeNormalizer
 {
     public string Normalize(string rawValue)

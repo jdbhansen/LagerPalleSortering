@@ -146,3 +146,28 @@ window.lagerScanner = {
         el.select?.();
     }
 };
+
+window.lagerPrint = {
+    printAndClose: function () {
+        // Only auto-close tabs opened from the main app window.
+        const closeIfPopup = function () {
+            if (window.opener && !window.opener.closed) {
+                window.close();
+            }
+        };
+
+        const onAfterPrint = function () {
+            window.removeEventListener("afterprint", onAfterPrint);
+            closeIfPopup();
+        };
+
+        window.addEventListener("afterprint", onAfterPrint);
+        window.print();
+
+        // Fallback for browsers where afterprint is unreliable.
+        window.setTimeout(function () {
+            window.removeEventListener("afterprint", onAfterPrint);
+            closeIfPopup();
+        }, 1200);
+    }
+};

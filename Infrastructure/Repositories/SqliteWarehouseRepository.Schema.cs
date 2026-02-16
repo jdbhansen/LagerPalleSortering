@@ -44,15 +44,25 @@ public sealed partial class SqliteWarehouseRepository
                 ConfirmedAt TEXT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS AuditEntries (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Timestamp TEXT NOT NULL,
+                Action TEXT NOT NULL,
+                Details TEXT NOT NULL,
+                MachineName TEXT NOT NULL
+            );
+
             CREATE INDEX IF NOT EXISTS IX_Pallets_GroupKey_Open ON Pallets(GroupKey, IsClosed);
             CREATE INDEX IF NOT EXISTS IX_PalletItems_PalletId ON PalletItems(PalletId);
             CREATE INDEX IF NOT EXISTS IX_ScanEntries_Id ON ScanEntries(Id DESC);
+            CREATE INDEX IF NOT EXISTS IX_AuditEntries_Id ON AuditEntries(Id DESC);
             """;
 
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
         await cmd.ExecuteNonQueryAsync(cancellationToken);
 
+        // Additive migrations allow older local DB files to be reused safely.
         await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedMoved", "INTEGER NOT NULL DEFAULT 0", cancellationToken);
         await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedAt", "TEXT NULL", cancellationToken);
         await EnsureColumnExistsAsync(connection, "ScanEntries", "ConfirmedQuantity", "INTEGER NOT NULL DEFAULT 0", cancellationToken);
@@ -110,6 +120,7 @@ public sealed partial class SqliteWarehouseRepository
             return;
         }
 
+        // One-time backfill from pre-variant schema.
         await using var migrateCmd = connection.CreateCommand();
         migrateCmd.CommandText = """
             INSERT INTO PalletItems(PalletId, ProductNumber, ExpiryDate, Quantity)

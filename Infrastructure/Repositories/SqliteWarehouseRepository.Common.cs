@@ -13,6 +13,7 @@ public sealed partial class SqliteWarehouseRepository
     private static PalletRecord ReadPalletSummary(SqliteDataReader reader)
     {
         var variantCount = reader.GetInt32(4);
+        // For mixed pallets, expose a clear synthetic display value in the dashboard.
         var product = variantCount == 1 && !reader.IsDBNull(5) ? reader.GetString(5) : $"BLANDET ({variantCount})";
         var expiry = variantCount == 1 && !reader.IsDBNull(6) ? reader.GetString(6) : "MIX";
         var key = variantCount == 1 ? BuildKey(product, expiry) : "MIXED";

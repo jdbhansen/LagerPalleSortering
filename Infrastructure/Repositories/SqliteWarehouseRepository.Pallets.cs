@@ -6,7 +6,7 @@ namespace LagerPalleSortering.Infrastructure.Repositories;
 
 public sealed partial class SqliteWarehouseRepository
 {
-    private static async Task<PalletRecord?> FindBestOpenPalletAsync(SqliteConnection connection, SqliteTransaction tx, string productNumber, string expiryDate, CancellationToken cancellationToken)
+    private async Task<PalletRecord?> FindBestOpenPalletAsync(SqliteConnection connection, SqliteTransaction tx, string productNumber, string expiryDate, CancellationToken cancellationToken)
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
@@ -23,7 +23,8 @@ public sealed partial class SqliteWarehouseRepository
             LEFT JOIN PalletItems pi ON pi.PalletId = p.PalletId
             WHERE p.IsClosed = 0
             GROUP BY p.PalletId, p.TotalQuantity, p.IsClosed, p.CreatedAt
-            ORDER BY HasExact DESC, p.PalletId;
+            -- Prefer exact variant match first, then stable numeric pallet order.
+            ORDER BY HasExact DESC, CAST(SUBSTR(p.PalletId, 3) AS INTEGER), p.PalletId;
             """;
         cmd.Parameters.AddWithValue("$product", productNumber);
         cmd.Parameters.AddWithValue("$expiry", expiryDate);
@@ -41,8 +42,8 @@ public sealed partial class SqliteWarehouseRepository
                 continue;
             }
 
-            // Enforce max 4 variants unless this is an existing exact variant.
-            if (!hasExact && variantCount >= MaxVariantsPerPallet)
+            // Enforce configurable max variants unless this is an existing exact variant.
+            if (!hasExact && variantCount >= _maxVariantsPerPallet)
             {
                 continue;
             }
@@ -92,6 +93,7 @@ public sealed partial class SqliteWarehouseRepository
 
     private static async Task UpsertPalletItemAsync(SqliteConnection connection, SqliteTransaction tx, string palletId, string productNumber, string expiryDate, int quantity, CancellationToken cancellationToken)
     {
+        // Update-first keeps write path simple and avoids a read-before-write roundtrip.
         await using var update = connection.CreateCommand();
         update.Transaction = tx;
         update.CommandText = """
