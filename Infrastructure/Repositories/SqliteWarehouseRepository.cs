@@ -8,19 +8,19 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
 {
     private const int MaxVariantsPerPallet = 4;
 
-    private readonly string connectionString;
-    private readonly SemaphoreSlim writeLock = new(1, 1);
+    private readonly string _connectionString;
+    private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     public SqliteWarehouseRepository(IWebHostEnvironment env)
     {
         var dataDir = Path.Combine(env.ContentRootPath, "App_Data");
         Directory.CreateDirectory(dataDir);
-        connectionString = $"Data Source={Path.Combine(dataDir, "lager.db")}";
+        _connectionString = $"Data Source={Path.Combine(dataDir, "lager.db")}";
     }
 
     public async Task<(string PalletId, bool CreatedNewPallet)> RegisterAsync(string productNumber, string expiryDate, int quantity, CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync(cancellationToken);
+        await _writeLock.WaitAsync(cancellationToken);
         try
         {
             await using var connection = OpenConnection();
@@ -68,13 +68,13 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         }
         finally
         {
-            writeLock.Release();
+            _writeLock.Release();
         }
     }
 
     public async Task ClosePalletAsync(string palletId, CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync(cancellationToken);
+        await _writeLock.WaitAsync(cancellationToken);
         try
         {
             await using var connection = OpenConnection();
@@ -86,13 +86,13 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         }
         finally
         {
-            writeLock.Release();
+            _writeLock.Release();
         }
     }
 
     public async Task<long?> ConfirmLatestUnconfirmedByPalletIdAsync(string palletId, DateTime confirmedAtUtc, CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync(cancellationToken);
+        await _writeLock.WaitAsync(cancellationToken);
         try
         {
             await using var connection = OpenConnection();
@@ -111,13 +111,13 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         }
         finally
         {
-            writeLock.Release();
+            _writeLock.Release();
         }
     }
 
     public async Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync(cancellationToken);
+        await _writeLock.WaitAsync(cancellationToken);
         try
         {
             await using var connection = OpenConnection();
@@ -153,13 +153,13 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         }
         finally
         {
-            writeLock.Release();
+            _writeLock.Release();
         }
     }
 
     public async Task ClearAllDataAsync(CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync(cancellationToken);
+        await _writeLock.WaitAsync(cancellationToken);
         try
         {
             await using var connection = OpenConnection();
@@ -182,7 +182,7 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         }
         finally
         {
-            writeLock.Release();
+            _writeLock.Release();
         }
     }
 
@@ -275,6 +275,6 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
 
     public void Dispose()
     {
-        writeLock.Dispose();
+        _writeLock.Dispose();
     }
 }

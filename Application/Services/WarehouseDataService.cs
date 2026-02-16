@@ -5,14 +5,14 @@ namespace LagerPalleSortering.Application.Services;
 
 public sealed class WarehouseDataService : IWarehouseDataService
 {
-    private readonly IWarehouseRepository repository;
+    private readonly IWarehouseRepository _repository;
 
     public WarehouseDataService(IWarehouseRepository repository)
     {
-        this.repository = repository;
+        _repository = repository;
     }
 
-    public Task InitializeAsync(CancellationToken cancellationToken = default) => repository.InitializeAsync(cancellationToken);
+    public Task InitializeAsync(CancellationToken cancellationToken = default) => _repository.InitializeAsync(cancellationToken);
 
     public async Task<RegisterResult> RegisterColliAsync(string productNumber, string? expiryRaw, int quantity, CancellationToken cancellationToken = default)
     {
@@ -29,12 +29,12 @@ public sealed class WarehouseDataService : IWarehouseDataService
             return RegisterResult.Fail("Antal kolli skal være større end 0.");
         }
 
-        if (!IsValidExpiry(expiry))
+        if (!HasValidExpiryFormat(expiry))
         {
             return RegisterResult.Fail("Holdbarhed skal være YYYYMMDD eller tom.");
         }
 
-        var result = await repository.RegisterAsync(product, expiry, quantity, cancellationToken);
+        var result = await _repository.RegisterAsync(product, expiry, quantity, cancellationToken);
         var actionText = result.CreatedNewPallet ? "Ny palle oprettet" : "Brug eksisterende palle";
 
         return RegisterResult.Ok(
@@ -46,7 +46,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
             $"{actionText}: læg kolli på {result.PalletId}.");
     }
 
-    public Task ClosePalletAsync(string palletId, CancellationToken cancellationToken = default) => repository.ClosePalletAsync(palletId, cancellationToken);
+    public Task ClosePalletAsync(string palletId, CancellationToken cancellationToken = default) => _repository.ClosePalletAsync(palletId, cancellationToken);
 
     public async Task<MoveConfirmationResult> ConfirmMoveByPalletScanAsync(string scannedPalletCode, CancellationToken cancellationToken = default)
     {
@@ -55,7 +55,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
             return MoveConfirmationResult.Fail("Ugyldig pallestregkode. Forventet format: PALLET:P-001.");
         }
 
-        var confirmedId = await repository.ConfirmLatestUnconfirmedByPalletIdAsync(palletId, DateTime.UtcNow, cancellationToken);
+        var confirmedId = await _repository.ConfirmLatestUnconfirmedByPalletIdAsync(palletId, DateTime.UtcNow, cancellationToken);
         if (confirmedId is null)
         {
             return MoveConfirmationResult.Fail($"Ingen u-bekræftede kolli fundet for palle {palletId}.");
@@ -64,17 +64,17 @@ public sealed class WarehouseDataService : IWarehouseDataService
         return MoveConfirmationResult.Ok($"Flytning bekræftet på palle {palletId}.", palletId, confirmedId.Value);
     }
 
-    public Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default) => repository.UndoLastAsync(cancellationToken);
+    public Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default) => _repository.UndoLastAsync(cancellationToken);
 
-    public Task ClearAllDataAsync(CancellationToken cancellationToken = default) => repository.ClearAllDataAsync(cancellationToken);
+    public Task ClearAllDataAsync(CancellationToken cancellationToken = default) => _repository.ClearAllDataAsync(cancellationToken);
 
-    public Task<List<PalletRecord>> GetOpenPalletsAsync(CancellationToken cancellationToken = default) => repository.GetOpenPalletsAsync(cancellationToken);
+    public Task<List<PalletRecord>> GetOpenPalletsAsync(CancellationToken cancellationToken = default) => _repository.GetOpenPalletsAsync(cancellationToken);
 
-    public Task<List<PalletContentItemRecord>> GetPalletContentsAsync(string palletId, CancellationToken cancellationToken = default) => repository.GetPalletContentsAsync(palletId, cancellationToken);
+    public Task<List<PalletContentItemRecord>> GetPalletContentsAsync(string palletId, CancellationToken cancellationToken = default) => _repository.GetPalletContentsAsync(palletId, cancellationToken);
 
-    public Task<List<ScanEntryRecord>> GetRecentEntriesAsync(int maxEntries, CancellationToken cancellationToken = default) => repository.GetRecentEntriesAsync(maxEntries, cancellationToken);
+    public Task<List<ScanEntryRecord>> GetRecentEntriesAsync(int maxEntries, CancellationToken cancellationToken = default) => _repository.GetRecentEntriesAsync(maxEntries, cancellationToken);
 
-    public Task<PalletRecord?> GetPalletForPrintAsync(string palletId, CancellationToken cancellationToken = default) => repository.GetPalletByIdAsync(palletId, cancellationToken);
+    public Task<PalletRecord?> GetPalletForPrintAsync(string palletId, CancellationToken cancellationToken = default) => _repository.GetPalletByIdAsync(palletId, cancellationToken);
 
     private static string NormalizeExpiry(string? raw)
     {
@@ -82,7 +82,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
         return string.IsNullOrWhiteSpace(value) ? WarehouseConstants.NoExpiry : value;
     }
 
-    private static bool IsValidExpiry(string expiry)
+    private static bool HasValidExpiryFormat(string expiry)
     {
         if (expiry == WarehouseConstants.NoExpiry)
         {

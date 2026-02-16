@@ -8,23 +8,25 @@ namespace LagerPalleSortering.Application.Services;
 
 public sealed class WarehouseExportService : IWarehouseExportService
 {
-    private readonly IWarehouseRepository repository;
+    private const string ExportTimestampFormat = "yyyy-MM-dd HH:mm:ss";
+
+    private readonly IWarehouseRepository _repository;
 
     public WarehouseExportService(IWarehouseRepository repository)
     {
-        this.repository = repository;
+        _repository = repository;
     }
 
     public async Task<byte[]> ExportCsvAsync(CancellationToken cancellationToken = default)
     {
-        var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
+        var entries = await _repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
         var sb = new StringBuilder();
         sb.AppendLine("TimestampUtc,PalletId,ProductNumber,ExpiryDate,Quantity,ConfirmedQuantity,CreatedNewPallet,ConfirmedMoved,ConfirmedAtUtc");
 
         foreach (var entry in entries.OrderBy(e => e.Timestamp))
         {
             sb
-                .Append(EscapeCsv(entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))).Append(',')
+                .Append(EscapeCsv(FormatTimestamp(entry.Timestamp))).Append(',')
                 .Append(EscapeCsv(entry.PalletId)).Append(',')
                 .Append(EscapeCsv(entry.ProductNumber)).Append(',')
                 .Append(EscapeCsv(entry.ExpiryDate)).Append(',')
@@ -32,7 +34,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
                 .Append(entry.ConfirmedQuantity.ToString(CultureInfo.InvariantCulture)).Append(',')
                 .Append(entry.CreatedNewPallet ? "1" : "0").Append(',')
                 .Append(entry.ConfirmedMoved ? "1" : "0").Append(',')
-                .Append(EscapeCsv(entry.ConfirmedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty))
+                .Append(EscapeCsv(FormatOptionalTimestamp(entry.ConfirmedAt)))
                 .AppendLine();
         }
 
@@ -41,8 +43,8 @@ public sealed class WarehouseExportService : IWarehouseExportService
 
     public async Task<byte[]> ExportExcelAsync(CancellationToken cancellationToken = default)
     {
-        var openPallets = await repository.GetOpenPalletsAsync(cancellationToken);
-        var entries = await repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
+        var openPallets = await _repository.GetOpenPalletsAsync(cancellationToken);
+        var entries = await _repository.GetRecentEntriesAsync(WarehouseConstants.MaxExportRows, cancellationToken);
 
         using var wb = new XLWorkbook();
         var palletSheet = wb.Worksheets.Add("OpenPallets");
@@ -61,7 +63,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
             palletSheet.Cell(row, 3).Value = pallet.ExpiryDate;
             palletSheet.Cell(row, 4).Value = pallet.TotalQuantity;
             palletSheet.Cell(row, 5).Value = pallet.IsClosed ? 1 : 0;
-            palletSheet.Cell(row, 6).Value = pallet.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            palletSheet.Cell(row, 6).Value = FormatTimestamp(pallet.CreatedAt);
             row++;
         }
 
@@ -79,7 +81,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
         row = 2;
         foreach (var entry in entries.OrderBy(e => e.Timestamp))
         {
-            entrySheet.Cell(row, 1).Value = entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            entrySheet.Cell(row, 1).Value = FormatTimestamp(entry.Timestamp);
             entrySheet.Cell(row, 2).Value = entry.PalletId;
             entrySheet.Cell(row, 3).Value = entry.ProductNumber;
             entrySheet.Cell(row, 4).Value = entry.ExpiryDate;
@@ -87,7 +89,7 @@ public sealed class WarehouseExportService : IWarehouseExportService
             entrySheet.Cell(row, 6).Value = entry.ConfirmedQuantity;
             entrySheet.Cell(row, 7).Value = entry.CreatedNewPallet ? 1 : 0;
             entrySheet.Cell(row, 8).Value = entry.ConfirmedMoved ? 1 : 0;
-            entrySheet.Cell(row, 9).Value = entry.ConfirmedAt?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty;
+            entrySheet.Cell(row, 9).Value = FormatOptionalTimestamp(entry.ConfirmedAt);
             row++;
         }
 
@@ -108,4 +110,11 @@ public sealed class WarehouseExportService : IWarehouseExportService
 
         return value;
     }
+
+    private static string FormatTimestamp(DateTime value) => value.ToString(ExportTimestampFormat, CultureInfo.InvariantCulture);
+
+    private static string FormatOptionalTimestamp(DateTime? value) =>
+        value.HasValue
+            ? FormatTimestamp(value.Value)
+            : string.Empty;
 }

@@ -6,7 +6,7 @@ namespace LagerPalleSortering.Infrastructure.Repositories;
 
 public sealed partial class SqliteWarehouseRepository
 {
-    private SqliteConnection OpenConnection() => new(connectionString);
+    private SqliteConnection OpenConnection() => new(_connectionString);
 
     private static string BuildKey(string product, string expiry) => $"{product}|{expiry}";
 

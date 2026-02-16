@@ -3,6 +3,8 @@ namespace LagerPalleSortering.Domain;
 public static class WarehouseBarcode
 {
     public const string PalletPrefix = "PALLET:";
+    private const string LegacySeparator = "+";
+    private const string CanonicalSeparator = "-";
 
     public static string CreatePalletCode(string palletId)
     {
@@ -13,7 +15,7 @@ public static class WarehouseBarcode
     public static bool TryParsePalletCode(string scannedValue, out string palletId)
     {
         palletId = string.Empty;
-        var value = (scannedValue ?? string.Empty).Trim().ToUpperInvariant();
+        var value = NormalizeScannedPalletCode(scannedValue);
         if (string.IsNullOrWhiteSpace(value))
         {
             return false;
@@ -41,5 +43,50 @@ public static class WarehouseBarcode
         return false;
     }
 
-    private static string NormalizePalletId(string value) => (value ?? string.Empty).Trim().ToUpperInvariant();
+    private static string NormalizePalletId(string value) =>
+        KeepAllowedPalletIdCharacters(
+            (value ?? string.Empty)
+                .Trim()
+                .ToUpperInvariant()
+                .Replace(LegacySeparator, CanonicalSeparator, StringComparison.Ordinal));
+
+    private static string NormalizeScannedPalletCode(string value)
+    {
+        var normalized = (value ?? string.Empty)
+            .Trim()
+            .ToUpperInvariant()
+            .Replace(LegacySeparator, CanonicalSeparator, StringComparison.Ordinal);
+
+        return KeepAllowedPalletCodeCharacters(normalized);
+    }
+
+    private static string KeepAllowedPalletCodeCharacters(string value)
+    {
+        var chars = new char[value.Length];
+        var index = 0;
+        foreach (var ch in value)
+        {
+            if (ch is ':' or '-' || char.IsAsciiLetterOrDigit(ch))
+            {
+                chars[index++] = ch;
+            }
+        }
+
+        return new string(chars, 0, index);
+    }
+
+    private static string KeepAllowedPalletIdCharacters(string value)
+    {
+        var chars = new char[value.Length];
+        var index = 0;
+        foreach (var ch in value)
+        {
+            if (ch == '-' || char.IsAsciiLetterOrDigit(ch))
+            {
+                chars[index++] = ch;
+            }
+        }
+
+        return new string(chars, 0, index);
+    }
 }

@@ -234,6 +234,38 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task ConfirmMoveByPalletScanAsync_WhenScannerReplacesHyphenWithPlus_StillConfirms()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
+
+        var plusEncodedPalletCode = $"PALLET:{register.PalletId}".Replace("-", "+", StringComparison.Ordinal);
+        var confirm = await fixture.Service.ConfirmMoveByPalletScanAsync(plusEncodedPalletCode);
+        var entries = await fixture.Service.GetRecentEntriesAsync(1);
+
+        Assert.True(confirm.Success);
+        Assert.Equal(register.PalletId, confirm.PalletId);
+        Assert.Single(entries);
+        Assert.True(entries[0].ConfirmedMoved);
+    }
+
+    [Fact]
+    public async Task ConfirmMoveByPalletScanAsync_WhenScannerAddsDanishCharacter_StillConfirms()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
+
+        var noisyPalletCode = $"PALLET:{register.PalletId}".Replace("-", "+", StringComparison.Ordinal) + "æ";
+        var confirm = await fixture.Service.ConfirmMoveByPalletScanAsync(noisyPalletCode);
+        var entries = await fixture.Service.GetRecentEntriesAsync(1);
+
+        Assert.True(confirm.Success);
+        Assert.Equal(register.PalletId, confirm.PalletId);
+        Assert.Single(entries);
+        Assert.True(entries[0].ConfirmedMoved);
+    }
+
+    [Fact]
     public async Task ConfirmMoveByPalletScanAsync_QuantityTwo_RequiresTwoScans()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");

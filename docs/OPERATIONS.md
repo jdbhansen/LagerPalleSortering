@@ -35,7 +35,7 @@ dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
 
 ## Fejlsøgning
 ### Fil-lock (CS2012 / låst DLL)
-1. Kør `.scripts\verify.ps1`.
+1. Kør `.\scripts\verify.ps1`.
 2. Hvis problemet fortsætter, find låsende processer:
 
 ```powershell
@@ -53,7 +53,7 @@ Get-CimInstance Win32_Process | Where-Object {
 - Alle registrerede kolli på pallen er allerede bekræftet.
 
 ## Release-checkliste
-1. `.scripts\verify.ps1` er grøn.
+1. `.\scripts\verify.ps1` er grøn.
 2. README og docs afspejler aktuelle regler.
 3. Commit + push.
 

@@ -3,9 +3,11 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$solutionPath = Join-Path $projectRoot "LagerPalleSortering.slnx"
 
 function Stop-LingeringTestHosts {
-    $repoMarker = "LagerPalleSortering.Tests"
+    $repoMarker = [regex]::Escape($projectRoot)
     $processes = Get-CimInstance Win32_Process |
         Where-Object {
             ($_.Name -match "testhost|dotnet") -and
@@ -22,9 +24,15 @@ function Stop-LingeringTestHosts {
     }
 }
 
-Stop-LingeringTestHosts
-dotnet build LagerPalleSortering.slnx
+try {
+    Stop-LingeringTestHosts
+    dotnet build $solutionPath
 
-if (-not $NoTest) {
-    dotnet test LagerPalleSortering.slnx --no-build
+    if (-not $NoTest) {
+        dotnet test $solutionPath --no-build
+    }
+}
+finally {
+    # Ensure no repo test/build processes are left running after verify.
+    Stop-LingeringTestHosts
 }
