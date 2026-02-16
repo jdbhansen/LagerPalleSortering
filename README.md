@@ -2,14 +2,37 @@
 
 Intern Blazor-app til varemodtagelse og palle-styring i lagerdrift.
 
+## Start Her
+- Kør app lokalt: `dotnet run`
+- Verificer build + tests: `.\scripts\verify.ps1`
+- Lav work package: `.\scripts\package-work.ps1`
+
+## Indhold
+- [Formål](#formål)
+- [Dokumentation](#dokumentation)
+- [Nøglefunktioner](#nøglefunktioner)
+- [Hurtig start](#hurtig-start)
+- [Verificering](#verificering)
+- [Tag med på arbejde (portable testpakke)](#tag-med-på-arbejde-portable-testpakke)
+- [Eksport og drift endpoints](#eksport-og-drift-endpoints)
+- [Konfiguration](#konfiguration)
+- [Arkitektur](#arkitektur)
+- [Git LFS](#git-lfs)
+
 ## Formål
 Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, label-print og flyttebekræftelse med scan.
+
+## Dokumentation
+- Brugerguide: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
+- Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](docs/TECHNICAL_GUIDE.md)
+- Drift/fejlsøgning: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+- Work package zip i repo: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
 
 ## Nøglefunktioner
 - Registrering af `varenummer`, `holdbarhed (YYYYMMDD, gyldig dato)` og `antal kolli`.
 - Automatisk pallevalg med guardrails:
-  - maks 4 vare+dato-varianter pr. palle.
-  - samme stregkode med forskellig holdbarhed må ikke blandes på samme palle.
+- Maks 4 vare+dato-varianter pr. palle.
+- Samme stregkode med forskellig holdbarhed må ikke blandes på samme palle.
 - Print af pallelabel med Code128 stregkode (`PALLET:P-001`).
 - Print af palleindhold med scanbare produkt-stregkoder, holdbarhedsdato og antal.
 - Flyttebekræftelse via palle-scan med kolli-tæller (`ConfirmedQuantity/Quantity`).
@@ -58,24 +81,6 @@ dotnet run
 
 Appen starter på lokal URL vist i terminalen.
 
-## Tag med på arbejde (portable testpakke)
-Byg en transportabel Windows-pakke (self-contained) med startscript:
-
-```powershell
-.\scripts\package-work.ps1
-```
-
-Output:
-- Mappe: `..\LagerPalleSortering-work-package\app`
-- Zip: `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
-- Repo-download: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
-- Scriptet synkroniserer automatisk den tracked zip i `work-package/` (Git LFS).
-
-På arbejds-PC:
-1. Pak zip-filen ud.
-2. Kør `Start-Lager.cmd`.
-3. Appen starter på `http://127.0.0.1:5050`.
-
 ## Verificering
 Anbefalet kommando (byg + test, inkl. håndtering af testhost fil-lock):
 
@@ -98,17 +103,33 @@ dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
 
 CI i GitHub Actions kører restore + build + test på Windows for `push` til `master` og på `pull_request`.
 Derudover kører CI:
-- work-package sync check (hash-match mellem genereret og tracked zip)
+- Work-package sync check (hash-match mellem genereret og tracked zip)
 - `dotnet format --verify-no-changes`
-- coverage gate (line total >= 65%)
+- Coverage gate (line total >= 65%)
 - Playwright UI sanity tests
 
-## Eksport
+## Tag med på arbejde (portable testpakke)
+Byg en transportabel Windows-pakke (self-contained) med startscript:
+
+```powershell
+.\scripts\package-work.ps1
+```
+
+Output:
+- Mappe: `..\LagerPalleSortering-work-package\app`
+- Zip: `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
+- Repo-download: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
+- Scriptet synkroniserer automatisk den tracked zip i `work-package/` (Git LFS).
+
+På arbejds-PC:
+1. Pak zip-filen ud.
+2. Kør `Start-Lager.cmd`.
+3. Appen starter på `http://127.0.0.1:5050`.
+
+## Eksport og drift endpoints
 - CSV: `GET /export/csv`
 - Excel: `GET /export/excel`
 - DB backup: `GET /backup/db`
-
-## Drift endpoints
 - Health: `GET /health`
 - Metrics: `GET /metrics`
 
@@ -122,11 +143,6 @@ Derudover kører CI:
   "DuplicateScanWindowMs": 1200
 }
 ```
-
-## Dokumentation
-- Brugerguide: `docs/USER_GUIDE.md`
-- Teknisk guide: `docs/TECHNICAL_GUIDE.md`
-- Drift/fejlsøgning: `docs/OPERATIONS.md`
 
 ## Git LFS
 - `work-package/*.zip` tracks via Git LFS.

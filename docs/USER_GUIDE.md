@@ -1,5 +1,13 @@
 # Brugerguide
 
+## Hurtig Navigation
+- [Standard workflow](#standard-workflow)
+- [Regler i systemet](#regler-i-systemet)
+- [Scannerregler](#scannerregler)
+- [Funktioner i UI](#funktioner-i-ui)
+- [Typiske fejlbeskeder](#typiske-fejlbeskeder)
+- [Relaterede dokumenter](#relaterede-dokumenter)
+
 ## Hvad appen bruges til
 LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert kolli skal flyttes til.
 
@@ -43,3 +51,8 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
   Scan en pallekode med palle-id (`P-xxx`) i data. Appen accepterer både `PALLET:P-xxx` og støjfyldte scans, så længe palle-id kan udtrækkes.
 - `Ingen u-bekræftede kolli...`
   Alle registrerede kolli på pallen er allerede bekræftet.
+
+## Relaterede dokumenter
+- Projektoversigt: [`README.md`](../README.md)
+- Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](TECHNICAL_GUIDE.md)
+- Drift/fejlsøgning: [`docs/OPERATIONS.md`](OPERATIONS.md)

@@ -1,5 +1,13 @@
 # Drift og Fejlsøgning
 
+## Hurtig Navigation
+- [Drift](#drift)
+- [Build og test (anbefalet)](#build-og-test-anbefalet)
+- [Manuelle kommandoer](#manuelle-kommandoer)
+- [Fejlsøgning](#fejlsøgning)
+- [Release-checkliste](#release-checkliste)
+- [Relaterede dokumenter](#relaterede-dokumenter)
+
 ## Drift
 - Applikation startes med:
 
@@ -72,4 +80,9 @@ Get-CimInstance Win32_Process | Where-Object {
 3. README og docs afspejler aktuelle regler.
 4. GitHub Actions `CI` er grøn på seneste commit.
 5. Commit + push.
+
+## Relaterede dokumenter
+- Projektoversigt: [`README.md`](../README.md)
+- Brugerguide: [`docs/USER_GUIDE.md`](USER_GUIDE.md)
+- Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](TECHNICAL_GUIDE.md)
 

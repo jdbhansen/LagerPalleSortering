@@ -1,5 +1,15 @@
 # Teknisk Guide
 
+## Hurtig Navigation
+- [Arkitekturoversigt](#arkitekturoversigt)
+- [Datamodel (SQLite)](#datamodel-sqlite)
+- [Kritiske forretningsregler](#kritiske-forretningsregler)
+- [Endpoints](#endpoints)
+- [Teststrategi](#teststrategi)
+- [CI](#ci)
+- [Migration note](#migration-note)
+- [Relaterede dokumenter](#relaterede-dokumenter)
+
 ## Arkitekturoversigt
 - `Domain/`
   - `WarehouseContracts`: delte DTO/records.
@@ -82,3 +92,8 @@
 - Ved scanner- eller barcode-migration kan du registrere nye implementeringer i `Program.cs` uden at ændre service-flow.
 - `WarehouseRules` i `appsettings` styrer centrale guardrails (max varianter, duplicate-scan vindue).
 - Print-sider afhænger af `IBarcodeService` via DI i stedet for konkret service-type.
+
+## Relaterede dokumenter
+- Projektoversigt: [`README.md`](../README.md)
+- Brugerguide: [`docs/USER_GUIDE.md`](USER_GUIDE.md)
+- Drift/fejlsøgning: [`docs/OPERATIONS.md`](OPERATIONS.md)
