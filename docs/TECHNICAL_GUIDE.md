@@ -5,7 +5,7 @@
   - `WarehouseContracts`: delte DTO/records.
   - `WarehouseConstants`: centrale konstanter.
   - `ProductBarcodeParser`: normalisering og checkdigit-logik.
-  - `WarehouseBarcode`: pallelabel format/parsing.
+  - `WarehouseBarcode`: pallelabel format/parsing med robust scan-sanitization.
 - `Application/`
   - `WarehouseDataService`: forretningsflow (registrering, bekræftelse, undo).
   - `WarehouseExportService`: CSV/Excel eksport.
@@ -35,6 +35,7 @@
 3. Ny variant må kun tilføjes når palle har under 4 varianter.
 4. Flyttebekræftelse er per kolli (`ConfirmedQuantity` stiger med 1 per scan).
 5. Fuldt bekræftet når `ConfirmedQuantity >= Quantity`.
+6. Palle-scan parser udtrækker kun `P-<digits>` og ignorerer øvrig scanner-støj.
 
 ## Endpoints
 - `GET /export/csv`
@@ -43,4 +44,13 @@
 ## Teststrategi
 - `WarehouseDataServiceTests`: funktions- og regeltests.
 - `SanityTests`: hurtig smoke-verifikation af kritiske flows.
+- `WarehouseBarcodeTests`: parser-/normaliseringstests for palle-scan.
+- `ProductBarcodeParserTests`: parser-/normaliseringstests for varestregkoder.
 - Fælles fixture i `tests/.../TestInfrastructure`.
+
+## CI
+- Workflow: `.github/workflows/ci.yml`
+- Kører på `windows-latest`:
+  - `dotnet restore LagerPalleSortering.slnx`
+  - `dotnet build LagerPalleSortering.slnx --configuration Release --no-restore`
+  - `dotnet test LagerPalleSortering.slnx --configuration Release --no-build`

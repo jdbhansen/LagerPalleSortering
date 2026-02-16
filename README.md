@@ -32,6 +32,9 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - Varekoder: EAN-8, EAN-13, UPC-A.
 - UPC-A normaliseres internt til EAN-13.
 - Scanner-symbology prefix (fx `]E0`) håndteres.
+- Palle-scan er tolerant over for scanner-støj:
+  - `+` normaliseres til `-` (fx `P+001` -> `P-001`).
+  - irrelevante tegn ignoreres (fx ekstra bogstaver/symboler før/efter kode).
 
 ## Arkitektur
 - `Domain/`: kontrakter, regler og barcode-normalisering.
@@ -84,6 +87,8 @@ Kun sanity/smoke tests:
 ```powershell
 dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
 ```
+
+CI i GitHub Actions kører restore + build + test på Windows for `push` til `master` og på `pull_request`.
 
 ## Eksport
 - CSV: `GET /export/csv`

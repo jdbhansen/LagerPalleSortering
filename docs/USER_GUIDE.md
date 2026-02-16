@@ -21,6 +21,9 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - UPC-A normaliseres automatisk til EAN-13.
 - Prefix fra scanner-symbologi (fx `]E0`) understøttes.
 - Pallelabels forventes i format `PALLET:P-001`.
+- Ved palle-scan ignoreres scanner-støj:
+  - `P+001` tolkes som `P-001`.
+  - ekstra tegn (fx `æ`, mellemrum, symboler) filtreres automatisk væk.
 
 ## Funktioner i UI
 - `Registrer`: opretter/tilføjer til relevant palle.
@@ -32,6 +35,6 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 
 ## Typiske fejlbeskeder
 - `Ugyldig pallestregkode...`
-  Scan en pallekode i format `PALLET:P-xxx`.
+  Scan en pallekode med palle-id (`P-xxx`) i data. Appen accepterer både `PALLET:P-xxx` og støjfyldte scans, så længe palle-id kan udtrækkes.
 - `Ingen u-bekræftede kolli...`
   Alle registrerede kolli på pallen er allerede bekræftet.

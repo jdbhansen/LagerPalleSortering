@@ -21,6 +21,7 @@ Scriptet:
 - stopper hængende `testhost/dotnet` processer for dette repo.
 - kører `dotnet build`.
 - kører `dotnet test --no-build`.
+- stopper igen `testhost/dotnet` processer for repoet efter kørsel (cleanup).
 
 ## Manuelle kommandoer
 ```powershell
@@ -48,6 +49,7 @@ Get-CimInstance Win32_Process | Where-Object {
 
 ### Ugyldig pallescan
 - Kontroller at label er i format `PALLET:P-xxx`.
+- Appen filtrerer scanner-støj (fx `+`, `æ`, symboler), men der skal stadig indgå et palle-id (`P-xxx`) i den scannede tekst.
 
 ### Ingen u-bekræftede kolli
 - Alle registrerede kolli på pallen er allerede bekræftet.
@@ -55,5 +57,6 @@ Get-CimInstance Win32_Process | Where-Object {
 ## Release-checkliste
 1. `.\scripts\verify.ps1` er grøn.
 2. README og docs afspejler aktuelle regler.
-3. Commit + push.
+3. GitHub Actions `CI` er grøn på seneste commit.
+4. Commit + push.
 

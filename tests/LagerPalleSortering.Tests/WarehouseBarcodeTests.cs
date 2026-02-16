@@ -8,6 +8,8 @@ public sealed class WarehouseBarcodeTests
     [InlineData("PALLET:P-001", "P-001")]
     [InlineData("PALLET:P+001", "P-001")]
     [InlineData("PALLET:P+001æ", "P-001")]
+    [InlineData("abcPALLET:P+0æ0*1xyz", "P-001")]
+    [InlineData("___P+001???", "P-001")]
     [InlineData("P-001", "P-001")]
     [InlineData("P+001", "P-001")]
     public void TryParsePalletCode_WithSupportedInput_ReturnsNormalizedPalletId(string scannedValue, string expectedPalletId)
@@ -22,6 +24,7 @@ public sealed class WarehouseBarcodeTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("PALLET:")]
+    [InlineData("PALLET:P-ABC")]
     [InlineData("ITEM:123")]
     public void TryParsePalletCode_WithInvalidInput_ReturnsFalse(string scannedValue)
     {
