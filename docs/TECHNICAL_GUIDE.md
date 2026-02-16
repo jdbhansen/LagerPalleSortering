@@ -58,6 +58,8 @@
 - `SanityTests`: hurtig smoke-verifikation af kritiske flows.
 - `WarehouseBarcodeTests`: parser-/normaliseringstests for palle-scan.
 - `ProductBarcodeParserTests`: parser-/normaliseringstests for varestregkoder.
+- `e2e/tests/app-health.spec.ts`: UI/endpoint sanity i Playwright.
+- `e2e/tests/ui-sanity.spec.ts`: stabile UI sanity-checks af centrale controls/sektioner.
 - Fælles fixture i `tests/.../TestInfrastructure`.
 
 ## CI
@@ -65,7 +67,12 @@
 - Kører på `windows-latest`:
   - `dotnet restore LagerPalleSortering.slnx`
   - `dotnet build LagerPalleSortering.slnx --configuration Release --no-restore`
-  - `dotnet test LagerPalleSortering.slnx --configuration Release --no-build`
+  - work-package sync check (`scripts/package-work.ps1` + SHA256 hash-match)
+  - `dotnet format LagerPalleSortering.slnx --verify-no-changes`
+  - `dotnet test ...` med coverage (`cobertura`) og line-threshold `>= 65%`
+  - `npm ci`
+  - `npx playwright install --with-deps chromium`
+  - `npm run test:e2e`
 
 ## Migration note
 - `WarehouseDataService` afhænger nu af barcode-interfaces i stedet for statiske helpers.

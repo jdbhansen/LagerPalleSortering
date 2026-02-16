@@ -27,6 +27,13 @@ Scriptet:
 - kører `dotnet test --no-build`.
 - stopper igen `testhost/dotnet` processer for repoet efter kørsel (cleanup).
 
+UI sanity (Playwright):
+```powershell
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
 ## Manuelle kommandoer
 ```powershell
 dotnet build LagerPalleSortering.slnx
@@ -60,7 +67,8 @@ Get-CimInstance Win32_Process | Where-Object {
 
 ## Release-checkliste
 1. `.\scripts\verify.ps1` er grøn.
-2. README og docs afspejler aktuelle regler.
-3. GitHub Actions `CI` er grøn på seneste commit.
-4. Commit + push.
+2. `npm run test:e2e` er grøn (lokalt eller i CI).
+3. README og docs afspejler aktuelle regler.
+4. GitHub Actions `CI` er grøn på seneste commit.
+5. Commit + push.
 

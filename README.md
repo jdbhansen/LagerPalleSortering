@@ -94,6 +94,11 @@ dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
 ```
 
 CI i GitHub Actions kører restore + build + test på Windows for `push` til `master` og på `pull_request`.
+Derudover kører CI:
+- work-package sync check (hash-match mellem genereret og tracked zip)
+- `dotnet format --verify-no-changes`
+- coverage gate (line total >= 65%)
+- Playwright UI sanity tests
 
 ## Eksport
 - CSV: `GET /export/csv`
@@ -119,3 +124,7 @@ CI i GitHub Actions kører restore + build + test på Windows for `push` til `ma
 - Brugerguide: `docs/USER_GUIDE.md`
 - Teknisk guide: `docs/TECHNICAL_GUIDE.md`
 - Drift/fejlsøgning: `docs/OPERATIONS.md`
+
+## Git LFS
+- `work-package/*.zip` tracks via Git LFS.
+- Ved klon på ny maskine: `git lfs install` og `git lfs pull`.
