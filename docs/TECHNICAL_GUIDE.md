@@ -4,8 +4,14 @@
 - `Domain/`
   - `WarehouseContracts`: delte DTO/records.
   - `WarehouseConstants`: centrale konstanter.
+  - Interfaces:
+    - `IProductBarcodeNormalizer`
+    - `IPalletBarcodeService`
   - `ProductBarcodeParser`: normalisering og checkdigit-logik.
   - `WarehouseBarcode`: pallelabel format/parsing med robust scan-sanitization.
+  - Standardimplementeringer:
+    - `DefaultProductBarcodeNormalizer`
+    - `DefaultPalletBarcodeService`
 - `Application/`
   - `WarehouseDataService`: forretningsflow (registrering, bekræftelse, undo).
   - `WarehouseExportService`: CSV/Excel eksport.
@@ -54,3 +60,7 @@
   - `dotnet restore LagerPalleSortering.slnx`
   - `dotnet build LagerPalleSortering.slnx --configuration Release --no-restore`
   - `dotnet test LagerPalleSortering.slnx --configuration Release --no-build`
+
+## Migration note
+- `WarehouseDataService` afhænger nu af barcode-interfaces i stedet for statiske helpers.
+- Ved scanner- eller barcode-migration kan du registrere nye implementeringer i `Program.cs` uden at ændre service-flow.

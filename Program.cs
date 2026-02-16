@@ -1,6 +1,7 @@
 using LagerPalleSortering.Components;
 using LagerPalleSortering.Application.Abstractions;
 using LagerPalleSortering.Application.Services;
+using LagerPalleSortering.Domain;
 using LagerPalleSortering.Infrastructure.Repositories;
 using LagerPalleSortering.Services;
 
@@ -11,6 +12,8 @@ var disableHttpsRedirection = builder.Configuration.GetValue<bool>("DisableHttps
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddSingleton<IWarehouseRepository, SqliteWarehouseRepository>();
+builder.Services.AddSingleton<IProductBarcodeNormalizer, DefaultProductBarcodeNormalizer>();
+builder.Services.AddSingleton<IPalletBarcodeService, DefaultPalletBarcodeService>();
 builder.Services.AddSingleton<IWarehouseDataService, WarehouseDataService>();
 builder.Services.AddSingleton<IWarehouseExportService, WarehouseExportService>();
 builder.Services.AddSingleton<BarcodeService>();

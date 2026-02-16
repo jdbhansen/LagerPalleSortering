@@ -6,17 +6,24 @@ namespace LagerPalleSortering.Application.Services;
 public sealed class WarehouseDataService : IWarehouseDataService
 {
     private readonly IWarehouseRepository _repository;
+    private readonly IProductBarcodeNormalizer _productBarcodeNormalizer;
+    private readonly IPalletBarcodeService _palletBarcodeService;
 
-    public WarehouseDataService(IWarehouseRepository repository)
+    public WarehouseDataService(
+        IWarehouseRepository repository,
+        IProductBarcodeNormalizer productBarcodeNormalizer,
+        IPalletBarcodeService palletBarcodeService)
     {
         _repository = repository;
+        _productBarcodeNormalizer = productBarcodeNormalizer;
+        _palletBarcodeService = palletBarcodeService;
     }
 
     public Task InitializeAsync(CancellationToken cancellationToken = default) => _repository.InitializeAsync(cancellationToken);
 
     public async Task<RegisterResult> RegisterColliAsync(string productNumber, string? expiryRaw, int quantity, CancellationToken cancellationToken = default)
     {
-        var product = ProductBarcodeParser.Normalize(productNumber ?? string.Empty);
+        var product = _productBarcodeNormalizer.Normalize(productNumber ?? string.Empty);
         var expiry = NormalizeExpiry(expiryRaw);
 
         if (string.IsNullOrWhiteSpace(product))
@@ -50,7 +57,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
 
     public async Task<MoveConfirmationResult> ConfirmMoveByPalletScanAsync(string scannedPalletCode, CancellationToken cancellationToken = default)
     {
-        if (!WarehouseBarcode.TryParsePalletCode(scannedPalletCode, out var palletId))
+        if (!_palletBarcodeService.TryParsePalletCode(scannedPalletCode, out var palletId))
         {
             return MoveConfirmationResult.Fail("Ugyldig pallestregkode. Forventet format: PALLET:P-001.");
         }

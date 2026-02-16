@@ -1,4 +1,5 @@
 using LagerPalleSortering.Application.Services;
+using LagerPalleSortering.Domain;
 using LagerPalleSortering.Infrastructure.Repositories;
 
 namespace LagerPalleSortering.Tests.TestInfrastructure;
@@ -23,7 +24,10 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
         Directory.CreateDirectory(root);
 
         var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(root));
-        var service = new WarehouseDataService(repository);
+        var service = new WarehouseDataService(
+            repository,
+            new DefaultProductBarcodeNormalizer(),
+            new DefaultPalletBarcodeService());
         var exportService = new WarehouseExportService(repository);
         await service.InitializeAsync();
 
@@ -33,7 +37,10 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
     public async Task<WarehouseDataService> CreateNewServiceForSameStorageAsync()
     {
         var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(rootPath));
-        var service = new WarehouseDataService(repository);
+        var service = new WarehouseDataService(
+            repository,
+            new DefaultProductBarcodeNormalizer(),
+            new DefaultPalletBarcodeService());
         await service.InitializeAsync();
         return service;
     }

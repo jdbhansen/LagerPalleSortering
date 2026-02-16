@@ -37,7 +37,7 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
   - irrelevante tegn ignoreres (fx ekstra bogstaver/symboler før/efter kode).
 
 ## Arkitektur
-- `Domain/`: kontrakter, regler og barcode-normalisering.
+- `Domain/`: kontrakter, regler, barcode-normalisering og barcode-interfaces/standardimplementeringer.
 - `Application/`: use-cases og serviceabstraktioner.
 - `Infrastructure/`: SQLite repository + migration/query-logik.
 - `Components/`: Blazor UI.
