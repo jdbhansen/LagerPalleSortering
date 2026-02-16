@@ -18,7 +18,7 @@ builder.Services.AddSingleton<IPalletBarcodeService, DefaultPalletBarcodeService
 builder.Services.AddSingleton<IOperationalMetrics, OperationalMetricsService>();
 builder.Services.AddSingleton<IWarehouseDataService, WarehouseDataService>();
 builder.Services.AddSingleton<IWarehouseExportService, WarehouseExportService>();
-builder.Services.AddSingleton<BarcodeService>();
+builder.Services.AddSingleton<IBarcodeService, BarcodeService>();
 
 var app = builder.Build();
 

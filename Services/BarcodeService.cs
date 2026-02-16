@@ -4,7 +4,7 @@ using ZXing.Rendering;
 
 namespace LagerPalleSortering.Services;
 
-public sealed class BarcodeService
+public sealed class BarcodeService : IBarcodeService
 {
     public string GenerateCode128Svg(string content, int width = 520, int height = 120)
     {
