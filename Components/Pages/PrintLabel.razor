@@ -19,7 +19,7 @@
         @if (pallet is not null)
         {
             <div class="label-meta">Vare: @pallet.ProductNumber</div>
-            <div class="label-meta">Holdbarhed: @pallet.ExpiryDate</div>
+            <div class="label-meta label-meta-expiry">Holdbarhed: @pallet.ExpiryDate</div>
             <div class="label-meta">Kolli: @pallet.TotalQuantity</div>
         }
         <div class="label-date">Udskrevet: @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</div>
