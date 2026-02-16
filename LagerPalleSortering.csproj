@@ -17,6 +17,10 @@
     <Compile Remove="tests\**\*.cs" />
     <Content Remove="tests\**\*" />
     <None Remove="tests\**\*" />
+    <Content Remove="test-results\**\*" />
+    <None Remove="test-results\**\*" />
+    <Content Remove="playwright-report\**\*" />
+    <None Remove="playwright-report\**\*" />
   </ItemGroup>
 
 </Project>

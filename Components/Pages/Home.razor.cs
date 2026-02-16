@@ -10,12 +10,11 @@ public partial class Home
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
-    private readonly HomeFormModel form = new() { Quantity = 1 };
+    private readonly HomeFormModel registrationForm = new() { Quantity = 1 };
     private readonly List<PalletRecord> openPallets = new();
     private readonly List<ScanEntryRecord> entries = new();
-    private readonly List<AuditEntryRecord> auditEntries = new();
     private string? statusMessage;
-    private string statusCss = "alert-info";
+    private string statusAlertCssClass = "alert-info";
     private string scannedPalletCode = string.Empty;
     private string? lastSuggestedPalletId;
     private bool keepExpiryBetweenScans = true;
@@ -53,7 +52,7 @@ public partial class Home
 
     private async Task RegisterColliAsync()
     {
-        var result = await DataService.RegisterColliAsync(form.ProductNumber ?? string.Empty, form.ExpiryDateRaw, form.Quantity);
+        var result = await DataService.RegisterColliAsync(registrationForm.ProductNumber ?? string.Empty, registrationForm.ExpiryDateRaw, registrationForm.Quantity);
 
         if (!result.Success)
         {
@@ -64,13 +63,13 @@ public partial class Home
 
         SetStatus(result.Message, isError: false);
         lastSuggestedPalletId = result.PalletId;
-        form.ProductNumber = string.Empty;
+        registrationForm.ProductNumber = string.Empty;
         if (!keepExpiryBetweenScans)
         {
-            form.ExpiryDateRaw = string.Empty;
+            registrationForm.ExpiryDateRaw = string.Empty;
         }
 
-        form.Quantity = 1;
+        registrationForm.Quantity = 1;
         await ReloadDataAsync();
         await FocusProductAsync();
     }
@@ -80,7 +79,7 @@ public partial class Home
         if (confirmScanCount <= 0)
         {
             statusMessage = "Antal at bekræfte skal være større end 0.";
-            statusCss = "alert-danger";
+            statusAlertCssClass = "alert-danger";
             await JS.InvokeVoidAsync("lagerScanner.focus", "confirmCountInput");
             return;
         }
@@ -106,20 +105,20 @@ public partial class Home
         if (confirmed == confirmScanCount)
         {
             statusMessage = $"Flytning bekræftet: {confirmed} kolli på {palletId}.";
-            statusCss = "alert-success";
+            statusAlertCssClass = "alert-success";
             scannedPalletCode = string.Empty;
             await ReloadDataAsync();
         }
         else if (confirmed > 0)
         {
             statusMessage = $"Delvis bekræftelse: {confirmed}/{confirmScanCount}. {lastMessage}";
-            statusCss = "alert-warning";
+            statusAlertCssClass = "alert-warning";
             await ReloadDataAsync();
         }
         else
         {
             statusMessage = lastMessage;
-            statusCss = "alert-danger";
+            statusAlertCssClass = "alert-danger";
         }
 
         await JS.InvokeVoidAsync("lagerScanner.focus", "palletScanInput");
@@ -178,11 +177,11 @@ public partial class Home
         lastSuggestedPalletId = null;
         scannedPalletCode = string.Empty;
         confirmScanCount = 1;
-        form.ProductNumber = string.Empty;
-        form.Quantity = 1;
+        registrationForm.ProductNumber = string.Empty;
+        registrationForm.Quantity = 1;
         if (!keepExpiryBetweenScans)
         {
-            form.ExpiryDateRaw = string.Empty;
+            registrationForm.ExpiryDateRaw = string.Empty;
         }
 
         await ReloadDataAsync();
@@ -229,15 +228,12 @@ public partial class Home
 
         entries.Clear();
         entries.AddRange(await DataService.GetRecentEntriesAsync(WarehouseConstants.DefaultRecentEntries));
-
-        auditEntries.Clear();
-        auditEntries.AddRange(await DataService.GetRecentAuditEntriesAsync(10));
     }
 
     private void SetStatus(string message, bool isError)
     {
         statusMessage = message;
-        statusCss = isError ? "alert-danger" : "alert-success";
+        statusAlertCssClass = isError ? "alert-danger" : "alert-success";
     }
 
     private async Task FocusProductAsync()

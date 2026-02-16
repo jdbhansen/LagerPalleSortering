@@ -148,7 +148,7 @@ window.lagerScanner = {
 };
 
 window.lagerPrint = {
-    printAndClose: function () {
+    printAndClosePopupTab: function () {
         // Only auto-close tabs opened from the main app window.
         const closeIfPopup = function () {
             if (window.opener && !window.opener.closed) {
@@ -170,7 +170,7 @@ window.lagerPrint = {
             closeIfPopup();
         }, 1200);
     },
-    closeTabOrGoHome: function () {
+    closePopupTabOrNavigateHome: function () {
         if (window.opener && !window.opener.closed) {
             window.close();
             return;
