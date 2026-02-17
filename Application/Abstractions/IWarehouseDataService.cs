@@ -22,6 +22,10 @@ public interface IWarehouseDataService
         string scannedPalletCode,
         bool bypassDuplicateGuard = false,
         CancellationToken cancellationToken = default);
+    Task<MoveBatchConfirmationResult> ConfirmMoveBatchByPalletScanAsync(
+        string scannedPalletCode,
+        int confirmScanCount,
+        CancellationToken cancellationToken = default);
     Task ClosePalletAsync(string palletId, CancellationToken cancellationToken = default);
     Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default);
     Task ClearAllDataAsync(CancellationToken cancellationToken = default);

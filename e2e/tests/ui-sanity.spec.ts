@@ -2,44 +2,67 @@ import { expect, test } from "@playwright/test";
 
 test.describe("UI sanity", () => {
   test("registration and confirmation controls are visible", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/app");
 
-    await expect(page.locator("#productInput")).toBeVisible();
-    await expect(page.locator("#expiryInput")).toBeVisible();
-    await expect(page.locator("#quantityInput")).toBeVisible();
-    await expect(page.locator("#registerButton")).toBeVisible();
+    await expect(page.getByLabel("Varenummer")).toBeVisible();
+    await expect(page.getByLabel("Holdbarhed (YYYYMMDD)")).toBeVisible();
+    await expect(page.getByLabel("Antal kolli")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Registrer kolli" })).toBeVisible();
 
-    await expect(page.locator("#palletScanInput")).toBeVisible();
-    await expect(page.locator("#confirmCountInput")).toBeVisible();
-    await expect(page.locator("#confirmMoveButton")).toBeVisible();
+    await expect(page.getByLabel("Scannet pallekode")).toBeVisible();
+    await expect(page.getByLabel("Antal at bekræfte")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Bekræft flyt" })).toBeVisible();
   });
 
-  test("operator can type into form fields", async ({ page }) => {
-    await page.goto("/");
+  test("operator can register and confirm move end-to-end", async ({ page }) => {
+    await page.goto("/app");
 
-    await page.fill("#productInput", "SANITY-ITEM");
-    await page.fill("#expiryInput", "20261231");
-    await page.fill("#quantityInput", "3");
-    await page.fill("#palletScanInput", "PALLET:P-001");
-    await page.fill("#confirmCountInput", "2");
+    await page.getByLabel("Varenummer").fill("SANITY-ITEM");
+    await page.getByLabel("Holdbarhed (YYYYMMDD)").fill("20261231");
+    await page.getByLabel("Antal kolli").fill("2");
+    await page.getByRole("button", { name: "Registrer kolli" }).click();
 
-    await expect(page.locator("#productInput")).toHaveValue("SANITY-ITEM");
-    await expect(page.locator("#expiryInput")).toHaveValue("20261231");
-    await expect(page.locator("#quantityInput")).toHaveValue("3");
-    await expect(page.locator("#palletScanInput")).toHaveValue("PALLET:P-001");
-    await expect(page.locator("#confirmCountInput")).toHaveValue("2");
+    await expect(page.locator(".alert", { hasText: "læg kolli på" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Print dato-label" })).toBeEnabled();
+
+    await page.getByLabel("Antal at bekræfte").fill("1");
+    await page.getByRole("button", { name: "Bekræft flyt" }).click();
+
+    await expect(page.locator(".alert", { hasText: "Flytning bekræftet" })).toBeVisible();
   });
 
-  test("key sections and actions are present", async ({ page }) => {
-    await page.goto("/");
+  test("advanced section shows date barcode column in recent entries", async ({ page }) => {
+    await page.goto("/app");
 
-    await expect(page.locator(".card-header .fw-semibold", { hasText: "Åbne paller" })).toBeVisible();
-    await expect(page.locator(".card-header .fw-semibold", { hasText: "Seneste registreringer" })).toBeVisible();
+    await page.getByLabel("Varenummer").fill("SANITY-DATE");
+    await page.getByLabel("Holdbarhed (YYYYMMDD)").fill("20270115");
+    await page.getByLabel("Antal kolli").fill("1");
+    await page.getByRole("button", { name: "Registrer kolli" }).click();
 
-    await expect(page.locator("#exportCsvButton")).toBeVisible();
-    await expect(page.locator("#exportExcelButton")).toBeVisible();
-    await expect(page.locator("#backupDbButton")).toBeVisible();
-    await expect(page.locator("#clearDatabaseButton")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Datostregkode" })).toBeVisible();
+    await expect(page.locator("table.table tbody tr td svg").first()).toBeVisible();
   });
 
+  test("simple mode hides advanced panels and keeps scanner flow operational", async ({ page }) => {
+    await page.goto("/app");
+
+    await page.getByRole("button", { name: "Skift til simpel scanner-visning" }).click();
+    await expect(page.getByRole("button", { name: "Skift til avanceret visning" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Fortryd seneste" })).toHaveCount(0);
+
+    await page.getByLabel("Varenummer").fill("SIMPLE-ITEM");
+    await page.getByLabel("Holdbarhed (YYYYMMDD)").fill("20270201");
+    await page.getByLabel("Antal kolli").fill("1");
+    await page.getByRole("button", { name: "Registrer kolli" }).click();
+    const suggestionAlert = page.locator(".alert", { hasText: "læg kolli på" });
+    await expect(suggestionAlert).toBeVisible();
+    const suggestionText = (await suggestionAlert.textContent()) ?? "";
+    const palletMatch = suggestionText.match(/P-\d{3}/);
+    expect(palletMatch).not.toBeNull();
+
+    await page.getByLabel("Scannet pallekode").fill(`PALLET:${palletMatch![0]}`);
+    await page.getByLabel("Antal at bekræfte").fill("1");
+    await page.getByRole("button", { name: "Bekræft flyt" }).click();
+    await expect(page.locator(".alert", { hasText: "Flytning bekræftet" })).toBeVisible();
+  });
 });

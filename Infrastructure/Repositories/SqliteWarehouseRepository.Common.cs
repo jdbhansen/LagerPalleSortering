@@ -6,6 +6,7 @@ namespace LagerPalleSortering.Infrastructure.Repositories;
 
 public sealed partial class SqliteWarehouseRepository
 {
+    // Keep connection creation centralized in case connection-level settings are added later.
     private SqliteConnection OpenConnection() => new(_connectionString);
 
     private static string BuildKey(string product, string expiry) => $"{product}|{expiry}";

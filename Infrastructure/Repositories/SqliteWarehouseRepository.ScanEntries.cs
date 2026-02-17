@@ -77,6 +77,7 @@ public sealed partial class SqliteWarehouseRepository
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
+        // Undo is intentionally LIFO to match operator expectation.
         cmd.CommandText = """
             SELECT Id, Timestamp, ProductNumber, ExpiryDate, Quantity, PalletId, GroupKey, CreatedNewPallet, ConfirmedQuantity, ConfirmedMoved, ConfirmedAt
             FROM ScanEntries

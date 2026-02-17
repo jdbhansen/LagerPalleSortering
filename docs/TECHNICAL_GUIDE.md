@@ -1,110 +1,80 @@
 # Teknisk Guide
 
-## Hurtig Navigation
+## Hurtig navigation
 - [Arkitekturoversigt](#arkitekturoversigt)
-- [Datamodel (SQLite)](#datamodel-sqlite)
-- [Kritiske forretningsregler](#kritiske-forretningsregler)
-- [Endpoints](#endpoints)
+- [Datamodel](#datamodel)
+- [Forretningsregler](#forretningsregler)
+- [API-design](#api-design)
+- [Navngivning](#navngivning)
 - [Teststrategi](#teststrategi)
 - [CI](#ci)
-- [Migration note](#migration-note)
 - [Relaterede dokumenter](#relaterede-dokumenter)
 
 ## Arkitekturoversigt
+- `frontend/`
+  - React app med feature-opdeling for warehouse-flow
+  - Hook-baseret sideorkestrering (`useWarehousePage`)
+- `Api/`
+  - Minimal API-endpoints og typed API contracts
 - `Domain/`
-  - `WarehouseContracts`: delte DTO/records.
-  - `WarehouseConstants`: centrale konstanter.
-  - Interfaces:
-    - `IProductBarcodeNormalizer`
-    - `IPalletBarcodeService`
-  - `ProductBarcodeParser`: normalisering og checkdigit-logik.
-  - `WarehouseBarcode`: pallelabel format/parsing med robust scan-sanitization.
-  - Standardimplementeringer:
-    - `DefaultProductBarcodeNormalizer`
-    - `DefaultPalletBarcodeService`
+  - kontrakter, barcode parsing/normalisering, regler
 - `Application/`
-  - `WarehouseDataService`: forretningsflow (registrering, bekræftelse, undo).
-  - `WarehouseExportService`: CSV/Excel eksport.
-  - Abstractions i `Application/Abstractions`.
+  - use-case services (`WarehouseDataService`, `WarehouseExportService`)
 - `Infrastructure/`
-  - `SqliteWarehouseRepository` (partials):
-    - `Schema`: schema + migration.
-    - `Pallets`: palle- og palleitem-query/commands.
-    - `ScanEntries`: scanentry- og bekræftelsesquery/commands.
-    - `Common`: mapping/helpers.
+  - `SqliteWarehouseRepository` (partial classes)
 - `Components/`
-  - Blazor UI (`Home`, `PrintLabel`, layout).
-  - Scanner-flow er delt i panel-komponenter:
-    - `ScannerSimplePanel` (forenklet håndscanner-visning)
-    - `ScannerAdvancedPanel` (fuld visning)
-  - `Home` orkestrerer tilstand, data-loading og status-hjælpermetoder (success/warning/error).
-  - Scanner paneler sender typed payloads (`RegisterColliInput`, `MoveConfirmInput`) til `Home`.
-- `Services/`
-  - `IBarcodeService` + `BarcodeService` til Code128 SVG-generering i print-sider.
-  - `ILagerScannerClient` + `LagerScannerClient` til JS interop for scanner-fokus/hotkeys/init samt læsning af rå input-værdier (`GetInputValueAsync`).
+  - Blazor print-sider + layout + legacy-side
 
-## Datamodel (SQLite)
+## Datamodel
 - `Pallets`
-  - `PalletId`, `GroupKey`, `ProductNumber`, `ExpiryDate`, `TotalQuantity`, `IsClosed`, `CreatedAt`
 - `PalletItems`
-  - `PalletId`, `ProductNumber`, `ExpiryDate`, `Quantity`
-  - Unik: `(PalletId, ProductNumber, ExpiryDate)`
 - `ScanEntries`
-  - `Timestamp`, `ProductNumber`, `ExpiryDate`, `Quantity`, `PalletId`, `CreatedNewPallet`,
-    `ConfirmedQuantity`, `ConfirmedMoved`, `ConfirmedAt`
 - `AuditEntries`
-  - `Timestamp`, `Action`, `Details`, `MachineName`
 
-## Kritiske forretningsregler
-1. Åben palle med matchende vare+dato prioriteres.
-2. Palle med samme vare men anden holdbarhed afvises.
-3. Ny variant må kun tilføjes når palle har under 4 varianter.
-4. Flyttebekræftelse er per kolli (`ConfirmedQuantity` stiger med 1 per scan).
-5. Fuldt bekræftet når `ConfirmedQuantity >= Quantity`.
-6. Palle-scan parser udtrækker kun `P-<digits>` og ignorerer øvrig scanner-støj.
-   Scanner-layout drift tolereres ved at mappe `æ/Æ` til `:` før parsing.
-7. Duplicate-scan guard kan afvise hurtige dublet-scans (konfigurerbar via `WarehouseRules`).
-8. UI-confirm flow bruger defensiv fallback-kæde:
-   - payload fra panel
-   - rå DOM-værdi via scanner interop
-   - senest foreslået palle (`PALLET:{lastSuggestedPalletId}`) hvis scanfelt er tomt.
+Se repository-implementering for præcise kolonner og migrationer.
 
-## Endpoints
-- `GET /export/csv`
-- `GET /export/excel`
-- `GET /backup/db`
-- `GET /health`
-- `GET /metrics`
+## Forretningsregler
+- Maks 4 varianter pr. palle
+- Samme stregkode med forskellig dato må ikke blandes på samme palle
+- Bekræftelse sker per fysisk kolli
+- Duplicate-scan guard kan afvise hurtige gentagne scans
+- Palleparser er robust over for scanner-støj (`æ/Æ` som `:` og `+` som `-`)
+
+## API-design
+Warehouse endpoints under `/api/warehouse`:
+- `GET /dashboard`
+- `POST /register`
+- `POST /confirm`
+- `POST /pallets/{palletId}/close`
+- `POST /undo`
+- `POST /clear`
+- `POST /restore`
+
+POST-endpoints er markeret med `DisableAntiforgery()` for scanner-/SPA-flow.
+
+## Navngivning
+- C# interfaces: `I`-prefiks (`IWarehouseDataService`)
+- C# services: domænenavn + `Service` (`WarehouseDataService`)
+- React hooks: `use*`
+- React komponenter: PascalCase + ansvar (`OpenPalletsCard`)
+- API payloads: `*Request` / `*Response`
 
 ## Teststrategi
-- `WarehouseDataServiceTests`: funktions- og regeltests.
-- `SanityTests`: hurtig smoke-verifikation af kritiske flows.
-- `WarehouseBarcodeTests`: parser-/normaliseringstests for palle-scan.
-- `ProductBarcodeParserTests`: parser-/normaliseringstests for varestregkoder.
-- `LagerScannerClientTests`: enhedstests af scanner-interop interface/implementering.
-- `e2e/tests/app-health.spec.ts`: UI/endpoint sanity i Playwright.
-- `e2e/tests/ui-sanity.spec.ts`: stabile UI sanity-checks af centrale controls/sektioner.
-- Fælles fixture i `tests/.../TestInfrastructure`.
+- Unit tests (`tests/LagerPalleSortering.Tests`)
+- API integration tests med `WebApplicationFactory`
+- Frontend component tests med Vitest + Testing Library
+- Browser e2e med Playwright (`e2e/tests`)
 
 ## CI
-- Workflow: `.github/workflows/ci.yml`
-- Kører på `windows-latest`:
-  - `dotnet restore LagerPalleSortering.slnx`
-  - `dotnet build LagerPalleSortering.slnx --configuration Release --no-restore`
-  - work-package sync check (`scripts/package-work.ps1` + SHA256 hash-match)
-  - `dotnet format LagerPalleSortering.slnx --verify-no-changes`
-  - `dotnet test ...` med coverage (`cobertura`) og line-threshold `>= 65%`
-  - `npm ci`
-  - `npx playwright install --with-deps chromium`
-  - `npm run test:e2e`
-
-## Migration note
-- `WarehouseDataService` afhænger nu af barcode-interfaces i stedet for statiske helpers.
-- Ved scanner- eller barcode-migration kan du registrere nye implementeringer i `Program.cs` uden at ændre service-flow.
-- `WarehouseRules` i `appsettings` styrer centrale guardrails (max varianter, duplicate-scan vindue).
-- Print-sider afhænger af `IBarcodeService` via DI i stedet for konkret service-type.
+CI validerer:
+- restore/build/test
+- format check
+- coverage gate
+- Playwright e2e
+- work-package sync
 
 ## Relaterede dokumenter
 - Projektoversigt: [`README.md`](../README.md)
 - Brugerguide: [`docs/USER_GUIDE.md`](USER_GUIDE.md)
-- Drift/fejlsøgning: [`docs/OPERATIONS.md`](OPERATIONS.md)
+- Operator-flow: [`docs/OPERATOR_FLOW.md`](OPERATOR_FLOW.md)
+- Drift: [`docs/OPERATIONS.md`](OPERATIONS.md)

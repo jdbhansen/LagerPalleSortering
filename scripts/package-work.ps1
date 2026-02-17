@@ -64,18 +64,33 @@ start "" "http://127.0.0.1:$Port"
 "@
 Set-Content -Path (Join-Path $publishDir "Start-Lager.cmd") -Value $startCmd -Encoding UTF8
 
+$generatedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $readme = @"
 LagerPalleSortering - Arbejdspakke
 ==================================
+Buildet: $generatedAt
 
+Start
+-----
 1) Pak filerne ud i en mappe (fx C:\LagerPalleSortering).
 2) Dobbeltklik Start-Lager.cmd.
-3) Appen åbner i browser på http://127.0.0.1:$Port
+3) Appen åbner i browser på http://127.0.0.1:$Port.
 4) Luk appen ved at lukke terminal-vinduet.
 
-Data gemmes i App_Data\lager.db i samme mappe.
-Tip: Hvis scanner-layout ikke matcher Windows-layout, kan ':' blive til 'æ'.
-Palle-scan i appen håndterer dette, men matchende layout anbefales stadig.
+Indhold i pakken
+----------------
+- Backend + React frontend er inkluderet og klar til brug.
+- Ingen installation af .NET eller Node.js er nødvendig på arbejds-pc.
+
+Data og backup
+--------------
+- Data gemmes i App_Data\lager.db i samme mappe.
+- Tag backup via appen før større ændringer.
+
+Scanner-tip
+-----------
+- Hvis scanner-layout ikke matcher Windows-layout, kan ':' blive til 'æ'.
+- Palle-scan i appen håndterer dette, men matchende layout anbefales stadig.
 "@
 Set-Content -Path (Join-Path $publishDir "README_WORK.txt") -Value $readme -Encoding UTF8
 
@@ -90,3 +105,4 @@ if ($SyncTrackedZip) {
 Write-Host "Work package klar:"
 Write-Host "Folder: $publishDir"
 Write-Host "Zip:    $zipPath"
+

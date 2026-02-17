@@ -72,6 +72,7 @@ public sealed partial class SqliteWarehouseRepository
 
     private static async Task EnsureColumnExistsAsync(SqliteConnection connection, string table, string column, string definitionSql, CancellationToken cancellationToken)
     {
+        // SQLite lacks a native "ADD COLUMN IF NOT EXISTS", so we probe schema first.
         await using var check = connection.CreateCommand();
         check.CommandText = $"PRAGMA table_info({table});";
         await using var reader = await check.ExecuteReaderAsync(cancellationToken);
@@ -98,6 +99,7 @@ public sealed partial class SqliteWarehouseRepository
 
     private static async Task MigrateLegacyConfirmedQuantityAsync(SqliteConnection connection, CancellationToken cancellationToken)
     {
+        // Backfill old boolean confirmation model into quantity-based confirmation model.
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             UPDATE ScanEntries

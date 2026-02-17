@@ -65,6 +65,7 @@ public sealed partial class SqliteWarehouseRepository
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
+        // Numeric suffix keeps pallet IDs monotonic and human-friendly (P-001, P-002, ...).
         cmd.CommandText = """
             SELECT COALESCE(MAX(CAST(SUBSTR(PalletId, 3) AS INTEGER)), 0)
             FROM Pallets;
@@ -149,6 +150,7 @@ public sealed partial class SqliteWarehouseRepository
         var updated = current - quantity;
         if (updated > 0)
         {
+            // Keep the row when quantity remains, so variant history on pallet is preserved.
             await using var update = connection.CreateCommand();
             update.Transaction = tx;
             update.CommandText = """
@@ -166,6 +168,7 @@ public sealed partial class SqliteWarehouseRepository
 
         await using var delete = connection.CreateCommand();
         delete.Transaction = tx;
+        // Remove empty variant row to keep pallet variant count accurate.
         delete.CommandText = """
             DELETE FROM PalletItems
             WHERE PalletId = $palletId AND ProductNumber = $product AND ExpiryDate = $expiry;

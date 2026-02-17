@@ -1,92 +1,74 @@
 # Drift og Fejlsøgning
 
-## Hurtig Navigation
-- [Drift](#drift)
-- [Build og test (anbefalet)](#build-og-test-anbefalet)
-- [Manuelle kommandoer](#manuelle-kommandoer)
-- [Fejlsøgning](#fejlsøgning)
-- [Release-checkliste](#release-checkliste)
-- [Relaterede dokumenter](#relaterede-dokumenter)
-
 ## Drift
-- Applikation startes med:
+Start app:
 
 ```powershell
 dotnet run
 ```
 
-- Runtime data ligger i: `App_Data/lager.db`
-- Tag backup af `lager.db` før opgraderinger eller større driftstiltag.
-- Appen har også indbygget backup-download: `GET /backup/db`.
-- Health/metrics:
+- Primær UI: `/app`
+- Legacy UI: `/legacy`
+- Data: `App_Data/lager.db`
+
+## Daglig drift
+- Brug backup før større ændringer: `GET /backup/db`
+- Kontroller status via:
   - `GET /health`
   - `GET /metrics`
-- Restore-funktionen i UI ligger nederst på forsiden for at holde dagligt scan-flow adskilt fra driftsindgreb.
-- UI har en toggle til `Simpel scanner-visning` for hurtig håndscanner-betjening; brug `Avanceret visning` ved behov for eksport/restore/tabeller.
 
 ## Build og test (anbefalet)
-Brug projektets verifikationsscript:
 
 ```powershell
-.\scripts\verify.ps1
+./scripts/verify.ps1
 ```
 
-Scriptet:
-- stopper hængende `testhost/dotnet` processer for dette repo.
-- kører `dotnet build`.
-- kører `dotnet test --no-build`.
-- stopper igen `testhost/dotnet` processer for repoet efter kørsel (cleanup).
+Supplerende frontend/e2e:
 
-UI sanity (Playwright):
 ```powershell
-npm ci
-npx playwright install chromium
+cd frontend
+npm run lint
+npm run test
+npm run build
+cd ..
 npm run test:e2e
 ```
 
-## Manuelle kommandoer
+## Work package
+
 ```powershell
-dotnet build LagerPalleSortering.slnx
-dotnet test LagerPalleSortering.slnx --no-build
+./scripts/package-work.ps1
 ```
 
-Sanity-only:
-```powershell
-dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
-```
+Output:
+- `..\LagerPalleSortering-work-package\app`
+- `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
+
+Work package er self-contained og kræver ikke installation af .NET/Node på arbejds-pc.
 
 ## Fejlsøgning
-### Fil-lock (CS2012 / låst DLL)
-1. Kør `.\scripts\verify.ps1`.
-2. Hvis problemet fortsætter, find låsende processer:
+### React-side loader ikke
+- Verificér at `wwwroot/app/index.html` og `wwwroot/app/assets/*` findes.
+- Kør `cd frontend && npm run build` igen.
 
-```powershell
-Get-CimInstance Win32_Process | Where-Object {
-  ($_.Name -match 'dotnet|testhost') -and ($_.CommandLine -match 'LagerPalleSortering')
-} | Select-Object ProcessId,Name,CommandLine
-```
+### Fil-lock i build/test
+- Kør `./scripts/verify.ps1`.
+- Gentag build/test når låsende `testhost/dotnet` processer er stoppet.
 
-3. Stop relevante processer og kør verify igen.
-
-### Ugyldig pallescan
-- Kontroller at label er i format `PALLET:P-xxx`.
-- Appen filtrerer scanner-støj (fx `+`, `æ`, symboler), men der skal stadig indgå et palle-id (`P-xxx`) i den scannede tekst.
-- Ved keyboard-layout mismatch (typisk US scanner + dansk Windows) kan `:` blive til `æ`; appen tolererer dette i palle-scan.
-- Bekræft-knappen læser input-felternes aktuelle råværdi direkte ved submit for at reducere timing-relaterede scannerfejl.
-- Drift-anbefaling: sæt scanner keyboard-country til samme layout som Windows for at undgå sideeffekter i andre inputfelter.
-
-### Ingen u-bekræftede kolli
-- Alle registrerede kolli på pallen er allerede bekræftet.
+### Scannerfejl i pallekode
+- Bekræft format `PALLET:P-xxx`.
+- Appen normaliserer kendte layout-afvigelser (`æ/Æ`, `+`).
+- Match scanner keyboard-country med Windows layout.
 
 ## Release-checkliste
-1. `.\scripts\verify.ps1` er grøn.
-2. `npm run test:e2e` er grøn (lokalt eller i CI).
-3. README og docs afspejler aktuelle regler.
-4. GitHub Actions `CI` er grøn på seneste commit.
-5. Commit + push.
+1. `./scripts/verify.ps1` grøn
+2. `cd frontend && npm run lint && npm run test && npm run build`
+3. `npm run test:e2e` grøn
+4. `./scripts/package-work.ps1` kørt
+5. Dokumentation opdateret
 
 ## Relaterede dokumenter
 - Projektoversigt: [`README.md`](../README.md)
 - Brugerguide: [`docs/USER_GUIDE.md`](USER_GUIDE.md)
+- Operator-flow: [`docs/OPERATOR_FLOW.md`](OPERATOR_FLOW.md)
 - Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](TECHNICAL_GUIDE.md)
-

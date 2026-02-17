@@ -101,6 +101,59 @@ public sealed class WarehouseDataService : IWarehouseDataService
         return MoveConfirmationResult.Ok($"Flytning bekræftet på palle {palletId}.", palletId, confirmedId.Value);
     }
 
+    public async Task<MoveBatchConfirmationResult> ConfirmMoveBatchByPalletScanAsync(
+        string scannedPalletCode,
+        int confirmScanCount,
+        CancellationToken cancellationToken = default)
+    {
+        if (confirmScanCount <= 0)
+        {
+            return MoveBatchConfirmationResult.Error("Antal at bekræfte skal være større end 0.");
+        }
+
+        var confirmed = 0;
+        string lastMessage = string.Empty;
+        string? palletId = null;
+
+        // Confirm one physical colli per iteration.
+        for (var i = 0; i < confirmScanCount; i++)
+        {
+            var result = await ConfirmMoveByPalletScanAsync(
+                scannedPalletCode,
+                bypassDuplicateGuard: i > 0,
+                cancellationToken);
+
+            lastMessage = result.Message;
+            palletId = result.PalletId;
+            if (!result.Success)
+            {
+                break;
+            }
+
+            confirmed++;
+        }
+
+        if (confirmed == confirmScanCount)
+        {
+            return MoveBatchConfirmationResult.Success(
+                $"Flytning bekræftet: {confirmed} kolli på {palletId}.",
+                palletId,
+                confirmed,
+                confirmScanCount);
+        }
+
+        if (confirmed > 0)
+        {
+            return MoveBatchConfirmationResult.Warning(
+                $"Delvis bekræftelse: {confirmed}/{confirmScanCount}. {lastMessage}",
+                palletId,
+                confirmed,
+                confirmScanCount);
+        }
+
+        return MoveBatchConfirmationResult.Error(lastMessage, palletId, confirmed, confirmScanCount);
+    }
+
     public async Task<UndoResult?> UndoLastAsync(CancellationToken cancellationToken = default)
     {
         var result = await _repository.UndoLastAsync(cancellationToken);
