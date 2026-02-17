@@ -56,20 +56,10 @@ public static class WarehouseApiEndpoints
 
         if (request.ConfirmScanCount <= 0)
         {
-            return Results.BadRequest(new WarehouseOperationApiResponse(
-                batchResult.Status,
-                batchResult.Message,
-                batchResult.PalletId,
-                batchResult.Confirmed,
-                batchResult.Requested));
+            return Results.BadRequest(CreateBatchOperationResponse(batchResult));
         }
 
-        return Results.Ok(new WarehouseOperationApiResponse(
-            batchResult.Status,
-            batchResult.Message,
-            batchResult.PalletId,
-            batchResult.Confirmed,
-            batchResult.Requested));
+        return Results.Ok(CreateBatchOperationResponse(batchResult));
     }
 
     private static async Task<IResult> ClosePalletAsync(
@@ -121,4 +111,12 @@ public static class WarehouseApiEndpoints
         await dataService.RestoreDatabaseAsync(stream, cancellationToken);
         return Results.Ok(new WarehouseOperationApiResponse("success", "Database gendannet fra backup."));
     }
+
+    private static WarehouseOperationApiResponse CreateBatchOperationResponse(MoveBatchConfirmationResult result) =>
+        new(
+            result.Status,
+            result.Message,
+            result.PalletId,
+            result.Confirmed,
+            result.Requested);
 }

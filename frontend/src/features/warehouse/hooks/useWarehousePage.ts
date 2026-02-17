@@ -16,6 +16,9 @@ interface ConfirmFormState {
   confirmScanCount: number;
 }
 
+type RegisterFormField = keyof RegisterFormState;
+type ConfirmFormField = keyof ConfirmFormState;
+
 const emptyDashboard: WarehouseDashboardResponse = {
   openPallets: [],
   entries: [],
@@ -99,6 +102,20 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     setStatus({ type: 'error', message: asErrorMessage(error) });
   }
 
+  function updateRegisterFormField<TField extends RegisterFormField>(
+    field: TField,
+    value: RegisterFormState[TField],
+  ) {
+    setRegisterForm((previous) => ({ ...previous, [field]: value }));
+  }
+
+  function updateConfirmFormField<TField extends ConfirmFormField>(
+    field: TField,
+    value: ConfirmFormState[TField],
+  ) {
+    setConfirmForm((previous) => ({ ...previous, [field]: value }));
+  }
+
   async function submitRegisterColli() {
     const result = await apiClient.registerWarehouseColli(
       registerForm.productNumber,
@@ -113,7 +130,8 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     }
 
     setLastSuggestedPalletId(result.palletId ?? '');
-    setRegisterForm((previous) => ({ ...previous, productNumber: '', quantity: 1 }));
+    updateRegisterFormField('productNumber', '');
+    updateRegisterFormField('quantity', 1);
     await reloadDashboard();
   }
 
@@ -126,7 +144,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     setStatus(result);
 
     if (result.type === 'success') {
-      setConfirmForm((previous) => ({ ...previous, scannedPalletCode: '' }));
+      updateConfirmFormField('scannedPalletCode', '');
       await reloadDashboard();
       return;
     }
@@ -199,6 +217,8 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     setRegisterForm,
     setConfirmForm,
     setRestoreFile,
+    updateRegisterFormField,
+    updateConfirmFormField,
     reportClientError,
     submitRegisterColli,
     submitConfirmMove,

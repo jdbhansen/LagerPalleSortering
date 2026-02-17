@@ -23,9 +23,9 @@ export function WarehousePage() {
     confirmForm,
     restoreFile,
     setIsSimpleMode,
-    setRegisterForm,
-    setConfirmForm,
     setRestoreFile,
+    updateRegisterFormField,
+    updateConfirmFormField,
     reportClientError,
     submitRegisterColli,
     submitConfirmMove,
@@ -71,9 +71,9 @@ export function WarehousePage() {
             productNumber={registerForm.productNumber}
             expiryDateRaw={registerForm.expiryDateRaw}
             quantity={registerForm.quantity}
-            onProductNumberChange={(value) => setRegisterForm((previous) => ({ ...previous, productNumber: value }))}
-            onExpiryDateChange={(value) => setRegisterForm((previous) => ({ ...previous, expiryDateRaw: value }))}
-            onQuantityChange={(value) => setRegisterForm((previous) => ({ ...previous, quantity: value }))}
+            onProductNumberChange={(value) => updateRegisterFormField('productNumber', value)}
+            onExpiryDateChange={(value) => updateRegisterFormField('expiryDateRaw', value)}
+            onQuantityChange={(value) => updateRegisterFormField('quantity', value)}
             onSubmit={submitRegisterColli}
             onError={reportClientError}
           />
@@ -84,8 +84,8 @@ export function WarehousePage() {
             scannedPalletCode={confirmForm.scannedPalletCode}
             confirmScanCount={confirmForm.confirmScanCount}
             lastSuggestedPalletId={lastSuggestedPalletId}
-            onScannedPalletCodeChange={(value) => setConfirmForm((previous) => ({ ...previous, scannedPalletCode: value }))}
-            onConfirmScanCountChange={(value) => setConfirmForm((previous) => ({ ...previous, confirmScanCount: value }))}
+            onScannedPalletCodeChange={(value) => updateConfirmFormField('scannedPalletCode', value)}
+            onConfirmScanCountChange={(value) => updateConfirmFormField('confirmScanCount', value)}
             onSubmit={submitConfirmMove}
             onError={reportClientError}
           />
