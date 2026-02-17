@@ -72,6 +72,7 @@ Get-CimInstance Win32_Process | Where-Object {
 - Kontroller at label er i format `PALLET:P-xxx`.
 - Appen filtrerer scanner-støj (fx `+`, `æ`, symboler), men der skal stadig indgå et palle-id (`P-xxx`) i den scannede tekst.
 - Ved keyboard-layout mismatch (typisk US scanner + dansk Windows) kan `:` blive til `æ`; appen tolererer dette i palle-scan.
+- Bekræft-knappen læser input-felternes aktuelle råværdi direkte ved submit for at reducere timing-relaterede scannerfejl.
 - Drift-anbefaling: sæt scanner keyboard-country til samme layout som Windows for at undgå sideeffekter i andre inputfelter.
 
 ### Ingen u-bekræftede kolli

@@ -69,23 +69,21 @@
     @if (isSimpleScannerMode)
     {
         <ScannerSimplePanel
-            RegistrationForm="registrationForm"
-            @bind-ScannedPalletCode="scannedPalletCode"
-            @bind-ConfirmScanCount="confirmScanCount"
-            LastSuggestedPalletId="lastSuggestedPalletId"
-            OnRegisterColli="RegisterColliAsync"
-            OnConfirmMove="ConfirmMoveAsync" />
+            RegistrationForm="@registrationForm"
+            ConfirmationForm="@confirmationForm"
+            LastSuggestedPalletId="@lastSuggestedPalletId"
+            OnRegisterColli="@RegisterColliAsync"
+            OnConfirmMove="@ConfirmMoveAsync" />
     }
     else
     {
         <ScannerAdvancedPanel
-            RegistrationForm="registrationForm"
-            @bind-ScannedPalletCode="scannedPalletCode"
-            @bind-ConfirmScanCount="confirmScanCount"
-            @bind-KeepExpiryBetweenScans="keepExpiryBetweenScans"
-            LastSuggestedPalletId="lastSuggestedPalletId"
-            OnRegisterColli="RegisterColliAsync"
-            OnConfirmMove="ConfirmMoveAsync" />
+            RegistrationForm="@registrationForm"
+            ConfirmationForm="@confirmationForm"
+            ScannerPreferences="@scannerPreferences"
+            LastSuggestedPalletId="@lastSuggestedPalletId"
+            OnRegisterColli="@RegisterColliAsync"
+            OnConfirmMove="@ConfirmMoveAsync" />
     }
 
     @if (!isSimpleScannerMode)

@@ -24,6 +24,9 @@ public sealed class LagerScannerClient(IJSRuntime jsRuntime) : ILagerScannerClie
     public Task FocusAsync(string elementId) =>
         jsRuntime.InvokeVoidAsync("lagerScanner.focus", elementId).AsTask();
 
+    public Task<string> GetInputValueAsync(string elementId) =>
+        jsRuntime.InvokeAsync<string>("lagerScanner.getValue", elementId).AsTask();
+
     public Task OpenInNewTabAsync(string url) =>
         jsRuntime.InvokeVoidAsync("open", url, "_blank").AsTask();
 }

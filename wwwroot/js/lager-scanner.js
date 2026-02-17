@@ -166,6 +166,14 @@ window.lagerScanner = {
 
         el.focus();
         el.select?.();
+    },
+    getValue: function (elementId) {
+        const el = document.getElementById(elementId);
+        if (!el) {
+            return "";
+        }
+
+        return (el.value ?? "").toString();
     }
 };
 

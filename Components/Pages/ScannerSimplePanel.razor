@@ -1,3 +1,6 @@
+@using LagerPalleSortering.Services
+@inject ILagerScannerClient ScannerClient
+
 <div class="scanner-simple-mode mb-3">
     <div class="alert alert-info mb-3" role="alert">
         Simpel scanner-visning: scan varenummer, scan/indtast dato, scan pallelabel og tryk Enter.
@@ -9,6 +12,9 @@
                 <div class="card-header bg-body fw-semibold">1) Registrer kolli</div>
                 <div class="card-body">
                     <EditForm Model="RegistrationForm" OnValidSubmit="HandleRegisterSubmitAsync">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
                         <div class="row g-3">
                             <div class="col-12 col-lg-5">
                                 <label class="form-label">Varenummer</label>
@@ -38,11 +44,19 @@
                     <div class="row g-3">
                         <div class="col-12 col-lg-8">
                             <label class="form-label">Scan palle-stregkode</label>
-                            <InputText id="palletScanInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="ScannedPalletCode" @bind-Value:event="oninput" />
+                            <input
+                                id="palletScanInput"
+                                class="form-control form-control-lg scanner-simple-input"
+                                @bind="ConfirmationForm.ScannedPalletCode" />
                         </div>
                         <div class="col-12 col-lg-4">
                             <label class="form-label">Antal at bekræfte</label>
-                            <InputNumber id="confirmCountInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="ConfirmScanCount" />
+                            <input
+                                id="confirmCountInput"
+                                type="number"
+                                min="1"
+                                class="form-control form-control-lg scanner-simple-input"
+                                @bind="ConfirmationForm.ConfirmScanCount" />
                         </div>
                         <div class="col-12 d-grid">
                             <button id="confirmMoveButton" class="btn btn-success btn-lg scanner-simple-button" @onclick="HandleConfirmMoveAsync">Bekræft flyt</button>
@@ -68,27 +82,37 @@
     public HomeFormModel RegistrationForm { get; set; } = default!;
 
     [Parameter]
-    public string ScannedPalletCode { get; set; } = string.Empty;
-
-    [Parameter]
-    public EventCallback<string> ScannedPalletCodeChanged { get; set; }
-
-    [Parameter]
-    public int ConfirmScanCount { get; set; } = 1;
-
-    [Parameter]
-    public EventCallback<int> ConfirmScanCountChanged { get; set; }
+    public HomeConfirmationModel ConfirmationForm { get; set; } = default!;
 
     [Parameter]
     public string? LastSuggestedPalletId { get; set; }
 
     [Parameter]
-    public EventCallback OnRegisterColli { get; set; }
+    public EventCallback<RegisterColliInput> OnRegisterColli { get; set; }
 
     [Parameter]
-    public EventCallback OnConfirmMove { get; set; }
+    public EventCallback<MoveConfirmInput> OnConfirmMove { get; set; }
 
-    private Task HandleRegisterSubmitAsync() => OnRegisterColli.InvokeAsync();
+    private async Task HandleRegisterSubmitAsync()
+    {
+        // Read current raw DOM values to avoid scanner Enter timing races vs Blazor binding.
+        var productNumber = await ScannerClient.GetInputValueAsync("productInput");
+        var expiryDate = await ScannerClient.GetInputValueAsync("expiryInput");
+        var rawQuantity = await ScannerClient.GetInputValueAsync("quantityInput");
+        var quantity = int.TryParse(rawQuantity, out var parsedQuantity) ? parsedQuantity : RegistrationForm.Quantity;
 
-    private Task HandleConfirmMoveAsync() => OnConfirmMove.InvokeAsync();
+        await OnRegisterColli.InvokeAsync(new RegisterColliInput(productNumber, expiryDate, quantity));
+    }
+
+    private async Task HandleConfirmMoveAsync()
+    {
+        // Read directly from input elements so the latest scan is used on first submit.
+        var scanned = await ScannerClient.GetInputValueAsync("palletScanInput");
+        var rawCount = await ScannerClient.GetInputValueAsync("confirmCountInput");
+        var count = int.TryParse(rawCount, out var parsedCount) ? parsedCount : ConfirmationForm.ConfirmScanCount;
+
+        ConfirmationForm.ScannedPalletCode = scanned;
+        ConfirmationForm.ConfirmScanCount = count;
+        await OnConfirmMove.InvokeAsync(new MoveConfirmInput(scanned, count));
+    }
 }

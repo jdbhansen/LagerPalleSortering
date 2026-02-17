@@ -44,6 +44,7 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - Drift endpoints: `/health` og `/metrics`.
 - Scanner-optimeret inputflow (Enter-baseret).
 - Skiftbar UI-tilstand med `Simpel scanner-visning` til håndscanner-brug.
+- Scanner-submit læser aktuelle input-værdier direkte fra DOM via JS interop for at undgå timing-mismatch mellem scanner og Blazor-binding.
 - Operator-status vises med tydelig alert-styling i toppen af siden.
 - "Database restore" er placeret nederst på forsiden for at mindske fejlklik i primært scan-flow.
 
@@ -73,7 +74,7 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - `Application/`: use-cases og serviceabstraktioner.
 - `Infrastructure/`: SQLite repository + migration/query-logik.
 - `Components/`: Blazor UI (`Home` + panel-komponenter for simpel/avanceret scanner-visning).
-- `Services/`: UI-nære services (fx `IBarcodeService` + `BarcodeService`, `ILagerScannerClient` + `LagerScannerClient`).
+- `Services/`: UI-nære services (fx `IBarcodeService` + `BarcodeService`, `ILagerScannerClient` + `LagerScannerClient` inkl. fokus/init og læsning af aktuelle input-værdier).
 
 ## Hurtig start
 Forudsætning: .NET SDK 10.

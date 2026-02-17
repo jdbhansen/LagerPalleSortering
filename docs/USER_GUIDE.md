@@ -33,6 +33,7 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
   - `PALLETæP-001` / `PALLETÆP-001` tolkes som `PALLET:P-001` (layout mismatch).
   - `P+001` tolkes som `P-001`.
   - ekstra tegn (fx `æ`, mellemrum, symboler) filtreres automatisk væk.
+- Hvis pallefeltet er tomt ved bekræft, forsøger appen automatisk at bruge senest foreslåede palle fra statusfeltet.
 - Anbefalet opsætning: scanner keyboard-layout og Windows input-sprog bør matche (fx begge Danish eller begge US).
 
 ## Funktioner i UI

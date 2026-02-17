@@ -82,6 +82,19 @@ public sealed class LagerScannerClientTests
         Assert.Equal(new object?[] { "https://example.local", "_blank" }, call.Arguments);
     }
 
+    [Fact]
+    public async Task GetInputValueAsync_InvokesGetValueWithElementId()
+    {
+        var js = new CapturingJsRuntime();
+        var client = new LagerScannerClient(js);
+
+        _ = await client.GetInputValueAsync("palletScanInput");
+
+        var call = Assert.Single(js.Invocations);
+        Assert.Equal("lagerScanner.getValue", call.Identifier);
+        Assert.Equal(new object?[] { "palletScanInput" }, call.Arguments);
+    }
+
     private static string? ReadStringProperty(object? value, string propertyName)
     {
         var property = value?.GetType().GetProperty(propertyName);

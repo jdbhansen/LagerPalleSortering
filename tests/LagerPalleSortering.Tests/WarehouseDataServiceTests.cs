@@ -353,6 +353,17 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task ConfirmMoveByPalletScanAsync_WellFormedButUnknownPallet_ReturnsNoUnconfirmedForParsedPalletId()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var result = await fixture.Service.ConfirmMoveByPalletScanAsync("PALLET:P-321");
+
+        Assert.False(result.Success);
+        Assert.Contains("P-321", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task RegisterColliAsync_AllowsMaximumFourDifferentVariantsPerPallet()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");

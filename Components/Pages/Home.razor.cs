@@ -21,14 +21,13 @@ public partial class Home
     private ILagerScannerClient ScannerClient { get; set; } = default!;
 
     private readonly HomeFormModel registrationForm = new() { Quantity = 1 };
+    private readonly HomeConfirmationModel confirmationForm = new();
+    private readonly HomeScannerPreferencesModel scannerPreferences = new();
     private readonly List<PalletRecord> openPallets = new();
     private readonly List<ScanEntryRecord> entries = new();
     private string? statusMessage;
     private string statusAlertCssClass = AlertSuccessCssClass;
-    private string scannedPalletCode = string.Empty;
     private string? lastSuggestedPalletId;
-    private bool keepExpiryBetweenScans = true;
-    private int confirmScanCount = 1;
     private bool isSimpleScannerMode;
     private bool showClearDatabaseWarning;
     private IBrowserFile? restoreFile;
@@ -75,9 +74,16 @@ public partial class Home
         focusProductAfterRender = true;
     }
 
-    private async Task RegisterColliAsync()
+    private async Task RegisterColliAsync(RegisterColliInput input)
     {
-        var result = await DataService.RegisterColliAsync(registrationForm.ProductNumber ?? string.Empty, registrationForm.ExpiryDateRaw, registrationForm.Quantity);
+        registrationForm.ProductNumber = input.ProductNumber;
+        registrationForm.ExpiryDateRaw = input.ExpiryDateRaw;
+        registrationForm.Quantity = input.Quantity;
+
+        var result = await DataService.RegisterColliAsync(
+            input.ProductNumber ?? string.Empty,
+            input.ExpiryDateRaw,
+            input.Quantity);
 
         if (!result.Success)
         {
@@ -89,7 +95,7 @@ public partial class Home
         SetStatus(result.Message, isError: false);
         lastSuggestedPalletId = result.PalletId;
         registrationForm.ProductNumber = string.Empty;
-        if (!keepExpiryBetweenScans)
+        if (!scannerPreferences.KeepExpiryBetweenScans)
         {
             registrationForm.ExpiryDateRaw = string.Empty;
         }
@@ -99,9 +105,32 @@ public partial class Home
         await FocusProductAsync();
     }
 
-    private async Task ConfirmMoveAsync()
+    private async Task ConfirmMoveAsync(MoveConfirmInput input)
     {
-        if (confirmScanCount <= 0)
+        var scannedCode = string.IsNullOrWhiteSpace(input.ScannedPalletCode)
+            ? await ScannerClient.GetInputValueAsync(PalletScanInputId)
+            : input.ScannedPalletCode;
+
+        var scanCount = input.ConfirmScanCount;
+        if (scanCount <= 0)
+        {
+            var rawCount = await ScannerClient.GetInputValueAsync(ConfirmCountInputId);
+            if (!int.TryParse(rawCount, out scanCount))
+            {
+                scanCount = input.ConfirmScanCount;
+            }
+        }
+
+        confirmationForm.ScannedPalletCode = scannedCode ?? string.Empty;
+        confirmationForm.ConfirmScanCount = scanCount;
+
+        if (string.IsNullOrWhiteSpace(confirmationForm.ScannedPalletCode) && !string.IsNullOrWhiteSpace(lastSuggestedPalletId))
+        {
+            // Fallback for scanner/input sync edge-cases: use latest suggested pallet.
+            confirmationForm.ScannedPalletCode = $"PALLET:{lastSuggestedPalletId}";
+        }
+
+        if (confirmationForm.ConfirmScanCount <= 0)
         {
             SetErrorStatus("Antal at bekræfte skal være større end 0.");
             await FocusAsync(ConfirmCountInputId);
@@ -113,9 +142,9 @@ public partial class Home
         string? palletId = null;
 
         // Confirm one physical colli per iteration.
-        for (var i = 0; i < confirmScanCount; i++)
+        for (var i = 0; i < confirmationForm.ConfirmScanCount; i++)
         {
-            var result = await DataService.ConfirmMoveByPalletScanAsync(scannedPalletCode, bypassDuplicateGuard: i > 0);
+            var result = await DataService.ConfirmMoveByPalletScanAsync(confirmationForm.ScannedPalletCode, bypassDuplicateGuard: i > 0);
             lastMessage = result.Message;
             palletId = result.PalletId;
             if (!result.Success)
@@ -126,15 +155,15 @@ public partial class Home
             confirmed++;
         }
 
-        if (confirmed == confirmScanCount)
+        if (confirmed == confirmationForm.ConfirmScanCount)
         {
             SetSuccessStatus($"Flytning bekræftet: {confirmed} kolli på {palletId}.");
-            scannedPalletCode = string.Empty;
+            confirmationForm.ScannedPalletCode = string.Empty;
             await ReloadDataAsync();
         }
         else if (confirmed > 0)
         {
-            SetWarningStatus($"Delvis bekræftelse: {confirmed}/{confirmScanCount}. {lastMessage}");
+            SetWarningStatus($"Delvis bekræftelse: {confirmed}/{confirmationForm.ConfirmScanCount}. {lastMessage}");
             await ReloadDataAsync();
         }
         else
@@ -196,8 +225,8 @@ public partial class Home
         await DataService.ClearAllDataAsync();
         showClearDatabaseWarning = false;
         lastSuggestedPalletId = null;
-        scannedPalletCode = string.Empty;
-        confirmScanCount = 1;
+        confirmationForm.ScannedPalletCode = string.Empty;
+        confirmationForm.ConfirmScanCount = 1;
         ResetRegistrationForm();
 
         await ReloadDataAsync();
@@ -274,7 +303,7 @@ public partial class Home
     {
         registrationForm.ProductNumber = string.Empty;
         registrationForm.Quantity = 1;
-        if (!keepExpiryBetweenScans)
+        if (!scannerPreferences.KeepExpiryBetweenScans)
         {
             registrationForm.ExpiryDateRaw = string.Empty;
         }

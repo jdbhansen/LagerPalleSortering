@@ -41,4 +41,5 @@ test.describe("UI sanity", () => {
     await expect(page.locator("#backupDbButton")).toBeVisible();
     await expect(page.locator("#clearDatabaseButton")).toBeVisible();
   });
+
 });

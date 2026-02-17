@@ -38,9 +38,10 @@
     - `ScannerSimplePanel` (forenklet håndscanner-visning)
     - `ScannerAdvancedPanel` (fuld visning)
   - `Home` orkestrerer tilstand, data-loading og status-hjælpermetoder (success/warning/error).
+  - Scanner paneler sender typed payloads (`RegisterColliInput`, `MoveConfirmInput`) til `Home`.
 - `Services/`
   - `IBarcodeService` + `BarcodeService` til Code128 SVG-generering i print-sider.
-  - `ILagerScannerClient` + `LagerScannerClient` til JS interop for scanner-fokus/hotkeys/init.
+  - `ILagerScannerClient` + `LagerScannerClient` til JS interop for scanner-fokus/hotkeys/init samt læsning af rå input-værdier (`GetInputValueAsync`).
 
 ## Datamodel (SQLite)
 - `Pallets`
@@ -63,6 +64,10 @@
 6. Palle-scan parser udtrækker kun `P-<digits>` og ignorerer øvrig scanner-støj.
    Scanner-layout drift tolereres ved at mappe `æ/Æ` til `:` før parsing.
 7. Duplicate-scan guard kan afvise hurtige dublet-scans (konfigurerbar via `WarehouseRules`).
+8. UI-confirm flow bruger defensiv fallback-kæde:
+   - payload fra panel
+   - rå DOM-værdi via scanner interop
+   - senest foreslået palle (`PALLET:{lastSuggestedPalletId}`) hvis scanfelt er tomt.
 
 ## Endpoints
 - `GET /export/csv`
