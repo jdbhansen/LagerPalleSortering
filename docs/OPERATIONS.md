@@ -52,6 +52,10 @@ Work package er self-contained og kræver ikke installation af .NET/Node på arb
 - Verificér at `wwwroot/app/index.html` og `wwwroot/app/assets/*` findes.
 - Kør `cd frontend && npm run build` igen.
 
+### Print af palleindhold klippes i bund
+- Brug `190x100`-knappen (`?format=label190x100`) for SVG-baseret labelprint.
+- Standardprint arver printerens papir/margin-indstillinger.
+
 ### Fil-lock i build/test
 - Kør `./scripts/verify.ps1`.
 - Gentag build/test når låsende `testhost/dotnet` processer er stoppet.

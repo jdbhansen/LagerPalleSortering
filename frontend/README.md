@@ -42,6 +42,10 @@ npm run build
 - API-funktioner: verber (`fetchWarehouseDashboard`, `registerWarehouseColli`)
 - Typer: `*Response`, `*Entry`, `*Pallet`
 
+## Print-varianter
+- Standard: `/print-pallet-contents/{palletId}`
+- Label 190x100 (SVG): `/print-pallet-contents/{palletId}?format=label190x100`
+
 ## Build til .NET app
 
 ```powershell

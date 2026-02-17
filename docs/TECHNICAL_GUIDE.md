@@ -25,6 +25,7 @@ Sidst opdateret: 2026-02-17.
   - `SqliteWarehouseRepository` (partial classes)
 - `Components/`
   - Blazor print-sider + layout + legacy-side
+  - `PrintPalletContents` understøtter SVG-labelformat `label190x100`
 
 ## Datamodel
 - `Pallets`

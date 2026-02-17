@@ -47,6 +47,7 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - Dato vises i UI/print som `YYYY-MM-DD` (barcode-data er stadig `YYYYMMDD`)
 - Palleindholdsprint er skaleret til op til 4 kolli-linjer pr. side
 - Palleindhold kan printes fra registreringslisten (også for lukkede paller)
+- `190x100` palleindhold-print findes som SVG-label til stabil skalering: `?format=label190x100`
 
 ## Hurtig start
 Forudsætning: .NET SDK 10 og Node.js LTS.

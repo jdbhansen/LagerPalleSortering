@@ -89,6 +89,7 @@ Indhold i pakken
 ----------------
 - Backend + React frontend er inkluderet og klar til brug.
 - Ingen installation af .NET eller Node.js er nødvendig på arbejds-pc.
+- Palleindhold kan printes i standardformat eller 190x100 SVG-labelformat.
 
 Data og backup
 --------------

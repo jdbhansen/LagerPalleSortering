@@ -19,6 +19,7 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - `Fortryd seneste`
 - `Luk` / `Luk + print`
 - `Print indhold` fra registreringstabellen (kan bruges til lukkede paller)
+- `190x100`-printknap til etiketprinter (SVG-skaleret output)
 
 ## Datostregkode
 - Holdbarhedsfeltet kan generere en **datostregkode**.

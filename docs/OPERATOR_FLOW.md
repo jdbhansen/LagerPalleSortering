@@ -26,6 +26,7 @@ Dokumenterer dagligt operator-flow i React-frontend (`/app`).
 - Delvis bekræftelse: vises som advarsel
 - Ugyldigt antal (`<= 0`): returnerer fejl
 - Lukkede paller kan stadig få printet indhold via registreringslisten
+- Ved labelprinter: brug `190x100`-varianten for skaleret SVG-output uden afskæring
 
 ## Operatørens kontrolpunkter
 - Tjek at statuspanel viser success/warning efter handling
