@@ -44,6 +44,9 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - Health + metrics endpoints
 - Simpel scanner-visning til håndscanner-drift
 - Datostregkode i React UI (markeret tydeligt som dato/holdbarhed)
+- Dato vises i UI/print som `YYYY-MM-DD` (barcode-data er stadig `YYYYMMDD`)
+- Palleindholdsprint er skaleret til op til 4 kolli-linjer pr. side
+- Palleindhold kan printes fra registreringslisten (også for lukkede paller)
 
 ## Hurtig start
 Forudsætning: .NET SDK 10 og Node.js LTS.

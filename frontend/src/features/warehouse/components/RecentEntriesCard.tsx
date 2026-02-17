@@ -33,12 +33,13 @@ export function RecentEntriesCard({ entries, onUndoLastEntry, onError }: RecentE
               <th>Kolli</th>
               <th>Palle</th>
               <th>Status</th>
+              <th>Handling</th>
             </tr>
           </thead>
           <tbody>
             {entries.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-muted">Ingen registreringer endnu.</td>
+                <td colSpan={8} className="text-muted">Ingen registreringer endnu.</td>
               </tr>
             )}
             {entries.map((entry) => {
@@ -69,6 +70,16 @@ export function RecentEntriesCard({ entries, onUndoLastEntry, onError }: RecentE
                     ) : (
                       <span className="badge text-bg-warning">Afventer ({entry.confirmedQuantity}/{entry.quantity})</span>
                     )}
+                  </td>
+                  <td>
+                    <a
+                      className="btn btn-sm btn-outline-dark"
+                      href={`/print-pallet-contents/${encodeURIComponent(entry.palletId)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Print indhold
+                    </a>
                   </td>
                 </tr>
               );

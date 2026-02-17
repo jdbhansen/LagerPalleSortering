@@ -19,11 +19,13 @@ Dokumenterer dagligt operator-flow i React-frontend (`/app`).
 - Datostregkode er adskilt visuelt fra varestregkode
 - Label: `Dato / Holdbarhed`
 - Bruges til hurtig gen-scan af dato uden manuel indtastning
+- Dato vises som `YYYY-MM-DD` i UI/print
 
 ## Edge-cases
 - Tom pallekode ved bekræftelse: fallback til senest foreslået palle
 - Delvis bekræftelse: vises som advarsel
 - Ugyldigt antal (`<= 0`): returnerer fejl
+- Lukkede paller kan stadig få printet indhold via registreringslisten
 
 ## Operatørens kontrolpunkter
 - Tjek at statuspanel viser success/warning efter handling

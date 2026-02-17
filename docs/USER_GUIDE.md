@@ -18,11 +18,13 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - `Backup DB` / `Gendan database`
 - `Fortryd seneste`
 - `Luk` / `Luk + print`
+- `Print indhold` fra registreringstabellen (kan bruges til lukkede paller)
 
 ## Datostregkode
 - Holdbarhedsfeltet kan generere en **datostregkode**.
 - Datostregkoden er visuelt markeret som `Dato / Holdbarhed` for ikke at forveksles med varestregkode.
 - Datostregkoden kan printes og scannes igen senere.
+- Visningstekst er `YYYY-MM-DD`, mens scanningsdata stadig er `YYYYMMDD`.
 
 ## Scannerregler
 - Varescan: EAN-8, EAN-13, UPC-A

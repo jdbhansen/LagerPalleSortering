@@ -40,6 +40,7 @@ Se repository-implementering for præcise kolonner og migrationer.
 - Bekræftelse sker per fysisk kolli
 - Duplicate-scan guard kan afvise hurtige gentagne scans
 - Palleparser er robust over for scanner-støj (`æ/Æ` som `:` og `+` som `-`)
+- Dato vises i grænsefladen som `YYYY-MM-DD`, men lagres/scannes som `YYYYMMDD`
 
 ## API-design
 Warehouse endpoints under `/api/warehouse`:

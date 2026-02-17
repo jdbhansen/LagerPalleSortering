@@ -155,13 +155,14 @@
                                 <th>Kolli</th>
                                 <th>Palle</th>
                                 <th>Status</th>
+                                <th>Handling</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (entries.Count == 0)
                             {
                                 <tr>
-                                    <td colspan="6" class="text-muted">Ingen registreringer endnu.</td>
+                                    <td colspan="7" class="text-muted">Ingen registreringer endnu.</td>
                                 </tr>
                             }
                             else
@@ -183,6 +184,9 @@
                                             {
                                                 <span class="badge text-bg-warning">Afventer (@entry.ConfirmedQuantity/@entry.Quantity)</span>
                                             }
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-dark" href="@($"/print-pallet-contents/{entry.PalletId}")" target="_blank">Print indhold</a>
                                         </td>
                                     </tr>
                                 }

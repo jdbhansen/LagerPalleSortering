@@ -9,6 +9,7 @@ Sidst opdateret: 2026-02-17.
   - `api/warehouseApiClient.ts`: default API-klientimplementering
   - `hooks/useWarehousePage.ts`: side-logik/state
   - `components/*`: præsentationskomponenter
+  - `utils/expiryDate.ts`: formattering af visningsdato (`YYYY-MM-DD`)
   - `WarehousePage.tsx`: side-komposition
 - `src/App.tsx`: tynd entry-komponent
 

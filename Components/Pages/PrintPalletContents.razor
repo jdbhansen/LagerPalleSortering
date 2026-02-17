@@ -22,9 +22,9 @@
             @foreach (var item in items)
             {
                 var productCode = item.ProductNumber;
-                var productSvg = BarcodeService.GenerateCode128Svg(productCode, 700, 110);
+                var productSvg = BarcodeService.GenerateCode128Svg(productCode, 520, 72);
                 var expirySvg = IsScannableExpiry(item.ExpiryDate)
-                    ? BarcodeService.GenerateCode128Svg(item.ExpiryDate, 420, 64)
+                    ? BarcodeService.GenerateCode128Svg(item.ExpiryDate, 300, 40)
                     : string.Empty;
                 var expiryDisplay = FormatExpiryForDisplay(item.ExpiryDate);
                 <div class="item-row">
