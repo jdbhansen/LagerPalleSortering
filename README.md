@@ -62,8 +62,10 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 - UPC-A normaliseres internt til EAN-13.
 - Scanner-symbology prefix (fx `]E0`) håndteres.
 - Palle-scan er tolerant over for scanner-støj:
+  - keyboard-layout mismatch håndteres (`æ/Æ` tolkes som `:` i palle-scan, fx `PALLETæP-001`).
   - `+` normaliseres til `-` (fx `P+001` -> `P-001`).
   - irrelevante tegn ignoreres (fx ekstra bogstaver/symboler før/efter kode).
+- Anbefalet drift: match scanner keyboard-country med Windows input-layout for at undgå fejltegn i andre felter.
 
 ## Arkitektur
 - `Domain/`: kontrakter, regler, barcode-normalisering og barcode-interfaces/standardimplementeringer.

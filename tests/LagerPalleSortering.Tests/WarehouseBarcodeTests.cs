@@ -6,6 +6,8 @@ public sealed class WarehouseBarcodeTests
 {
     [Theory]
     [InlineData("PALLET:P-001", "P-001")]
+    [InlineData("PALLETæP-001", "P-001")]
+    [InlineData("PALLETÆP-001", "P-001")]
     [InlineData("PALLET:P+001", "P-001")]
     [InlineData("PALLET:P+001æ", "P-001")]
     [InlineData("abcPALLET:P+0æ0*1xyz", "P-001")]

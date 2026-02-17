@@ -30,8 +30,10 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - Prefix fra scanner-symbologi (fx `]E0`) understøttes.
 - Pallelabels forventes i format `PALLET:P-001`.
 - Ved palle-scan ignoreres scanner-støj:
+  - `PALLETæP-001` / `PALLETÆP-001` tolkes som `PALLET:P-001` (layout mismatch).
   - `P+001` tolkes som `P-001`.
   - ekstra tegn (fx `æ`, mellemrum, symboler) filtreres automatisk væk.
+- Anbefalet opsætning: scanner keyboard-layout og Windows input-sprog bør matche (fx begge Danish eller begge US).
 
 ## Funktioner i UI
 - `Registrer`: opretter/tilføjer til relevant palle.

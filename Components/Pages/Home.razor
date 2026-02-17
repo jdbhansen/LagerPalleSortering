@@ -111,7 +111,7 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">Scan palle-stregkode</label>
-                            <InputText id="palletScanInput" class="form-control form-control-lg" @bind-Value="scannedPalletCode" />
+                            <InputText id="palletScanInput" class="form-control form-control-lg" @bind-Value="scannedPalletCode" @bind-Value:event="oninput" />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label">Antal at bekræfte</label>

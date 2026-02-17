@@ -9,6 +9,8 @@ public sealed class DefaultPalletBarcodeService : IPalletBarcodeService
     private const string PalletIdPrefix = "P-";
     private const string LegacySeparator = "+";
     private const string CanonicalSeparator = "-";
+    private const char KeyboardDriftDanishAeLower = 'æ';
+    private const char KeyboardDriftDanishAeUpper = 'Æ';
 
     public string CreatePalletCode(string palletId)
     {
@@ -47,6 +49,9 @@ public sealed class DefaultPalletBarcodeService : IPalletBarcodeService
         var normalized = (value ?? string.Empty)
             .Trim()
             .ToUpperInvariant()
+            // Scanner keyboard wedge mismatch: Danish layout may emit Æ where code expects :
+            .Replace(KeyboardDriftDanishAeLower, ':')
+            .Replace(KeyboardDriftDanishAeUpper, ':')
             .Replace(LegacySeparator, CanonicalSeparator, StringComparison.Ordinal);
 
         return KeepAllowedPalletCodeCharacters(normalized);

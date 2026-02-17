@@ -70,10 +70,12 @@ LagerPalleSortering - Arbejdspakke
 
 1) Pak filerne ud i en mappe (fx C:\LagerPalleSortering).
 2) Dobbeltklik Start-Lager.cmd.
-3) Appen aabner i browser paa http://127.0.0.1:$Port
+3) Appen åbner i browser på http://127.0.0.1:$Port
 4) Luk appen ved at lukke terminal-vinduet.
 
 Data gemmes i App_Data\lager.db i samme mappe.
+Tip: Hvis scanner-layout ikke matcher Windows-layout, kan ':' blive til 'æ'.
+Palle-scan i appen håndterer dette, men matchende layout anbefales stadig.
 "@
 Set-Content -Path (Join-Path $publishDir "README_WORK.txt") -Value $readme -Encoding UTF8
 

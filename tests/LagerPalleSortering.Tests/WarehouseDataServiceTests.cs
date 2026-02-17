@@ -303,6 +303,22 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task ConfirmMoveByPalletScanAsync_WhenScannerMapsColonToDanishAe_StillConfirms()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("item-01", "20260101", 1);
+
+        var mappedSeparatorCode = $"PALLET:{register.PalletId}".Replace(":", "æ", StringComparison.Ordinal);
+        var confirm = await fixture.Service.ConfirmMoveByPalletScanAsync(mappedSeparatorCode);
+        var entries = await fixture.Service.GetRecentEntriesAsync(1);
+
+        Assert.True(confirm.Success);
+        Assert.Equal(register.PalletId, confirm.PalletId);
+        Assert.Single(entries);
+        Assert.True(entries[0].ConfirmedMoved);
+    }
+
+    [Fact]
     public async Task ConfirmMoveByPalletScanAsync_QuantityTwo_RequiresTwoScans()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");

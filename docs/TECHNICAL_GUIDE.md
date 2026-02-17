@@ -57,6 +57,7 @@
 4. Flyttebekræftelse er per kolli (`ConfirmedQuantity` stiger med 1 per scan).
 5. Fuldt bekræftet når `ConfirmedQuantity >= Quantity`.
 6. Palle-scan parser udtrækker kun `P-<digits>` og ignorerer øvrig scanner-støj.
+   Scanner-layout drift tolereres ved at mappe `æ/Æ` til `:` før parsing.
 7. Duplicate-scan guard kan afvise hurtige dublet-scans (konfigurerbar via `WarehouseRules`).
 
 ## Endpoints

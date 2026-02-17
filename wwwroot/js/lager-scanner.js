@@ -1,4 +1,12 @@
 window.lagerScanner = {
+    normalizeKeyboardLayoutDrift: function (value) {
+        if (typeof value !== "string" || value.length === 0) {
+            return value;
+        }
+
+        // Common mismatch when scanner and OS keyboard layouts differ.
+        return value.replaceAll("æ", ":").replaceAll("Æ", ":");
+    },
     init: function (productId, expiryId, quantityId, registerButtonId) {
         const product = document.getElementById(productId);
         const expiry = document.getElementById(expiryId);
@@ -46,11 +54,25 @@ window.lagerScanner = {
             return;
         }
 
+        const normalizePalletInput = function () {
+            const normalized = window.lagerScanner.normalizeKeyboardLayoutDrift(palletInput.value);
+            if (normalized === palletInput.value) {
+                return;
+            }
+
+            palletInput.value = normalized;
+            palletInput.dispatchEvent(new Event("input", { bubbles: true }));
+            palletInput.dispatchEvent(new Event("change", { bubbles: true }));
+        };
+
+        palletInput.addEventListener("input", normalizePalletInput);
+
         palletInput.addEventListener("keydown", function (event) {
             if (event.key !== "Enter") {
                 return;
             }
 
+            normalizePalletInput();
             event.preventDefault();
             confirmButton.click();
         });
