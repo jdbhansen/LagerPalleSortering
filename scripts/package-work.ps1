@@ -64,9 +64,11 @@ start "" "http://127.0.0.1:$Port"
 "@
 Set-Content -Path (Join-Path $publishDir "Start-Lager.cmd") -Value $startCmd -Encoding UTF8
 
+$generatedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $readme = @"
 LagerPalleSortering - Arbejdspakke
 ==================================
+Buildet: $generatedAt
 
 Start
 -----
