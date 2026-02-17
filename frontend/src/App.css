@@ -1,0 +1,11 @@
+.container-xl {
+  max-width: 1240px;
+}
+
+.card {
+  border-radius: 0.75rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}

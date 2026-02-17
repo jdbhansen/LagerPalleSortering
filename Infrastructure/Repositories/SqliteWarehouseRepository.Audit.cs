@@ -15,6 +15,7 @@ public sealed partial class SqliteWarehouseRepository
     {
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = tx;
+        // Audit is written in the same transaction as domain changes for traceability.
         cmd.CommandText = """
             INSERT INTO AuditEntries(Timestamp, Action, Details, MachineName)
             VALUES($ts, $action, $details, $machine);

@@ -1,4 +1,5 @@
 using LagerPalleSortering.Components;
+using LagerPalleSortering.Api;
 using LagerPalleSortering.Application.Abstractions;
 using LagerPalleSortering.Application.Services;
 using LagerPalleSortering.Domain;
@@ -44,10 +45,11 @@ if (!disableHttpsRedirection)
 }
 
 app.UseAntiforgery();
-
-app.MapStaticAssets();
+// Required so Vite-built React assets in wwwroot/app/assets are served in prod/test.
+app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapWarehouseApiEndpoints();
 
 app.MapGet("/export/csv", async (IWarehouseExportService exportService, CancellationToken cancellationToken) =>
 {
@@ -98,4 +100,12 @@ app.MapGet("/metrics", (IOperationalMetrics metrics) =>
     return Results.Ok(snapshot);
 });
 
+app.MapGet("/", () => Results.Redirect("/app"));
+// Let React Router own non-file routes under /app (e.g. /app/history).
+app.MapFallbackToFile("/app/{*path:nonfile}", "app/index.html");
+
 app.Run();
+
+public partial class Program
+{
+}

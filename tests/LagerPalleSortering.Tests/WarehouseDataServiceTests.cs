@@ -341,6 +341,53 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task ConfirmMoveBatchByPalletScanAsync_WhenFullyConfirmed_ReturnsSuccessStatus()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("item-02", "20260101", 2);
+
+        var result = await fixture.Service.ConfirmMoveBatchByPalletScanAsync($"PALLET:{register.PalletId}", 2);
+        var entries = await fixture.Service.GetRecentEntriesAsync(1);
+
+        Assert.Equal("success", result.Status);
+        Assert.Equal(2, result.Confirmed);
+        Assert.Equal(2, result.Requested);
+        Assert.Single(entries);
+        Assert.True(entries[0].ConfirmedMoved);
+        Assert.Equal(2, entries[0].ConfirmedQuantity);
+    }
+
+    [Fact]
+    public async Task ConfirmMoveBatchByPalletScanAsync_WhenPartiallyConfirmed_ReturnsWarningStatus()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+        var register = await fixture.Service.RegisterColliAsync("item-03", "20260101", 1);
+
+        var result = await fixture.Service.ConfirmMoveBatchByPalletScanAsync($"PALLET:{register.PalletId}", 2);
+        var entries = await fixture.Service.GetRecentEntriesAsync(1);
+
+        Assert.Equal("warning", result.Status);
+        Assert.Equal(1, result.Confirmed);
+        Assert.Equal(2, result.Requested);
+        Assert.Single(entries);
+        Assert.True(entries[0].ConfirmedMoved);
+        Assert.Equal(1, entries[0].ConfirmedQuantity);
+    }
+
+    [Fact]
+    public async Task ConfirmMoveBatchByPalletScanAsync_WhenCountIsNonPositive_ReturnsErrorStatus()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var result = await fixture.Service.ConfirmMoveBatchByPalletScanAsync("PALLET:P-001", 0);
+
+        Assert.Equal("error", result.Status);
+        Assert.Equal(0, result.Confirmed);
+        Assert.Equal(0, result.Requested);
+        Assert.Contains("større end 0", result.Message);
+    }
+
+    [Fact]
     public async Task ConfirmMoveByPalletScanAsync_InvalidCode_ReturnsError()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");

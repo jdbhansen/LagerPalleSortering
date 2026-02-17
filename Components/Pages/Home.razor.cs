@@ -137,38 +137,24 @@ public partial class Home
             return;
         }
 
-        var confirmed = 0;
-        string lastMessage = string.Empty;
-        string? palletId = null;
+        var batchResult = await DataService.ConfirmMoveBatchByPalletScanAsync(
+            confirmationForm.ScannedPalletCode,
+            confirmationForm.ConfirmScanCount);
 
-        // Confirm one physical colli per iteration.
-        for (var i = 0; i < confirmationForm.ConfirmScanCount; i++)
+        if (batchResult.Status == "success")
         {
-            var result = await DataService.ConfirmMoveByPalletScanAsync(confirmationForm.ScannedPalletCode, bypassDuplicateGuard: i > 0);
-            lastMessage = result.Message;
-            palletId = result.PalletId;
-            if (!result.Success)
-            {
-                break;
-            }
-
-            confirmed++;
-        }
-
-        if (confirmed == confirmationForm.ConfirmScanCount)
-        {
-            SetSuccessStatus($"Flytning bekræftet: {confirmed} kolli på {palletId}.");
+            SetSuccessStatus(batchResult.Message);
             confirmationForm.ScannedPalletCode = string.Empty;
             await ReloadDataAsync();
         }
-        else if (confirmed > 0)
+        else if (batchResult.Status == "warning")
         {
-            SetWarningStatus($"Delvis bekræftelse: {confirmed}/{confirmationForm.ConfirmScanCount}. {lastMessage}");
+            SetWarningStatus(batchResult.Message);
             await ReloadDataAsync();
         }
         else
         {
-            SetErrorStatus(lastMessage);
+            SetErrorStatus(batchResult.Message);
         }
 
         await FocusAsync(PalletScanInputId);

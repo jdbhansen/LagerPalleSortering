@@ -95,3 +95,23 @@ public sealed record MoveConfirmationResult(
     public static MoveConfirmationResult Fail(string message) =>
         new(false, message, null, null);
 }
+
+/// <summary>
+/// Aggregated result for confirming multiple colli by repeated pallet scans.
+/// </summary>
+public sealed record MoveBatchConfirmationResult(
+    string Status,
+    string Message,
+    string? PalletId,
+    int Confirmed,
+    int Requested)
+{
+    public static MoveBatchConfirmationResult Success(string message, string? palletId, int confirmed, int requested) =>
+        new("success", message, palletId, confirmed, requested);
+
+    public static MoveBatchConfirmationResult Warning(string message, string? palletId, int confirmed, int requested) =>
+        new("warning", message, palletId, confirmed, requested);
+
+    public static MoveBatchConfirmationResult Error(string message, string? palletId = null, int confirmed = 0, int requested = 0) =>
+        new("error", message, palletId, confirmed, requested);
+}

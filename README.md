@@ -1,21 +1,23 @@
 # LagerPalleSortering
 
-Intern Blazor-app til varemodtagelse og palle-styring i lagerdrift.
+Intern app til varemodtagelse og palle-styring i lagerdrift.
+Stack: React frontend + ASP.NET backend + SQLite.
 
-## Start Her
+## Start her
 - Kør app lokalt: `dotnet run`
-- Verificer build + tests: `.\scripts\verify.ps1`
-- Lav work package: `.\scripts\package-work.ps1`
+- Build + test: `./scripts/verify.ps1`
+- Byg work package: `./scripts/package-work.ps1`
 
 ## Indhold
 - [Formål](#formål)
 - [Dokumentation](#dokumentation)
 - [Nøglefunktioner](#nøglefunktioner)
 - [Hurtig start](#hurtig-start)
-- [Verificering](#verificering)
-- [Tag med på arbejde (portable testpakke)](#tag-med-på-arbejde-portable-testpakke)
-- [Eksport og drift endpoints](#eksport-og-drift-endpoints)
+- [Test og kvalitet](#test-og-kvalitet)
+- [Work package (arbejds-pc)](#work-package-arbejds-pc)
+- [Endpoints](#endpoints)
 - [Konfiguration](#konfiguration)
+- [Navngivning og kodepraksis](#navngivning-og-kodepraksis)
 - [Arkitektur](#arkitektur)
 - [Git LFS](#git-lfs)
 
@@ -24,113 +26,85 @@ Appen reducerer fejl i palle-placering ved at styre registrering, palleforslag, 
 
 ## Dokumentation
 - Brugerguide: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
+- Operator-flow (React): [`docs/OPERATOR_FLOW.md`](docs/OPERATOR_FLOW.md)
 - Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](docs/TECHNICAL_GUIDE.md)
 - Drift/fejlsøgning: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+- Frontend-noter: [`frontend/README.md`](frontend/README.md)
 - Work package zip i repo: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
 
 ## Nøglefunktioner
-- Registrering af `varenummer`, `holdbarhed (YYYYMMDD, gyldig dato)` og `antal kolli`.
-- Automatisk pallevalg med guardrails:
-- Maks 4 vare+dato-varianter pr. palle.
-- Samme stregkode med forskellig holdbarhed må ikke blandes på samme palle.
-- Print af pallelabel med Code128 stregkode (`PALLET:P-001`).
-- Print af palleindhold med scanbare produkt-stregkoder, holdbarhedsdato og antal.
-- Flyttebekræftelse via palle-scan med kolli-tæller (`ConfirmedQuantity/Quantity`).
-- Double-scan guard mod utilsigtede hurtige dublet-scans (konfigurerbar).
-- Persistens i SQLite (`App_Data/lager.db`).
-- Backup (`/backup/db`) og restore direkte i UI.
-- Audit-log for kritiske handlinger (registrer, luk, bekræft, undo, clear, backup/restore) gemmes i databasen.
-- Eksport til CSV og Excel.
-- Drift endpoints: `/health` og `/metrics`.
-- Scanner-optimeret inputflow (Enter-baseret).
-- Skiftbar UI-tilstand med `Simpel scanner-visning` til håndscanner-brug.
-- Scanner-submit læser aktuelle input-værdier direkte fra DOM via JS interop for at undgå timing-mismatch mellem scanner og Blazor-binding.
-- Operator-status vises med tydelig alert-styling i toppen af siden.
-- "Database restore" er placeret nederst på forsiden for at mindske fejlklik i primært scan-flow.
-
-## Tastaturgenveje
-- `Enter` i varenummer: flytter fokus til holdbarhed.
-- `Enter` i holdbarhed/antal: registrerer kolli.
-- `Enter` i palle-scan/antal at bekræfte: bekræfter flyt.
-- `Alt+1`: fokus på varenummer.
-- `Alt+2`: fokus på palle-scan.
-- `Alt+R`: registrer kolli.
-- `Alt+B`: bekræft flyt.
-- `Alt+U`: fortryd seneste.
-- `Esc`: annuller "ryd database"-advarsel (når den vises).
-
-## Barcode support
-- Varekoder: EAN-8, EAN-13, UPC-A.
-- UPC-A normaliseres internt til EAN-13.
-- Scanner-symbology prefix (fx `]E0`) håndteres.
-- Palle-scan er tolerant over for scanner-støj:
-  - keyboard-layout mismatch håndteres (`æ/Æ` tolkes som `:` i palle-scan, fx `PALLETæP-001`).
-  - `+` normaliseres til `-` (fx `P+001` -> `P-001`).
-  - irrelevante tegn ignoreres (fx ekstra bogstaver/symboler før/efter kode).
-- Anbefalet drift: match scanner keyboard-country med Windows input-layout for at undgå fejltegn i andre felter.
-
-## Arkitektur
-- `Domain/`: kontrakter, regler, barcode-normalisering og barcode-interfaces/standardimplementeringer.
-- `Application/`: use-cases og serviceabstraktioner.
-- `Infrastructure/`: SQLite repository + migration/query-logik.
-- `Components/`: Blazor UI (`Home` + panel-komponenter for simpel/avanceret scanner-visning).
-- `Services/`: UI-nære services (fx `IBarcodeService` + `BarcodeService`, `ILagerScannerClient` + `LagerScannerClient` inkl. fokus/init og læsning af aktuelle input-værdier).
+- Registrering af `varenummer`, `holdbarhed (YYYYMMDD)` og `antal kolli`
+- Automatisk pallevalg med guardrails
+- Maks 4 vare+dato-varianter pr. palle
+- Samme stregkode med forskellig holdbarhed må ikke blandes på samme palle
+- Flyttebekræftelse via palle-scan med kolli-tæller
+- Backup/restore af database i UI
+- Eksport til CSV/Excel
+- Health + metrics endpoints
+- Simpel scanner-visning til håndscanner-drift
+- Datostregkode i React UI (markeret tydeligt som dato/holdbarhed)
 
 ## Hurtig start
-Forudsætning: .NET SDK 10.
+Forudsætning: .NET SDK 10 og Node.js LTS.
 
 ```powershell
 dotnet run
 ```
 
-Appen starter på lokal URL vist i terminalen.
+- Appen starter på lokal URL vist i terminalen.
+- React frontend serveres på `/app`.
+- Legacy Blazor-side findes på `/legacy`.
 
-## Verificering
-Anbefalet kommando (byg + test, inkl. håndtering af testhost fil-lock):
+### Frontend build (React)
 
 ```powershell
-.\scripts\verify.ps1
+cd frontend
+npm install
+npm run build
+cd ..
 ```
 
-Alternativt:
+Build-output skrives til `wwwroot/app`.
+
+## Test og kvalitet
+Anbefalet:
+
+```powershell
+./scripts/verify.ps1
+```
+
+Manuelt:
 
 ```powershell
 dotnet build LagerPalleSortering.slnx
-dotnet test LagerPalleSortering.slnx --no-build
+dotnet test LagerPalleSortering.slnx
+cd frontend
+npm run lint
+npm run test
+npm run build
+cd ..
+npm run test:e2e
 ```
 
-Kun sanity/smoke tests:
+## Work package (arbejds-pc)
+Byg transportabel Windows-pakke (self-contained):
 
 ```powershell
-dotnet test LagerPalleSortering.slnx --filter "Category=Sanity"
-```
-
-CI i GitHub Actions kører restore + build + test på Windows for `push` til `master` og på `pull_request`.
-Derudover kører CI:
-- Work-package sync check (hash-match mellem genereret og tracked zip)
-- `dotnet format --verify-no-changes`
-- Coverage gate (line total >= 65%)
-- Playwright UI sanity tests
-
-## Tag med på arbejde (portable testpakke)
-Byg en transportabel Windows-pakke (self-contained) med startscript:
-
-```powershell
-.\scripts\package-work.ps1
+./scripts/package-work.ps1
 ```
 
 Output:
 - Mappe: `..\LagerPalleSortering-work-package\app`
 - Zip: `..\LagerPalleSortering-work-package\LagerPalleSortering-work.zip`
-- Repo-download: [`work-package/LagerPalleSortering-work.zip`](work-package/LagerPalleSortering-work.zip)
-- Scriptet synkroniserer automatisk den tracked zip i `work-package/` (Git LFS).
+- Tracked zip: `work-package/LagerPalleSortering-work.zip`
 
-På arbejds-PC:
-1. Pak zip-filen ud.
+På arbejds-pc:
+1. Pak zip ud.
 2. Kør `Start-Lager.cmd`.
 3. Appen starter på `http://127.0.0.1:5050`.
 
-## Eksport og drift endpoints
+## Endpoints
+- API: `/api/warehouse/*`
 - CSV: `GET /export/csv`
 - Excel: `GET /export/excel`
 - DB backup: `GET /backup/db`
@@ -148,6 +122,27 @@ På arbejds-PC:
 }
 ```
 
+## Navngivning og kodepraksis
+- API-funktioner bruger verber (`registerWarehouseColli`, `confirmWarehouseMove`)
+- Typer bruger substantiv + suffiks (`WarehouseDashboardResponse`, `WarehouseOperationResponse`)
+- Komponenter navngives efter ansvar (`RegisterColliCard`, `ConfirmMoveCard`)
+- Hooks prefikses med `use` og indeholder sideorkestrering (`useWarehousePage`)
+- Kommentarer bruges kun ved ikke-triviel intent, ikke til linje-for-linje forklaring
+
+## Arkitektur
+- `frontend/`: React UI (feature-opdelt warehouse-modul)
+- `Api/`: Minimal API endpoints + API contracts
+- `Domain/`: kontrakter/regler/barcode-domæne
+- `Application/`: use-cases og services
+- `Infrastructure/`: SQLite repository og migration/query logik
+- `Components/`: Blazor print/layout/legacy-sider
+- `Services/`: UI-nære services (barcode + scanner interop)
+
 ## Git LFS
-- `work-package/*.zip` tracks via Git LFS.
-- Ved klon på ny maskine: `git lfs install` og `git lfs pull`.
+- `work-package/*.zip` er tracket via Git LFS.
+- Ny maskine:
+
+```powershell
+git lfs install
+git lfs pull
+```

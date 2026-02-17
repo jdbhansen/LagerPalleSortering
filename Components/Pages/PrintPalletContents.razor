@@ -22,7 +22,10 @@
             @foreach (var item in items)
             {
                 var productCode = item.ProductNumber;
-                var svg = BarcodeService.GenerateCode128Svg(productCode, 700, 110);
+                var productSvg = BarcodeService.GenerateCode128Svg(productCode, 700, 110);
+                var expirySvg = IsScannableExpiry(item.ExpiryDate)
+                    ? BarcodeService.GenerateCode128Svg(item.ExpiryDate, 420, 64)
+                    : string.Empty;
                 <div class="item-row">
                     <div class="item-header">
                         <strong>Vare:</strong> @item.ProductNumber
@@ -31,10 +34,17 @@
                         <span class="item-sep">|</span>
                         <strong>Antal:</strong> @item.Quantity
                     </div>
-                    @if (!string.IsNullOrWhiteSpace(svg))
+                    @if (!string.IsNullOrWhiteSpace(productSvg))
                     {
-                        <div class="item-barcode">@((MarkupString)svg)</div>
+                        <div class="item-barcode">@((MarkupString)productSvg)</div>
                         <div class="item-code">@productCode</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(expirySvg))
+                    {
+                        @* Explicit visual label to avoid confusion with product barcode. *@
+                        <div class="item-expiry-label">Dato / Holdbarhed (ikke varenummer)</div>
+                        <div class="item-expiry-barcode">@((MarkupString)expirySvg)</div>
+                        <div class="item-expiry-code">@item.ExpiryDate</div>
                     }
                 </div>
             }
@@ -75,5 +85,12 @@
     private async Task HandleBackAsync()
     {
         await JS.InvokeVoidAsync("lagerPrint.closePopupTabOrNavigateHome");
+    }
+
+    private static bool IsScannableExpiry(string expiryDate)
+    {
+        return !string.IsNullOrWhiteSpace(expiryDate)
+            && expiryDate.Length == 8
+            && expiryDate.All(char.IsDigit);
     }
 }
