@@ -8,6 +8,34 @@ namespace LagerPalleSortering.Tests;
 public sealed class WarehouseApiEndpointsTests
 {
     [Fact]
+    public async Task RootEndpoint_RedirectsToApp()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient(new()
+        {
+            AllowAutoRedirect = false
+        });
+
+        var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/app", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task AppFallback_ForClientRoute_ReturnsIndexHtml()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/app/warehouse/history");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("<!doctype html>", html, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task DashboardEndpoint_WhenFreshDatabase_ReturnsEmptyCollections()
     {
         using var factory = new WarehouseApiWebApplicationFactory();
@@ -118,5 +146,57 @@ public sealed class WarehouseApiEndpointsTests
         Assert.Equal(HttpStatusCode.OK, dashboardResponse.StatusCode);
         Assert.NotNull(dashboardPayload);
         Assert.Single(dashboardPayload.OpenPallets);
+    }
+
+    [Fact]
+    public async Task ConfirmEndpoint_WithInvalidCount_ReturnsBadRequest()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/warehouse/confirm",
+            new ConfirmMoveApiRequest("PALLET:P-001", 0));
+        var payload = await response.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Equal("error", payload.Type);
+    }
+
+    [Fact]
+    public async Task RestoreEndpoint_WithoutFile_ReturnsBadRequest()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new ByteArrayContent(Array.Empty<byte>()), "file", "empty.db");
+        var response = await client.PostAsync("/api/warehouse/restore", content);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("Vælg en backupfil først", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task HealthAndMetricsEndpoints_ReturnSnapshots()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var healthResponse = await client.GetAsync("/health");
+        var healthBody = await healthResponse.Content.ReadAsStringAsync();
+
+        var metricsResponse = await client.GetAsync("/metrics");
+        var metricsBody = await metricsResponse.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
+        Assert.Contains("\"status\"", healthBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"warehouse\"", healthBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"metrics\"", healthBody, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Equal(HttpStatusCode.OK, metricsResponse.StatusCode);
+        Assert.Contains("registerAttempts", metricsBody, StringComparison.OrdinalIgnoreCase);
     }
 }
