@@ -126,6 +126,7 @@
                                             <div class="d-inline-flex flex-wrap gap-1 justify-content-end">
                                                 <a class="btn btn-sm btn-outline-primary" href="@($"/print-label/{pallet.PalletId}")" target="_blank">Label</a>
                                                 <a class="btn btn-sm btn-outline-dark" href="@($"/print-pallet-contents/{pallet.PalletId}")" target="_blank">Indhold</a>
+                                                <a class="btn btn-sm btn-outline-dark" href="@($"/print-pallet-contents/{pallet.PalletId}?format=label190x100")" target="_blank">Indhold 190x100</a>
                                                 <button class="btn btn-sm btn-primary" @onclick="() => CloseAndPrintContentsAsync(pallet.PalletId)">Luk + print</button>
                                                 <button class="btn btn-sm btn-outline-secondary" @onclick="() => ClosePalletAsync(pallet.PalletId)">Luk</button>
                                             </div>
@@ -186,7 +187,10 @@
                                             }
                                         </td>
                                         <td>
-                                            <a class="btn btn-sm btn-outline-dark" href="@($"/print-pallet-contents/{entry.PalletId}")" target="_blank">Print indhold</a>
+                                            <div class="d-inline-flex flex-wrap gap-1">
+                                                <a class="btn btn-sm btn-outline-dark" href="@($"/print-pallet-contents/{entry.PalletId}")" target="_blank">Print indhold</a>
+                                                <a class="btn btn-sm btn-outline-dark" href="@($"/print-pallet-contents/{entry.PalletId}?format=label190x100")" target="_blank">190x100</a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }

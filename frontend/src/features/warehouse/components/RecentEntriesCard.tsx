@@ -72,14 +72,24 @@ export function RecentEntriesCard({ entries, onUndoLastEntry, onError }: RecentE
                     )}
                   </td>
                   <td>
-                    <a
-                      className="btn btn-sm btn-outline-dark"
-                      href={`/print-pallet-contents/${encodeURIComponent(entry.palletId)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Print indhold
-                    </a>
+                    <div className="d-inline-flex flex-wrap gap-1">
+                      <a
+                        className="btn btn-sm btn-outline-dark"
+                        href={`/print-pallet-contents/${encodeURIComponent(entry.palletId)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Print indhold
+                      </a>
+                      <a
+                        className="btn btn-sm btn-outline-dark"
+                        href={`/print-pallet-contents/${encodeURIComponent(entry.palletId)}?format=label190x100`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        190x100
+                      </a>
+                    </div>
                   </td>
                 </tr>
               );

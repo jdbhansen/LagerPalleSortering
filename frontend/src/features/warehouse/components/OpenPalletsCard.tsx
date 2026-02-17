@@ -40,6 +40,7 @@ export function OpenPalletsCard({ pallets, onClosePallet, onError }: OpenPallets
                   <div className="d-inline-flex flex-wrap gap-1 justify-content-end">
                     <a className="btn btn-sm btn-outline-primary" href={`/print-label/${encodeURIComponent(pallet.palletId)}`} target="_blank" rel="noreferrer">Label</a>
                     <a className="btn btn-sm btn-outline-dark" href={`/print-pallet-contents/${encodeURIComponent(pallet.palletId)}`} target="_blank" rel="noreferrer">Indhold</a>
+                    <a className="btn btn-sm btn-outline-dark" href={`/print-pallet-contents/${encodeURIComponent(pallet.palletId)}?format=label190x100`} target="_blank" rel="noreferrer">Indhold 190x100</a>
                     <button
                       className="btn btn-sm btn-primary"
                       type="button"

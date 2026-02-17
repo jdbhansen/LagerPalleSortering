@@ -4,14 +4,18 @@
 @inject IJSRuntime JS
 @inject IWarehouseDataService DataService
 @inject IBarcodeService BarcodeService
+@using System.Net
 
 <PageTitle>Print Palle Indhold</PageTitle>
 
 <div class="contents-page">
-    <div class="contents-sheet">
-        <div class="sheet-title">Palle Indhold</div>
-        <div class="sheet-pallet">Palle: @PalletId</div>
-        <div class="sheet-date">Udskrevet: @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</div>
+    <div class="contents-sheet @(IsLabel190x100 ? "contents-sheet-label-190x100" : string.Empty)">
+        @if (!IsLabel190x100)
+        {
+            <div class="sheet-title">Palle Indhold</div>
+            <div class="sheet-pallet">Palle: @PalletId</div>
+            <div class="sheet-date">Udskrevet: @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</div>
+        }
 
         @if (items.Count == 0)
         {
@@ -22,32 +26,51 @@
             @foreach (var item in items)
             {
                 var productCode = item.ProductNumber;
-                var productSvg = BarcodeService.GenerateCode128Svg(productCode, 520, 72);
+                var productSvg = IsLabel190x100
+                    ? BarcodeService.GenerateCode128Svg(productCode, 460, 62)
+                    : BarcodeService.GenerateCode128Svg(productCode, 520, 72);
                 var expirySvg = IsScannableExpiry(item.ExpiryDate)
-                    ? BarcodeService.GenerateCode128Svg(item.ExpiryDate, 300, 40)
+                    ? IsLabel190x100
+                        ? BarcodeService.GenerateCode128Svg(item.ExpiryDate, 260, 36)
+                        : BarcodeService.GenerateCode128Svg(item.ExpiryDate, 300, 40)
                     : string.Empty;
                 var expiryDisplay = FormatExpiryForDisplay(item.ExpiryDate);
-                <div class="item-row">
-                    <div class="item-header">
-                        <strong>Vare:</strong> @item.ProductNumber
-                        <span class="item-sep">|</span>
-                        <strong>Holdbarhed:</strong> <span class="item-expiry">@expiryDisplay</span>
-                        <span class="item-sep">|</span>
-                        <strong>Antal:</strong> @item.Quantity
+                @if (IsLabel190x100)
+                {
+                    var labelSvg = BuildLabel190x100Svg(
+                        PalletId,
+                        item.ProductNumber,
+                        expiryDisplay,
+                        item.Quantity,
+                        productCode,
+                        productSvg,
+                        expirySvg);
+                    <div class="label190x100-page">@((MarkupString)labelSvg)</div>
+                }
+                else
+                {
+                    <div class="item-row">
+                        <div class="item-header">
+                            <strong>Vare:</strong> @item.ProductNumber
+                            <span class="item-sep">|</span>
+                            <strong>Holdbarhed:</strong> <span class="item-expiry">@expiryDisplay</span>
+                            <span class="item-sep">|</span>
+                            <strong>Antal:</strong> @item.Quantity
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(productSvg))
+                        {
+                            <div class="item-barcode">@((MarkupString)productSvg)</div>
+                            <div class="item-code">@productCode</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(expirySvg))
+                        {
+                            @* Explicit visual label to avoid confusion with product barcode. *@
+                            <div class="item-expiry-label">Dato / Holdbarhed (ikke varenummer)</div>
+                            <div class="item-expiry-barcode">@((MarkupString)expirySvg)</div>
+                            <div class="item-expiry-code">@expiryDisplay</div>
+                        }
                     </div>
-                    @if (!string.IsNullOrWhiteSpace(productSvg))
-                    {
-                        <div class="item-barcode">@((MarkupString)productSvg)</div>
-                        <div class="item-code">@productCode</div>
-                    }
-                    @if (!string.IsNullOrWhiteSpace(expirySvg))
-                    {
-                        @* Explicit visual label to avoid confusion with product barcode. *@
-                        <div class="item-expiry-label">Dato / Holdbarhed (ikke varenummer)</div>
-                        <div class="item-expiry-barcode">@((MarkupString)expirySvg)</div>
-                        <div class="item-expiry-code">@expiryDisplay</div>
-                    }
-                </div>
+                }
             }
         }
     </div>
@@ -62,7 +85,11 @@
     [Parameter]
     public string PalletId { get; set; } = string.Empty;
 
+    [SupplyParameterFromQuery(Name = "format")]
+    public string? PrintFormat { get; set; }
+
     private readonly List<PalletContentItemRecord> items = new();
+    private bool IsLabel190x100 => string.Equals(PrintFormat, "label190x100", StringComparison.OrdinalIgnoreCase);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -103,5 +130,71 @@
         }
 
         return $"{expiryDate[..4]}-{expiryDate[4..6]}-{expiryDate[6..8]}";
+    }
+
+    private static string BuildLabel190x100Svg(
+        string palletId,
+        string productNumber,
+        string expiryDisplay,
+        int quantity,
+        string productCode,
+        string productBarcodeSvg,
+        string expiryBarcodeSvg)
+    {
+        var productBarcodeGroup = BuildBarcodeGroup(productBarcodeSvg, 460, 62, 80, 300, 1740, 260);
+        var expiryBarcodeGroup = string.IsNullOrWhiteSpace(expiryBarcodeSvg)
+            ? string.Empty
+            : BuildBarcodeGroup(expiryBarcodeSvg, 260, 36, 650, 730, 600, 170);
+
+        return $"""
+            <svg class="label190x100-svg" viewBox="0 0 1900 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Palle indhold">
+              <rect x="1" y="1" width="1898" height="998" fill="#fff" stroke="#000" stroke-width="2" />
+              <text x="950" y="66" text-anchor="middle" font-size="44" font-weight="700" fill="#111">Palle: {WebUtility.HtmlEncode(palletId)}</text>
+              <text x="950" y="118" text-anchor="middle" font-size="30" fill="#333">Vare: {WebUtility.HtmlEncode(productNumber)}</text>
+              <text x="950" y="162" text-anchor="middle" font-size="32" font-weight="700" fill="#222">Holdbarhed: {WebUtility.HtmlEncode(expiryDisplay)} | Antal: {quantity}</text>
+              {productBarcodeGroup}
+              <text x="950" y="600" text-anchor="middle" font-size="34" letter-spacing="2" fill="#222">{WebUtility.HtmlEncode(productCode)}</text>
+              <text x="950" y="676" text-anchor="middle" font-size="25" font-weight="700" fill="#334155">Dato / Holdbarhed (ikke varenummer)</text>
+              {expiryBarcodeGroup}
+              <text x="950" y="952" text-anchor="middle" font-size="26" fill="#475569">{WebUtility.HtmlEncode(expiryDisplay)}</text>
+            </svg>
+            """;
+    }
+
+    private static string BuildBarcodeGroup(
+        string barcodeSvg,
+        int sourceWidth,
+        int sourceHeight,
+        int x,
+        int y,
+        int targetWidth,
+        int targetHeight)
+    {
+        if (string.IsNullOrWhiteSpace(barcodeSvg))
+        {
+            return string.Empty;
+        }
+
+        var inner = ExtractSvgInner(barcodeSvg);
+        if (string.IsNullOrWhiteSpace(inner))
+        {
+            return string.Empty;
+        }
+
+        var scaleX = targetWidth / (double)sourceWidth;
+        var scaleY = targetHeight / (double)sourceHeight;
+        return $"""<g transform="translate({x} {y}) scale({scaleX.ToString(System.Globalization.CultureInfo.InvariantCulture)} {scaleY.ToString(System.Globalization.CultureInfo.InvariantCulture)})">{inner}</g>""";
+    }
+
+    private static string ExtractSvgInner(string svgMarkup)
+    {
+        var start = svgMarkup.IndexOf('>');
+        var end = svgMarkup.LastIndexOf("</svg>", StringComparison.OrdinalIgnoreCase);
+        if (start < 0 || end <= start)
+        {
+            return string.Empty;
+        }
+
+        return svgMarkup[(start + 1)..end];
     }
 }

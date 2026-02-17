@@ -108,23 +108,22 @@
 }
 
 @media print {
-    @page {
-        size: A4;
-        margin: 0;
-    }
-
     .contents-page {
         min-height: auto;
         padding: 0;
         margin: 0;
+        display: block;
     }
 
     .contents-sheet {
-        border: 0;
-        padding: 6mm;
+        /* Inherit printer paper size/margins instead of forcing A4 dimensions. */
+        width: auto;
         min-height: auto;
-        height: 297mm;
-        overflow: hidden;
+        height: auto;
+        max-width: none;
+        border: 0;
+        padding: 0;
+        overflow: visible;
     }
 
     .item-row {
@@ -134,5 +133,76 @@
 
     .screen-only {
         display: none !important;
+    }
+
+    .contents-sheet-label-190x100 {
+        page: pallet-contents-label-190x100;
+    }
+
+    .label190x100-page {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .label190x100-page:not(:last-child) {
+        page-break-after: always;
+        break-after: page;
+    }
+}
+
+@page pallet-contents-label-190x100 {
+    size: 190mm 100mm;
+    margin: 2mm;
+}
+
+@media print {
+    .contents-sheet-label-190x100 {
+        padding: 2mm;
+    }
+
+    .label190x100-page {
+        width: 186mm;
+        height: 96mm;
+        display: block;
+    }
+
+    .label190x100-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .contents-sheet-label-190x100 .sheet-title {
+        font-size: 1.05rem;
+    }
+
+    .contents-sheet-label-190x100 .sheet-pallet {
+        font-size: 0.92rem;
+    }
+
+    .contents-sheet-label-190x100 .sheet-date {
+        font-size: 0.72rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .contents-sheet-label-190x100 .item-header {
+        font-size: 0.82rem;
+    }
+
+    .contents-sheet-label-190x100 .item-expiry {
+        font-size: 0.9rem;
+    }
+
+    .contents-sheet-label-190x100 .item-code {
+        font-size: 0.65rem;
+    }
+
+    .contents-sheet-label-190x100 .item-expiry-label {
+        font-size: 0.55rem;
+        margin-top: 0.15rem;
+    }
+
+    .contents-sheet-label-190x100 .item-expiry-code {
+        font-size: 0.62rem;
     }
 }
