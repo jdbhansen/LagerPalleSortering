@@ -1,7 +1,7 @@
 using LagerPalleSortering.Domain;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
+using LagerPalleSortering.Services;
 
 namespace LagerPalleSortering.Components.Pages;
 
@@ -17,6 +17,9 @@ public partial class Home
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
+    [Inject]
+    private ILagerScannerClient ScannerClient { get; set; } = default!;
+
     private readonly HomeFormModel registrationForm = new() { Quantity = 1 };
     private readonly List<PalletRecord> openPallets = new();
     private readonly List<ScanEntryRecord> entries = new();
@@ -26,9 +29,12 @@ public partial class Home
     private string? lastSuggestedPalletId;
     private bool keepExpiryBetweenScans = true;
     private int confirmScanCount = 1;
+    private bool isSimpleScannerMode;
     private bool showClearDatabaseWarning;
     private IBrowserFile? restoreFile;
     private string? selectedRestoreFileName;
+    private bool shouldReinitializeScannerBindings = true;
+    private bool focusProductAfterRender = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,24 +43,36 @@ public partial class Home
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        _ = firstRender;
+
+        if (shouldReinitializeScannerBindings)
         {
-            return;
+            // Rebind after mode switches so newly rendered inputs keep scanner flow.
+            await ScannerClient.InitializeRegistrationFlowAsync(ProductInputId, "expiryInput", "quantityInput", "registerButton");
+            await ScannerClient.InitializePalletConfirmAsync(PalletScanInputId, "confirmMoveButton", ConfirmCountInputId);
+            await ScannerClient.InitializeHotkeysAsync(new LagerHotkeysOptions(
+                ProductInputId,
+                PalletScanInputId,
+                "registerButton",
+                "confirmMoveButton",
+                "undoLastButton",
+                "clearCancelButton"));
+            shouldReinitializeScannerBindings = false;
         }
 
-        // Register scanner-friendly keyboard behavior once on initial render.
-        await JS.InvokeVoidAsync("lagerScanner.init", "productInput", "expiryInput", "quantityInput", "registerButton");
-        await JS.InvokeVoidAsync("lagerScanner.initPalletConfirm", PalletScanInputId, "confirmMoveButton", ConfirmCountInputId);
-        await JS.InvokeVoidAsync("lagerScanner.initHotkeys", new
+        if (focusProductAfterRender)
         {
-            productInputId = ProductInputId,
-            palletInputId = PalletScanInputId,
-            registerButtonId = "registerButton",
-            confirmButtonId = "confirmMoveButton",
-            undoButtonId = "undoLastButton",
-            clearCancelButtonId = "clearCancelButton"
-        });
-        await FocusProductAsync();
+            focusProductAfterRender = false;
+            await FocusProductAsync();
+        }
+    }
+
+    private void ToggleScannerMode()
+    {
+        isSimpleScannerMode = !isSimpleScannerMode;
+        showClearDatabaseWarning = false;
+        shouldReinitializeScannerBindings = true;
+        focusProductAfterRender = true;
     }
 
     private async Task RegisterColliAsync()
@@ -142,7 +160,7 @@ public partial class Home
         await ReloadDataAsync();
 
         var url = Navigation.ToAbsoluteUri($"/print-pallet-contents/{palletId}").ToString();
-        await JS.InvokeVoidAsync("open", url, "_blank");
+        await ScannerClient.OpenInNewTabAsync(url);
         await FocusProductAsync();
     }
 
@@ -264,7 +282,7 @@ public partial class Home
 
     private async Task FocusAsync(string inputId)
     {
-        await JS.InvokeVoidAsync("lagerScanner.focus", inputId);
+        await ScannerClient.FocusAsync(inputId);
     }
 
     private async Task FocusProductAsync()

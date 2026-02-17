@@ -19,6 +19,7 @@ builder.Services.AddSingleton<IOperationalMetrics, OperationalMetricsService>();
 builder.Services.AddSingleton<IWarehouseDataService, WarehouseDataService>();
 builder.Services.AddSingleton<IWarehouseExportService, WarehouseExportService>();
 builder.Services.AddSingleton<IBarcodeService, BarcodeService>();
+builder.Services.AddScoped<ILagerScannerClient, LagerScannerClient>();
 
 var app = builder.Build();
 

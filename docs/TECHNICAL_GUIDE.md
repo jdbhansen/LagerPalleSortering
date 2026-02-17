@@ -34,9 +34,13 @@
     - `Common`: mapping/helpers.
 - `Components/`
   - Blazor UI (`Home`, `PrintLabel`, layout).
-  - `Home` bruger ensartet status-hjælpermetoder (success/warning/error) for konsekvent operator-feedback.
+  - Scanner-flow er delt i panel-komponenter:
+    - `ScannerSimplePanel` (forenklet håndscanner-visning)
+    - `ScannerAdvancedPanel` (fuld visning)
+  - `Home` orkestrerer tilstand, data-loading og status-hjælpermetoder (success/warning/error).
 - `Services/`
   - `IBarcodeService` + `BarcodeService` til Code128 SVG-generering i print-sider.
+  - `ILagerScannerClient` + `LagerScannerClient` til JS interop for scanner-fokus/hotkeys/init.
 
 ## Datamodel (SQLite)
 - `Pallets`
@@ -72,6 +76,7 @@
 - `SanityTests`: hurtig smoke-verifikation af kritiske flows.
 - `WarehouseBarcodeTests`: parser-/normaliseringstests for palle-scan.
 - `ProductBarcodeParserTests`: parser-/normaliseringstests for varestregkoder.
+- `LagerScannerClientTests`: enhedstests af scanner-interop interface/implementering.
 - `e2e/tests/app-health.spec.ts`: UI/endpoint sanity i Playwright.
 - `e2e/tests/ui-sanity.spec.ts`: stabile UI sanity-checks af centrale controls/sektioner.
 - Fælles fixture i `tests/.../TestInfrastructure`.

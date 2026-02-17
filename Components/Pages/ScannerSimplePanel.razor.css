@@ -1,0 +1,11 @@
+.scanner-simple-mode .scanner-simple-input {
+    min-height: 3.25rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.scanner-simple-mode .scanner-simple-button {
+    min-height: 3.25rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+}

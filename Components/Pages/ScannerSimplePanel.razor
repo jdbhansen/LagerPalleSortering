@@ -1,0 +1,94 @@
+<div class="scanner-simple-mode mb-3">
+    <div class="alert alert-info mb-3" role="alert">
+        Simpel scanner-visning: scan varenummer, scan/indtast dato, scan pallelabel og tryk Enter.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-body fw-semibold">1) Registrer kolli</div>
+                <div class="card-body">
+                    <EditForm Model="RegistrationForm" OnValidSubmit="HandleRegisterSubmitAsync">
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-5">
+                                <label class="form-label">Varenummer</label>
+                                <InputText id="productInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="RegistrationForm.ProductNumber" />
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <label class="form-label">Holdbarhed (YYYYMMDD)</label>
+                                <InputText id="expiryInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="RegistrationForm.ExpiryDateRaw" />
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label class="form-label">Antal kolli</label>
+                                <InputNumber id="quantityInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="RegistrationForm.Quantity" />
+                            </div>
+                            <div class="col-12 d-grid">
+                                <button id="registerButton" class="btn btn-primary btn-lg scanner-simple-button" type="submit">Registrer kolli</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-body fw-semibold">2) Bekræft flyt</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-8">
+                            <label class="form-label">Scan palle-stregkode</label>
+                            <InputText id="palletScanInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="ScannedPalletCode" @bind-Value:event="oninput" />
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <label class="form-label">Antal at bekræfte</label>
+                            <InputNumber id="confirmCountInput" class="form-control form-control-lg scanner-simple-input" @bind-Value="ConfirmScanCount" />
+                        </div>
+                        <div class="col-12 d-grid">
+                            <button id="confirmMoveButton" class="btn btn-success btn-lg scanner-simple-button" @onclick="HandleConfirmMoveAsync">Bekræft flyt</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(LastSuggestedPalletId))
+    {
+        <div class="alert alert-primary d-flex flex-wrap align-items-center gap-2 mt-3 mb-0" role="alert">
+            <span class="badge text-bg-primary">Foreslået palle</span>
+            <strong>@LastSuggestedPalletId</strong>
+            <a class="btn btn-sm btn-outline-primary ms-sm-auto" href="@($"/print-label/{LastSuggestedPalletId}")" target="_blank">Print label</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public HomeFormModel RegistrationForm { get; set; } = default!;
+
+    [Parameter]
+    public string ScannedPalletCode { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ScannedPalletCodeChanged { get; set; }
+
+    [Parameter]
+    public int ConfirmScanCount { get; set; } = 1;
+
+    [Parameter]
+    public EventCallback<int> ConfirmScanCountChanged { get; set; }
+
+    [Parameter]
+    public string? LastSuggestedPalletId { get; set; }
+
+    [Parameter]
+    public EventCallback OnRegisterColli { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirmMove { get; set; }
+
+    private Task HandleRegisterSubmitAsync() => OnRegisterColli.InvokeAsync();
+
+    private Task HandleConfirmMoveAsync() => OnConfirmMove.InvokeAsync();
+}

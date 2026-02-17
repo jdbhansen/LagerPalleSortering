@@ -36,6 +36,7 @@ LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert 
 - Anbefalet opsætning: scanner keyboard-layout og Windows input-sprog bør matche (fx begge Danish eller begge US).
 
 ## Funktioner i UI
+- `Skift til simpel scanner-visning`: viser en forenklet side med store felter/knapper til håndscanner-flow.
 - `Registrer`: opretter/tilføjer til relevant palle.
 - `Print`: udskriver label for valgt palle.
 - `Bekræft`: bekræfter flytning via palle-scan.

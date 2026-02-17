@@ -22,6 +22,7 @@ dotnet run
   - `GET /health`
   - `GET /metrics`
 - Restore-funktionen i UI ligger nederst på forsiden for at holde dagligt scan-flow adskilt fra driftsindgreb.
+- UI har en toggle til `Simpel scanner-visning` for hurtig håndscanner-betjening; brug `Avanceret visning` ved behov for eksport/restore/tabeller.
 
 ## Build og test (anbefalet)
 Brug projektets verifikationsscript:
