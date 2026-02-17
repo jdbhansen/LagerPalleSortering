@@ -1,4 +1,5 @@
 # Brugerguide
+Sidst opdateret: 2026-02-17.
 
 ## Hvad appen bruges til
 LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert kolli skal flyttes til.

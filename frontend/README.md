@@ -1,6 +1,7 @@
 # Frontend (React)
 
 React-frontend til LagerPalleSortering.
+Sidst opdateret: 2026-02-17.
 
 ## Struktur
 - `src/features/warehouse/`

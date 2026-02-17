@@ -2,6 +2,7 @@
 
 Intern app til varemodtagelse og palle-styring i lagerdrift.
 Stack: React frontend + ASP.NET backend + SQLite.
+Sidst opdateret: 2026-02-17.
 
 ## Start her
 - Kør app lokalt: `dotnet run`
@@ -127,6 +128,7 @@ På arbejds-pc:
 - Typer bruger substantiv + suffiks (`WarehouseDashboardResponse`, `WarehouseOperationResponse`)
 - Komponenter navngives efter ansvar (`RegisterColliCard`, `ConfirmMoveCard`)
 - Hooks prefikses med `use` og indeholder sideorkestrering (`useWarehousePage`)
+- API-klient i React følger interface-kontrakt (`WarehouseApiClientContract`) for testbarhed
 - Kommentarer bruges kun ved ikke-triviel intent, ikke til linje-for-linje forklaring
 
 ## Arkitektur

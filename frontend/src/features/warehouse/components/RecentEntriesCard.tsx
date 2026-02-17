@@ -1,5 +1,6 @@
 import type { WarehouseScanEntryRecord } from '../models';
 import { ScanBarcodeSvg } from './ScanBarcodeSvg';
+import { formatExpiryDateForDisplay } from '../utils/expiryDate';
 
 interface RecentEntriesCardProps {
   entries: WarehouseScanEntryRecord[];
@@ -43,12 +44,13 @@ export function RecentEntriesCard({ entries, onUndoLastEntry, onError }: RecentE
             {entries.map((entry) => {
               const timestamp = new Date(entry.timestamp).toLocaleTimeString('da-DK', { hour12: false });
               const hasScannableExpiry = /^\d{8}$/.test(entry.expiryDate);
+              const expiryDateDisplay = formatExpiryDateForDisplay(entry.expiryDate);
 
               return (
                 <tr key={entry.id}>
                   <td>{timestamp}</td>
                   <td>{entry.productNumber}</td>
-                  <td>{entry.expiryDate}</td>
+                  <td>{expiryDateDisplay}</td>
                   <td>
                     {hasScannableExpiry ? (
                       <div className="d-flex flex-column align-items-center">

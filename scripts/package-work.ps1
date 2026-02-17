@@ -65,10 +65,18 @@ start "" "http://127.0.0.1:$Port"
 Set-Content -Path (Join-Path $publishDir "Start-Lager.cmd") -Value $startCmd -Encoding UTF8
 
 $generatedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$buildCommit = "ukendt"
+try {
+    $buildCommit = (git -C $projectRoot rev-parse --short HEAD).Trim()
+}
+catch {
+    # Best effort metadata only.
+}
 $readme = @"
 LagerPalleSortering - Arbejdspakke
 ==================================
 Buildet: $generatedAt
+Commit: $buildCommit
 
 Start
 -----

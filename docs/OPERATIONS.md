@@ -1,4 +1,5 @@
 # Drift og Fejlsøgning
+Sidst opdateret: 2026-02-17.
 
 ## Drift
 Start app:
@@ -66,6 +67,10 @@ Work package er self-contained og kræver ikke installation af .NET/Node på arb
 3. `npm run test:e2e` grøn
 4. `./scripts/package-work.ps1` kørt
 5. Dokumentation opdateret
+
+## CI-note
+- Workflow bruger `concurrency.cancel-in-progress: true`.
+- Ældre runs kan derfor stå som `cancelled`, når nyere commit-run starter.
 
 ## Relaterede dokumenter
 - Projektoversigt: [`README.md`](../README.md)

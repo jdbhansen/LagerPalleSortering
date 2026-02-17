@@ -1,4 +1,5 @@
 # Operator Flow (React)
+Sidst opdateret: 2026-02-17.
 
 ## Formål
 Dokumenterer dagligt operator-flow i React-frontend (`/app`).

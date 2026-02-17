@@ -26,11 +26,12 @@
                 var expirySvg = IsScannableExpiry(item.ExpiryDate)
                     ? BarcodeService.GenerateCode128Svg(item.ExpiryDate, 420, 64)
                     : string.Empty;
+                var expiryDisplay = FormatExpiryForDisplay(item.ExpiryDate);
                 <div class="item-row">
                     <div class="item-header">
                         <strong>Vare:</strong> @item.ProductNumber
                         <span class="item-sep">|</span>
-                        <strong>Holdbarhed:</strong> <span class="item-expiry">@item.ExpiryDate</span>
+                        <strong>Holdbarhed:</strong> <span class="item-expiry">@expiryDisplay</span>
                         <span class="item-sep">|</span>
                         <strong>Antal:</strong> @item.Quantity
                     </div>
@@ -44,7 +45,7 @@
                         @* Explicit visual label to avoid confusion with product barcode. *@
                         <div class="item-expiry-label">Dato / Holdbarhed (ikke varenummer)</div>
                         <div class="item-expiry-barcode">@((MarkupString)expirySvg)</div>
-                        <div class="item-expiry-code">@item.ExpiryDate</div>
+                        <div class="item-expiry-code">@expiryDisplay</div>
                     }
                 </div>
             }
@@ -92,5 +93,15 @@
         return !string.IsNullOrWhiteSpace(expiryDate)
             && expiryDate.Length == 8
             && expiryDate.All(char.IsDigit);
+    }
+
+    private static string FormatExpiryForDisplay(string expiryDate)
+    {
+        if (!IsScannableExpiry(expiryDate))
+        {
+            return expiryDate;
+        }
+
+        return $"{expiryDate[..4]}-{expiryDate[4..6]}-{expiryDate[6..8]}";
     }
 }

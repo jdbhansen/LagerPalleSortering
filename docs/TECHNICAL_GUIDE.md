@@ -1,4 +1,5 @@
 # Teknisk Guide
+Sidst opdateret: 2026-02-17.
 
 ## Hurtig navigation
 - [Arkitekturoversigt](#arkitekturoversigt)
@@ -51,6 +52,7 @@ Warehouse endpoints under `/api/warehouse`:
 - `POST /restore`
 
 POST-endpoints er markeret med `DisableAntiforgery()` for scanner-/SPA-flow.
+Response-mapping for batch-bekræftelse er centraliseret i endpoint-hjælper for mindre duplikering.
 
 ## Navngivning
 - C# interfaces: `I`-prefiks (`IWarehouseDataService`)
@@ -58,6 +60,7 @@ POST-endpoints er markeret med `DisableAntiforgery()` for scanner-/SPA-flow.
 - React hooks: `use*`
 - React komponenter: PascalCase + ansvar (`OpenPalletsCard`)
 - API payloads: `*Request` / `*Response`
+- Frontend API-klient abstraheres via `WarehouseApiClientContract`
 
 ## Teststrategi
 - Unit tests (`tests/LagerPalleSortering.Tests`)

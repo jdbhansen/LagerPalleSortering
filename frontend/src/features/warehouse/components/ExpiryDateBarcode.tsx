@@ -1,5 +1,6 @@
 import JsBarcode from 'jsbarcode';
 import { useEffect, useRef } from 'react';
+import { formatExpiryDateForDisplay } from '../utils/expiryDate';
 
 interface ExpiryDateBarcodeProps {
   expiryDateRaw: string;
@@ -12,6 +13,7 @@ function isValidExpiryDateBarcodeInput(value: string): boolean {
 export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const isValid = isValidExpiryDateBarcodeInput(expiryDateRaw);
+  const displayDate = formatExpiryDateForDisplay(expiryDateRaw);
 
   useEffect(() => {
     if (!svgRef.current || !isValid) {
@@ -55,7 +57,7 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
   <div class="label">
     <div class="title">Dato / Holdbarhed</div>
     ${svgMarkup}
-    <div class="hint">${expiryDateRaw}</div>
+    <div class="hint">${displayDate}</div>
   </div>
   <script>window.print();</script>
 </body>
@@ -88,7 +90,7 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
           <div className="d-flex justify-content-center">
             <svg ref={svgRef} />
           </div>
-          <div className="small text-secondary text-center mt-1">{expiryDateRaw}</div>
+          <div className="small text-secondary text-center mt-1">{displayDate}</div>
         </div>
       )}
     </div>
