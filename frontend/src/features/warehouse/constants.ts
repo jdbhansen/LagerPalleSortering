@@ -14,4 +14,5 @@ export const warehouseDefaults = {
   registerQuantity: 1,
   printDelayMs: 100,
   focusDelayMs: 0,
+  dashboardRefreshMs: 10000,
 } as const;

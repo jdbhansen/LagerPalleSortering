@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   warehouseApiClient,
 } from '../api/warehouseApiClient';
@@ -7,6 +7,7 @@ import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../
 import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
+import { useAutoRefreshDashboard } from './useAutoRefreshDashboard';
 
 interface RegisterFormState {
   productNumber: string;
@@ -60,10 +61,10 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     [dashboard.entries],
   );
 
-  async function reloadDashboard() {
+  const reloadDashboard = useCallback(async () => {
     const latestDashboard = await apiClient.fetchWarehouseDashboard();
     setDashboard(latestDashboard);
-  }
+  }, [apiClient]);
 
   useEffect(() => {
     let isActive = true;
@@ -93,9 +94,15 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     };
   }, [apiClient]);
 
-  function reportClientError(error: unknown) {
+  const reportClientError = useCallback((error: unknown) => {
     setStatus({ type: 'error', message: toErrorMessage(error) });
-  }
+  }, []);
+
+  useAutoRefreshDashboard({
+    refresh: reloadDashboard,
+    onError: reportClientError,
+    enabled: !loading,
+  });
 
   function updateRegisterFormField<TField extends RegisterFormField>(
     field: TField,

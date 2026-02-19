@@ -9,6 +9,7 @@ import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
 import { warehouseBarcodeFormats, warehouseDefaults, warehouseStorageKeys } from '../constants';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
+import { useAutoRefreshDashboard } from './useAutoRefreshDashboard';
 
 const emptyDashboard: WarehouseDashboardResponse = {
   openPallets: [],
@@ -121,6 +122,16 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
   useEffect(() => {
     window.localStorage.setItem(warehouseStorageKeys.newSortingActive, started ? '1' : '0');
   }, [started]);
+
+  const reportClientError = useCallback((error: unknown) => {
+    setStatus({ type: 'error', message: toErrorMessage(error) });
+  }, []);
+
+  useAutoRefreshDashboard({
+    refresh: reloadDashboard,
+    onError: reportClientError,
+    enabled: !loading && !submitting,
+  });
 
   const startNewSorting = useCallback(() => {
     if (started) {
@@ -288,10 +299,6 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     }
 
     navigateTo(getPrintPalletContentsPath(palletId));
-  }, []);
-
-  const reportClientError = useCallback((error: unknown) => {
-    setStatus({ type: 'error', message: toErrorMessage(error) });
   }, []);
 
   return {
