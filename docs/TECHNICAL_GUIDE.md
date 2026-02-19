@@ -39,5 +39,6 @@ Sidst opdateret: 2026-02-19.
 - Backend: application abstractions (`IWarehouseDataService`, `IWarehouseRepository`, osv.)
 
 ## Teststatus
-- Frontend `npm run test` er midlertidigt deaktiveret (no-op) pga. tidligere hæng i Vitest.
+- Frontend tests kører med Vitest i `forks`-pool med `maxWorkers=1` og `fileParallelism=false` for stabil kørsel i CI/lokalt.
+- Testsuite fokuserer på stabile enhedstests (routing, formattering, App-view routing/state).
 - C# tests og e2e kører fortsat som normalt.

@@ -16,11 +16,10 @@ dotnet run
 ```powershell
 ./scripts/verify.ps1
 npm --prefix frontend run lint
+npm --prefix frontend run test
 npm --prefix frontend run build
 npm run test:e2e
 ```
-
-Bemærk: `npm --prefix frontend run test` er deaktiveret (no-op), indtil Vitest er genaktiveret.
 
 ## Fejlsøgning
 ### Appen virker låst efter inaktivitet

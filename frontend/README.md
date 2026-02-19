@@ -41,9 +41,8 @@ cd frontend
 npm install
 npm run dev
 npm run lint
+npm run test
 npm run build
 ```
-
-Bemærk: `npm run test` er deaktiveret (no-op).
 
 Build-output skrives til `../wwwroot/app`.

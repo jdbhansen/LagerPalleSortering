@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "node -e \"console.log('Vitest er deaktiveret for dette projekt.');\"",
-    "test:watch": "node -e \"console.log('Vitest watch er deaktiveret for dette projekt.');\"",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest --pool=forks --maxWorkers=1 --fileParallelism=false",
     "lint": "eslint .",
     "preview": "vite preview"
   },
