@@ -70,7 +70,7 @@ export function PalletContentsOverviewCard({
     return () => {
       active = false;
     };
-  }, [onError, selectedPalletId]);
+  }, [additionalPalletIds, onError, pallets, selectedPalletId]);
 
   return (
     <div className="card border-0 shadow-sm mb-3">
