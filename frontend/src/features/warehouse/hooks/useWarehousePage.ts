@@ -7,7 +7,6 @@ import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../
 import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
-import { useAutoRefreshDashboard } from './useAutoRefreshDashboard';
 
 interface RegisterFormState {
   productNumber: string;
@@ -97,12 +96,6 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
   const reportClientError = useCallback((error: unknown) => {
     setStatus({ type: 'error', message: toErrorMessage(error) });
   }, []);
-
-  useAutoRefreshDashboard({
-    refresh: reloadDashboard,
-    onError: reportClientError,
-    enabled: !loading,
-  });
 
   function updateRegisterFormField<TField extends RegisterFormField>(
     field: TField,

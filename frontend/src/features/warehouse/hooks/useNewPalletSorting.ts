@@ -9,7 +9,6 @@ import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
 import { warehouseBarcodeFormats, warehouseDefaults, warehouseStorageKeys } from '../constants';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
-import { useAutoRefreshDashboard } from './useAutoRefreshDashboard';
 
 const emptyDashboard: WarehouseDashboardResponse = {
   openPallets: [],
@@ -43,6 +42,7 @@ export interface NewPalletSortingViewModel {
   openColli: number;
   pendingConfirmations: number;
   recentClosedPalletIds: string[];
+  palletContentsRefreshToken: number;
   productInputRef: RefObject<HTMLInputElement | null>;
   palletInputRef: RefObject<HTMLInputElement | null>;
   reportClientError: (error: unknown) => void;
@@ -64,6 +64,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
   const [submitting, setSubmitting] = useState(false);
   const [dashboard, setDashboard] = useState<WarehouseDashboardResponse>(emptyDashboard);
   const [status, setStatus] = useState<WarehouseOperationResponse | null>(null);
+  const [palletContentsRefreshToken, setPalletContentsRefreshToken] = useState(0);
   const [formState, setFormState] = useState<NewPalletSortingFormState>(defaultFormState);
   const { productNumber, expiryDateRaw, scannedPalletCode, suggestedPalletId } = formState;
 
@@ -127,12 +128,6 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     setStatus({ type: 'error', message: toErrorMessage(error) });
   }, []);
 
-  useAutoRefreshDashboard({
-    refresh: reloadDashboard,
-    onError: reportClientError,
-    enabled: !loading && !submitting,
-  });
-
   const startNewSorting = useCallback(() => {
     if (started) {
       setStatus({ type: 'warning', message: 'Afslut den aktive pallesortering før du starter en ny.' });
@@ -195,6 +190,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
 
       updateFormField('scannedPalletCode', '');
       await reloadDashboard();
+      setPalletContentsRefreshToken((previous) => previous + 1);
 
       window.setTimeout(() => {
         palletInputRef.current?.focus();
@@ -233,6 +229,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
       updateFormField('productNumber', '');
       updateFormField('scannedPalletCode', '');
       await reloadDashboard();
+      setPalletContentsRefreshToken((previous) => previous + 1);
 
       window.setTimeout(() => {
         productInputRef.current?.focus();
@@ -260,6 +257,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
       }
 
       await reloadDashboard();
+      setPalletContentsRefreshToken((previous) => previous + 1);
       navigateTo(getPrintPalletContentsPath(suggestedPalletId));
     } catch (error: unknown) {
       setStatus({ type: 'error', message: toErrorMessage(error) });
@@ -278,6 +276,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
       const result = await apiClient.closeWarehousePallet(palletId);
       setStatus(result);
       await reloadDashboard();
+      setPalletContentsRefreshToken((previous) => previous + 1);
 
       if (result.type === 'success' && suggestedPalletId === palletId) {
         updateFormField('suggestedPalletId', '');
@@ -314,6 +313,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     openColli,
     pendingConfirmations,
     recentClosedPalletIds,
+    palletContentsRefreshToken,
     productInputRef,
     palletInputRef,
     setProductNumber: (value) => updateFormField('productNumber', value),

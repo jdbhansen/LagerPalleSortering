@@ -6,15 +6,19 @@ import { formatExpiryDateForDisplay } from '../utils/expiryDate';
 interface PalletContentsOverviewCardProps {
   pallets: WarehousePalletRecord[];
   additionalPalletIds?: string[];
+  refreshToken?: number;
   onError: (error: unknown) => void;
   onClosePallet?: (palletId: string) => Promise<void>;
   onPrintLabel?: (palletId: string) => void;
   closingPallet?: boolean;
 }
 
+const emptyAdditionalPalletIds: string[] = [];
+
 export function PalletContentsOverviewCard({
   pallets,
-  additionalPalletIds = [],
+  additionalPalletIds = emptyAdditionalPalletIds,
+  refreshToken = 0,
   onError,
   onClosePallet,
   onPrintLabel,
@@ -70,7 +74,7 @@ export function PalletContentsOverviewCard({
     return () => {
       active = false;
     };
-  }, [additionalPalletIds, onError, pallets, selectedPalletId]);
+  }, [onError, refreshToken, selectedPalletId]);
 
   return (
     <div className="card border-0 shadow-sm mb-3">

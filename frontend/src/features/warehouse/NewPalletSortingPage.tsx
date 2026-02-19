@@ -18,6 +18,7 @@ export function NewPalletSortingPage() {
     openColli,
     pendingConfirmations,
     recentClosedPalletIds,
+    palletContentsRefreshToken,
     productInputRef,
     palletInputRef,
     setProductNumber,
@@ -149,6 +150,7 @@ export function NewPalletSortingPage() {
         <PalletContentsOverviewCard
           pallets={dashboard.openPallets}
           additionalPalletIds={recentClosedPalletIds}
+          refreshToken={palletContentsRefreshToken}
           onError={reportClientError}
           onClosePallet={closePalletFromList}
           onPrintLabel={printPalletContentsLabel}
