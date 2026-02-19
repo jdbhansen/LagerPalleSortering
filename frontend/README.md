@@ -1,17 +1,38 @@
 # Frontend (React)
 
 React-frontend til LagerPalleSortering.
-Sidst opdateret: 2026-02-17.
+Sidst opdateret: 2026-02-19.
 
 ## Struktur
-- `src/features/warehouse/`
-  - `api/warehouseApiClientContract.ts`: API-interfacekontrakt
-  - `api/warehouseApiClient.ts`: default API-klientimplementering
-  - `hooks/useWarehousePage.ts`: side-logik/state
-  - `components/*`: præsentationskomponenter
-  - `utils/expiryDate.ts`: formattering af visningsdato (`YYYY-MM-DD`)
-  - `WarehousePage.tsx`: side-komposition
-- `src/App.tsx`: tynd entry-komponent
+- `src/App.tsx`
+  - mode-switch mellem `Ny pallesortering` og `Fuld oversigt`
+  - print-route dispatch via `warehouseRouting.ts`
+- `src/navigation.ts`
+  - intern SPA-navigation (`navigateTo`, `subscribeNavigation`)
+- `src/shared/errorMessage.ts`
+  - fælles fejltekst-mapping
+
+## Warehouse feature
+- `src/features/warehouse/constants.ts`
+  - storage keys, defaults og valideringsmønstre
+- `src/features/warehouse/warehouseRouting.ts`
+  - route parser + route builders for print
+- `src/features/warehouse/hooks/useNewPalletSorting.ts`
+  - stateful flow-hook med form-interface og API-kontrakt
+- `src/features/warehouse/hooks/useWarehousePage.ts`
+  - fuld oversigt-state og operationer
+- `src/features/warehouse/hooks/usePrintOnMount.ts`
+  - genbrugelig auto-print hook
+- `src/features/warehouse/components/PalletContentsOverviewCard.tsx`
+  - palleindhold, lukning og genprint
+- `src/features/warehouse/print/*`
+  - dedikerede printvisninger
+
+## Principper
+- Ingen nye browserfaner i normal flow
+- Sideeffekter i hooks, UI-komponenter holdes så presentational som muligt
+- API-klient abstraheres via `WarehouseApiClientContract`
+- Undgå magic strings via konstanter og route-builders
 
 ## Udvikling
 
@@ -19,38 +40,10 @@ Sidst opdateret: 2026-02-17.
 cd frontend
 npm install
 npm run dev
-```
-
-Krav: backend kører på `http://localhost:5050` for Vite-proxy.
-
-## Kvalitet
-
-```powershell
 npm run lint
-npm run test
 npm run build
 ```
 
-## UI-tests
-- Unit/integration tests ligger i `src/features/warehouse/WarehousePage.test.tsx`
-- Test setup ligger i `src/test/setupTests.ts`
-- Kør watch-mode med `npm run test:watch`
+Bemærk: `npm run test` er deaktiveret (no-op).
 
-## Navngivningsstandard
-- Komponenter: PascalCase + ansvar (`ConfirmMoveCard`)
-- Hooks: `use*` (`useWarehousePage`)
-- API-funktioner: verber (`fetchWarehouseDashboard`, `registerWarehouseColli`)
-- Typer: `*Response`, `*Entry`, `*Pallet`
-
-## Print-varianter
-- Standard: `/print-pallet-contents/{palletId}`
-- Label 190x100 (SVG): `/print-pallet-contents/{palletId}?format=label190x100`
-
-## Build til .NET app
-
-```powershell
-cd frontend
-npm run build
-```
-
-Build-output skrives til `wwwroot/app` og serveres på `/app`.
+Build-output skrives til `../wwwroot/app`.

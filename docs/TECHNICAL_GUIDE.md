@@ -1,85 +1,43 @@
 # Teknisk Guide
-Sidst opdateret: 2026-02-17.
-
-## Hurtig navigation
-- [Arkitekturoversigt](#arkitekturoversigt)
-- [Datamodel](#datamodel)
-- [Forretningsregler](#forretningsregler)
-- [API-design](#api-design)
-- [Navngivning](#navngivning)
-- [Teststrategi](#teststrategi)
-- [CI](#ci)
-- [Relaterede dokumenter](#relaterede-dokumenter)
+Sidst opdateret: 2026-02-19.
 
 ## Arkitekturoversigt
 - `frontend/`
-  - React app med feature-opdeling for warehouse-flow
-  - Hook-baseret sideorkestrering (`useWarehousePage`)
+  - React SPA under `/app`
+  - modes: `NewPalletSortingPage` og `WarehousePage`
+  - print-ruter i samme SPA
 - `Api/`
-  - Minimal API-endpoints og typed API contracts
-- `Domain/`
-  - kontrakter, barcode parsing/normalisering, regler
+  - `WarehouseApiEndpoints`: lageroperationer
+  - `OperationalApiEndpoints`: export/backup/health/metrics
 - `Application/`
-  - use-case services (`WarehouseDataService`, `WarehouseExportService`)
+  - `WarehouseDataService`, `WarehouseExportService`
+- `Domain/`
+  - barcode-normalisering/parsing + regler
 - `Infrastructure/`
   - `SqliteWarehouseRepository` (partial classes)
-- `Components/`
-  - Blazor print-sider + layout + legacy-side
-  - `PrintPalletContents` understøtter SVG-labelformat `label190x100`
 
-## Datamodel
-- `Pallets`
-- `PalletItems`
-- `ScanEntries`
-- `AuditEntries`
+## Frontend refaktorering (vedligehold)
+- `src/features/warehouse/constants.ts`
+  - fælles storage keys, defaults og barcode-regex
+- `src/features/warehouse/warehouseRouting.ts`
+  - parsing og opbygning af print-ruter
+- `src/features/warehouse/hooks/useNewPalletSorting.ts`
+  - state samlet i form-interface + API client injection via kontrakt
+- `src/features/warehouse/hooks/usePrintOnMount.ts`
+  - genbrugelig print-sideeffekt
+- `src/features/warehouse/api/warehouseApiClient.ts`
+  - centraliserede endpoint-stier
 
-Se repository-implementering for præcise kolonner og migrationer.
+## Backend refaktorering (vedligehold)
+- `Api/WarehouseOperationTypes.cs`
+  - centraliserede operationstyper (`success`, `warning`, `error`)
+- `Program.cs`
+  - endpoint-mapping flyttet ud i dedikeret endpoint-klasse
 
-## Forretningsregler
-- Maks 4 varianter pr. palle
-- Samme stregkode med forskellig dato må ikke blandes på samme palle
-- Bekræftelse sker per fysisk kolli
-- Duplicate-scan guard kan afvise hurtige gentagne scans
-- Palleparser er robust over for scanner-støj (`æ/Æ` som `:` og `+` som `-`)
-- Dato vises i grænsefladen som `YYYY-MM-DD`, men lagres/scannes som `YYYYMMDD`
+## Kontrakter og interfaces
+- Frontend: `WarehouseApiClientContract`, view-model interfaces i hooks
+- Backend: application abstractions (`IWarehouseDataService`, `IWarehouseRepository`, osv.)
 
-## API-design
-Warehouse endpoints under `/api/warehouse`:
-- `GET /dashboard`
-- `POST /register`
-- `POST /confirm`
-- `POST /pallets/{palletId}/close`
-- `POST /undo`
-- `POST /clear`
-- `POST /restore`
-
-POST-endpoints er markeret med `DisableAntiforgery()` for scanner-/SPA-flow.
-Response-mapping for batch-bekræftelse er centraliseret i endpoint-hjælper for mindre duplikering.
-
-## Navngivning
-- C# interfaces: `I`-prefiks (`IWarehouseDataService`)
-- C# services: domænenavn + `Service` (`WarehouseDataService`)
-- React hooks: `use*`
-- React komponenter: PascalCase + ansvar (`OpenPalletsCard`)
-- API payloads: `*Request` / `*Response`
-- Frontend API-klient abstraheres via `WarehouseApiClientContract`
-
-## Teststrategi
-- Unit tests (`tests/LagerPalleSortering.Tests`)
-- API integration tests med `WebApplicationFactory`
-- Frontend component tests med Vitest + Testing Library
-- Browser e2e med Playwright (`e2e/tests`)
-
-## CI
-CI validerer:
-- restore/build/test
-- format check
-- coverage gate
-- Playwright e2e
-- work-package sync
-
-## Relaterede dokumenter
-- Projektoversigt: [`README.md`](../README.md)
-- Brugerguide: [`docs/USER_GUIDE.md`](USER_GUIDE.md)
-- Operator-flow: [`docs/OPERATOR_FLOW.md`](OPERATOR_FLOW.md)
-- Drift: [`docs/OPERATIONS.md`](OPERATIONS.md)
+## Teststatus
+- Frontend `npm run test` er midlertidigt deaktiveret (no-op) pga. tidligere hæng i Vitest.
+- C# tests og e2e kører fortsat som normalt.
