@@ -4,6 +4,9 @@ import {
 } from '../api/warehouseApiClient';
 import type { WarehouseApiClientContract } from '../api/warehouseApiClientContract';
 import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../models';
+import { navigateTo } from '../../../navigation';
+import { toErrorMessage } from '../../../shared/errorMessage';
+import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
 
 interface RegisterFormState {
   productNumber: string;
@@ -34,14 +37,6 @@ const defaultConfirmForm: ConfirmFormState = {
   scannedPalletCode: '',
   confirmScanCount: 1,
 };
-
-function asErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return 'Ukendt fejl';
-}
 
 export function useWarehousePage(apiClient: WarehouseApiClientContract = warehouseApiClient) {
   const [dashboard, setDashboard] = useState<WarehouseDashboardResponse>(emptyDashboard);
@@ -81,7 +76,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
         }
       } catch (error: unknown) {
         if (isActive) {
-          setStatus({ type: 'error', message: asErrorMessage(error) });
+          setStatus({ type: 'error', message: toErrorMessage(error) });
         }
       } finally {
         if (isActive) {
@@ -99,7 +94,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
   }, [apiClient]);
 
   function reportClientError(error: unknown) {
-    setStatus({ type: 'error', message: asErrorMessage(error) });
+    setStatus({ type: 'error', message: toErrorMessage(error) });
   }
 
   function updateRegisterFormField<TField extends RegisterFormField>(
@@ -130,6 +125,9 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     }
 
     setLastSuggestedPalletId(result.palletId ?? '');
+    if (result.createdNewPallet && result.palletId) {
+      navigateTo(getPrintLabelPath(result.palletId));
+    }
     updateRegisterFormField('productNumber', '');
     updateRegisterFormField('quantity', 1);
     await reloadDashboard();
@@ -160,7 +158,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     await reloadDashboard();
 
     if (printContents) {
-      window.open(`/print-pallet-contents/${encodeURIComponent(palletId)}`, '_blank');
+      navigateTo(getPrintPalletContentsPath(palletId));
     }
   }
 

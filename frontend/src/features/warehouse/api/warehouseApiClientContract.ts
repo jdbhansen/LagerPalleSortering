@@ -1,7 +1,14 @@
-import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../models';
+import type {
+  WarehouseDashboardResponse,
+  WarehouseOperationResponse,
+  WarehousePalletContentsResponse,
+  WarehousePalletRecord,
+} from '../models';
 
 export interface WarehouseApiClientContract {
   fetchWarehouseDashboard(): Promise<WarehouseDashboardResponse>;
+  fetchWarehousePallet(palletId: string): Promise<WarehousePalletRecord>;
+  fetchWarehousePalletContents(palletId: string): Promise<WarehousePalletContentsResponse>;
   registerWarehouseColli(
     productNumber: string,
     expiryDateRaw: string,

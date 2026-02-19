@@ -1,6 +1,7 @@
 import type { WarehouseScanEntryRecord } from '../models';
 import { ScanBarcodeSvg } from './ScanBarcodeSvg';
 import { formatExpiryDateForDisplay } from '../utils/expiryDate';
+import { navigateTo } from '../../../navigation';
 
 interface RecentEntriesCardProps {
   entries: WarehouseScanEntryRecord[];
@@ -73,22 +74,20 @@ export function RecentEntriesCard({ entries, onUndoLastEntry, onError }: RecentE
                   </td>
                   <td>
                     <div className="d-inline-flex flex-wrap gap-1">
-                      <a
+                      <button
                         className="btn btn-sm btn-outline-dark"
-                        href={`/print-pallet-contents/${encodeURIComponent(entry.palletId)}`}
-                        target="_blank"
-                        rel="noreferrer"
+                        type="button"
+                        onClick={() => navigateTo(`/app/print-pallet-contents/${encodeURIComponent(entry.palletId)}`)}
                       >
                         Print indhold
-                      </a>
-                      <a
+                      </button>
+                      <button
                         className="btn btn-sm btn-outline-dark"
-                        href={`/print-pallet-contents/${encodeURIComponent(entry.palletId)}?format=label190x100`}
-                        target="_blank"
-                        rel="noreferrer"
+                        type="button"
+                        onClick={() => navigateTo(`/app/print-pallet-contents/${encodeURIComponent(entry.palletId)}?format=label190x100`)}
                       >
                         190x100
-                      </a>
+                      </button>
                     </div>
                   </td>
                 </tr>

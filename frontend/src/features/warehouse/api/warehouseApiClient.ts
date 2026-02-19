@@ -1,5 +1,22 @@
-import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../models';
+import type {
+  WarehouseDashboardResponse,
+  WarehouseOperationResponse,
+  WarehousePalletContentsResponse,
+  WarehousePalletRecord,
+} from '../models';
 import type { WarehouseApiClientContract } from './warehouseApiClientContract';
+
+const warehouseApiRoutes = {
+  dashboard: '/api/warehouse/dashboard',
+  register: '/api/warehouse/register',
+  confirm: '/api/warehouse/confirm',
+  undo: '/api/warehouse/undo',
+  clear: '/api/warehouse/clear',
+  restore: '/api/warehouse/restore',
+  pallet: (palletId: string) => `/api/warehouse/pallets/${encodeURIComponent(palletId)}`,
+  palletContents: (palletId: string) => `/api/warehouse/pallets/${encodeURIComponent(palletId)}/contents`,
+  closePallet: (palletId: string) => `/api/warehouse/pallets/${encodeURIComponent(palletId)}/close`,
+} as const;
 
 async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init);
@@ -15,11 +32,19 @@ async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T
 }
 
 export function fetchWarehouseDashboard(): Promise<WarehouseDashboardResponse> {
-  return requestJson<WarehouseDashboardResponse>('/api/warehouse/dashboard');
+  return requestJson<WarehouseDashboardResponse>(warehouseApiRoutes.dashboard);
+}
+
+export function fetchWarehousePallet(palletId: string): Promise<WarehousePalletRecord> {
+  return requestJson<WarehousePalletRecord>(warehouseApiRoutes.pallet(palletId));
+}
+
+export function fetchWarehousePalletContents(palletId: string): Promise<WarehousePalletContentsResponse> {
+  return requestJson<WarehousePalletContentsResponse>(warehouseApiRoutes.palletContents(palletId));
 }
 
 export function registerWarehouseColli(productNumber: string, expiryDateRaw: string, quantity: number): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>('/api/warehouse/register', {
+  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.register, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ productNumber, expiryDateRaw, quantity }),
@@ -27,7 +52,7 @@ export function registerWarehouseColli(productNumber: string, expiryDateRaw: str
 }
 
 export function confirmWarehouseMove(scannedPalletCode: string, confirmScanCount: number): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>('/api/warehouse/confirm', {
+  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.confirm, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ scannedPalletCode, confirmScanCount }),
@@ -35,19 +60,19 @@ export function confirmWarehouseMove(scannedPalletCode: string, confirmScanCount
 }
 
 export function closeWarehousePallet(palletId: string): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>(`/api/warehouse/pallets/${encodeURIComponent(palletId)}/close`, {
+  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.closePallet(palletId), {
     method: 'POST',
   });
 }
 
 export function undoWarehouseLastEntry(): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>('/api/warehouse/undo', {
+  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.undo, {
     method: 'POST',
   });
 }
 
 export function clearWarehouseDatabase(): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>('/api/warehouse/clear', {
+  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.clear, {
     method: 'POST',
   });
 }
@@ -56,7 +81,7 @@ export function restoreWarehouseDatabase(file: File): Promise<WarehouseOperation
   const formData = new FormData();
   formData.set('file', file);
 
-  return requestJson<WarehouseOperationResponse>('/api/warehouse/restore', {
+  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.restore, {
     method: 'POST',
     body: formData,
   });
@@ -64,6 +89,8 @@ export function restoreWarehouseDatabase(file: File): Promise<WarehouseOperation
 
 export const warehouseApiClient: WarehouseApiClientContract = {
   fetchWarehouseDashboard,
+  fetchWarehousePallet,
+  fetchWarehousePalletContents,
   registerWarehouseColli,
   confirmWarehouseMove,
   closeWarehousePallet,

@@ -10,6 +10,7 @@ vi.mock('jsbarcode', () => ({
 
 const apiMocks = vi.hoisted(() => ({
   fetchWarehouseDashboard: vi.fn(),
+  fetchWarehousePalletContents: vi.fn(),
   registerWarehouseColli: vi.fn(),
   confirmWarehouseMove: vi.fn(),
   closeWarehousePallet: vi.fn(),
@@ -28,6 +29,7 @@ import {
   closeWarehousePallet,
   confirmWarehouseMove,
   fetchWarehouseDashboard,
+  fetchWarehousePalletContents,
   registerWarehouseColli,
   restoreWarehouseDatabase,
   undoWarehouseLastEntry,
@@ -48,6 +50,7 @@ describe('WarehousePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fetchWarehouseDashboard).mockResolvedValue(emptyDashboard);
+    vi.mocked(fetchWarehousePalletContents).mockResolvedValue({ items: [] });
     vi.mocked(registerWarehouseColli).mockResolvedValue(successResponse);
     vi.mocked(confirmWarehouseMove).mockResolvedValue(successResponse);
     vi.mocked(closeWarehousePallet).mockResolvedValue(successResponse);

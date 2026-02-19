@@ -1,6 +1,7 @@
 import { ClearDatabaseWarning } from './components/ClearDatabaseWarning';
 import { ConfirmMoveCard } from './components/ConfirmMoveCard';
 import { OpenPalletsCard } from './components/OpenPalletsCard';
+import { PalletContentsOverviewCard } from './components/PalletContentsOverviewCard';
 import { RecentEntriesCard } from './components/RecentEntriesCard';
 import { RegisterColliCard } from './components/RegisterColliCard';
 import { RestoreDatabaseCard } from './components/RestoreDatabaseCard';
@@ -97,6 +98,11 @@ export function WarehousePage() {
           <OpenPalletsCard
             pallets={dashboard.openPallets}
             onClosePallet={closePallet}
+            onError={reportClientError}
+          />
+
+          <PalletContentsOverviewCard
+            pallets={dashboard.openPallets}
             onError={reportClientError}
           />
 

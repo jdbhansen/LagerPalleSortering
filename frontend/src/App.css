@@ -1,11 +1,126 @@
 .container-xl {
-  max-width: 1240px;
+  max-width: 1120px;
 }
 
-.card {
-  border-radius: 0.75rem;
+.mode-switcher {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffffeb;
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid #dfe7f2;
 }
 
-.table-responsive {
-  overflow-x: auto;
+.mode-switcher-inner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding-block: 0.75rem;
+}
+
+.mode-switcher-label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.scanner-flow-header h1 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.scanner-flow-start {
+  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.print-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem;
+  background: #f4f7fb;
+}
+
+.print-sheet {
+  width: min(900px, 100%);
+  background: #fff;
+  border: 1px solid #dbe5f1;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.print-label-sheet {
+  max-width: 520px;
+  text-align: center;
+}
+
+.print-title {
+  margin: 0;
+  font-size: 1.65rem;
+}
+
+.print-pallet-id {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 0.35rem;
+}
+
+.print-barcode,
+.print-item-barcode {
+  display: flex;
+  justify-content: center;
+}
+
+.print-code {
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 0.95rem;
+}
+
+.print-meta {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.5rem;
+}
+
+.print-timestamp {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.print-item-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.print-contents-sheet-190x100 {
+  width: 100%;
+  max-width: 760px;
+}
+
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-page {
+    background: #fff;
+    padding: 0;
+  }
+
+  .print-sheet {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .mode-switcher-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
