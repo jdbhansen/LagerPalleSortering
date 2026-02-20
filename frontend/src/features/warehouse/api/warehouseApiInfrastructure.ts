@@ -17,8 +17,9 @@ export interface WarehouseHttpClient {
 export class FetchWarehouseHttpClient implements WarehouseHttpClient {
   private readonly fetchImpl: typeof fetch;
 
-  constructor(fetchImpl: typeof fetch = fetch) {
-    this.fetchImpl = fetchImpl;
+  constructor(fetchImpl?: typeof fetch) {
+    // Bind default browser fetch to avoid "Illegal invocation" in some runtimes.
+    this.fetchImpl = fetchImpl ?? globalThis.fetch.bind(globalThis);
   }
 
   async requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
