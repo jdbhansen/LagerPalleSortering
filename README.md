@@ -1,53 +1,80 @@
 # LagerPalleSortering
 
-Intern app til varemodtagelse og palle-styring i lagerdrift.
-Stack: React frontend + ASP.NET backend + SQLite.
 Sidst opdateret: 2026-02-20.
 
-## Start her
-- Kør app lokalt: `dotnet run`
-- Kør samlet verificering: `./scripts/verify.ps1`
-- Byg frontend: `npm --prefix frontend run build`
+LagerPalleSortering er en intern app til varemodtagelse og pallehåndtering.
+Stack: ASP.NET (Minimal API) + React (SPA) + SQLite.
+
+## Hurtig start
+
+1. Installer .NET 10 SDK og Node.js 20+.
+2. Kør backend:
+
+```powershell
+dotnet run
+```
+
+3. Åbn appen på `http://localhost:5000/app` (eller den URL der vises i terminalen).
+
+## Daglig udvikling
+
+- Backend build/test:
+
+```powershell
+dotnet build
+dotnet test
+```
+
+- Frontend lint/test/build:
+
+```powershell
+npm --prefix frontend run lint
+npm --prefix frontend run test -- --run
+npm --prefix frontend run build
+```
+
+- Samlet verificering:
+
+```powershell
+./scripts/verify.ps1
+```
+
+## Opret work package
+
+```powershell
+./scripts/package-work.ps1
+```
+
+Output:
+- `../LagerPalleSortering-work-package/app`
+- `../LagerPalleSortering-work-package/LagerPalleSortering-work.zip`
+- synkroniseret zip i `work-package/LagerPalleSortering-work.zip`
+
+## Funktioner
+
+- To driftsvisninger:
+  - `Ny pallesortering` (sekventielt flow: registrer -> bekræft)
+  - `Fuld oversigt`
+- GS1 parsing (`AI(01)` + `AI(17)`) ved scanning.
+- Dato-normalisering (`YYMMDD` -> `YYYYMMDD`, når gyldig).
+- Label-print for palle og palleindhold.
+- Backup, restore, health og metrics endpoints.
+
+## Arkitektur (kort)
+
+- `Api/`: HTTP endpoints
+- `Application/`: use-cases/services
+- `Domain/`: regler, normalisering og parsing
+- `Infrastructure/`: persistence og database-provider
+- `frontend/`: React SPA
+- `tests/`: .NET tests
 
 ## Dokumentation
-- Brugerguide: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
-- Operator-flow: [`docs/OPERATOR_FLOW.md`](docs/OPERATOR_FLOW.md)
-- Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](docs/TECHNICAL_GUIDE.md)
-- Drift/fejlsøgning: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
-- Frontend-noter: [`frontend/README.md`](frontend/README.md)
 
-## Nøglefunktioner
-- React SPA på `/app` med to tilstande: `Ny pallesortering` og `Fuld oversigt`
-- Ét aktivt sorteringsforløb ad gangen med eksplicit `Afslut pallesortering`
-- Scannerflow: registrer kolli -> scan palle -> bekræft flyt
-- GS1/QR parsing i registrering: læser `AI(01)` varenummer og `AI(17)` holdbarhed automatisk
-- Automatisk dato-normalisering: `YYMMDD` konverteres til gyldig `YYYYMMDD` ved registrering
-- Auto-print af pallelabel, når en ny palle oprettes
-- Luk palle og auto-print palle-indholdslabel (`190x100`)
-- Sektion `Indhold på paller` i begge visninger (inkl. genprint af lukkede paller)
-- Event-baseret opdatering af `Indhold på paller` efter relevante handlinger (ingen konstant polling)
-- API under `/api/warehouse/*`, eksport/backup/health under egne endpoints
-
-## Arkitektur
-- `frontend/`: React SPA, feature-opdelt med hooks, kontrakter og route-helpers
-- `Api/`: Minimal API endpoints (`WarehouseApiEndpoints`, `OperationalApiEndpoints`)
-- `Application/`: use-cases og services
-- `Domain/`: forretningsregler og barcode-kontrakter
-- `Infrastructure/`: SQLite repository
-- `wwwroot/app`: deployet React SPA build
-
-## Endpoints
-- `GET /api/warehouse/dashboard`
-- `GET /api/warehouse/pallets/{palletId}`
-- `GET /api/warehouse/pallets/{palletId}/contents`
-- `POST /api/warehouse/register`
-- `POST /api/warehouse/confirm`
-- `POST /api/warehouse/pallets/{palletId}/close`
-- `POST /api/warehouse/undo`
-- `POST /api/warehouse/clear`
-- `POST /api/warehouse/restore`
-- `GET /export/csv`
-- `GET /export/excel`
-- `GET /backup/db`
-- `GET /health`
-- `GET /metrics`
+- Brugerguide: `docs/USER_GUIDE.md`
+- Operatørflow: `docs/OPERATOR_FLOW.md`
+- Drift/fejlsøgning: `docs/OPERATIONS.md`
+- Teknisk guide: `docs/TECHNICAL_GUIDE.md`
+- Migration notes: `docs/MIGRATION_NOTES.md`
+- Scanner-validering: `docs/SCANNER_VALIDATION.md`
+- Frontend-noter: `frontend/README.md`

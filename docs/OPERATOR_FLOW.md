@@ -1,34 +1,40 @@
-# Operator Flow (React)
+# Operator Flow
+
 Sidst opdateret: 2026-02-20.
 
 ## Formål
-Dagligt operatørflow i React-frontend (`/app`).
 
-## Ny pallesortering
-1. Start ny sortering
-2. Scan kolli stregkode
-3. GS1/QR-scans (AI 01 + AI 17) udfylder automatisk varenummer + holdbarhed
-4. Ved manuel dato kan både `YYYYMMDD` og `YYMMDD` bruges (auto-normaliseres når gyldig)
-5. Registrer kolli
-6. Scan palle
-7. Sæt kolli på plads
-8. Afslut pallesortering når batch er færdig
+Kort driftsflow til operatører i daglig varemodtagelse.
 
-## Lukning og label
-- `Luk palle + print indholdslabel` lukker foreslået palle og printer automatisk.
-- I `Indhold på paller` kan valgt palle lukkes og indholdslabel printes igen.
-- Lukkede paller fjernes ikke fra listen med det samme, så genprint er muligt.
-- Indholdslisten opdateres event-baseret efter registrering, flyttebekræftelse og pallelukning.
+## Standardflow (Ny pallesortering)
 
-## Fuld oversigt
-- Viser åbne paller, seneste entries og databaseværktøjer.
-- Samme sektion `Indhold på paller` findes også her.
+1. Start sortering.
+2. Trin 1: scan kolli + holdbarhed.
+3. Registrer kolli.
+4. Trin 2: scan pallelabel.
+5. Bekræft flytning.
+6. Gentag trin 2-5 per kolli.
+7. Afslut sortering.
 
-## Kritiske handlinger
-- `Ryd database` kræver bekræftelse.
-- `Gendan database` kræver gyldig backupfil.
-- `Fortryd seneste` ændrer sidste registrering.
+## Print-flow
 
-## Printadfærd
-- Print foregår i SPA-ruter under `/app/print-*`.
-- Ingen nye browserfaner i normal drift.
+- Ny palle kan udløse automatisk label-print.
+- Efter print kan operatøren stadig gennemføre trin 2 (flytning), fordi ventende palle-id bevares i sessionen.
+- `Luk palle + print indholdslabel` bruges når pallen er færdig.
+
+## Fejlflow (hurtig beslutning)
+
+- `Ugyldig pallestregkode`:
+  - Scan label igen
+  - Tjek scanner-layout (`:`/`æ`, `-`/`+`)
+- `Ingen u-bekræftede kolli fundet`:
+  - Tjek at korrekt palle er scannet
+  - Tjek om kolli allerede er bekræftet
+- Datofejl:
+  - Brug `YYYYMMDD` eller gyldig `YYMMDD`
+
+## Operatør-checkliste pr. skift
+
+- Test én kendt pallelabel (`PALLET:P-001`) ved skiftstart.
+- Bekræft at print er læsbart med scanner.
+- Tag backup før større dataoperationer.

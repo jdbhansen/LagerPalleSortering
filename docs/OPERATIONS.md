@@ -1,47 +1,84 @@
 # Drift og Fejlsøgning
+
 Sidst opdateret: 2026-02-20.
 
-## Drift
-Start app:
+## Drift: start og stop
+
+Start app lokalt:
 
 ```powershell
 dotnet run
 ```
 
 - Primær UI: `/app`
-- Data: `App_Data/lager.db`
+- Datafil: `App_Data/lager.db`
 
-## Kvalitetskørsel
+Stop app: luk terminalprocessen.
+
+## Standard driftschecks
+
+1. Health endpoint svarer:
 
 ```powershell
-./scripts/verify.ps1
-npm --prefix frontend run lint
-npm --prefix frontend run test
-npm --prefix frontend run build
-npm run test:e2e
+curl http://localhost:5000/health
 ```
 
+2. Metrics endpoint svarer:
+
+```powershell
+curl http://localhost:5000/metrics
+```
+
+3. Seneste backup kan downloades:
+
+```powershell
+curl http://localhost:5000/backup/db
+```
+
+## Verificering før release
+
+```powershell
+dotnet build -warnaserror
+dotnet test
+npm --prefix frontend run lint
+npm --prefix frontend run test -- --run
+npm --prefix frontend run build
+```
+
+## Work package
+
+```powershell
+./scripts/package-work.ps1
+```
+
+Output zip: `work-package/LagerPalleSortering-work.zip`
+
 ## Fejlsøgning
-### Appen virker låst efter inaktivitet
-- Tjek browser console for netværksfejl til `/api/warehouse/*`.
+
+### Appen reagerer ikke som forventet
+
+- Tjek browser console for fejl mod `/api/warehouse/*`.
 - Tjek `/health` og `/metrics`.
-- Verificer at databasen ikke er låst (`App_Data/lager.db`).
-- `Indhold på paller` bruger event-baseret opdatering (ikke konstant polling), så opdatering sker ved relevante handlinger.
+- Kør `./scripts/verify.ps1`.
 
-### Holdbarhedsdato bliver afvist ved scanning
-- Ved GS1/QR med `AI(17)` konverteres dato automatisk til `YYYYMMDD`.
-- Ved manuel indtastning konverteres gyldig `YYMMDD` automatisk til `YYYYMMDD`.
-- Ugyldige kalenderdatoer normaliseres ikke og bliver afvist af validering.
+### Scanner-output er forkert
 
-### Print åbner ny fane
-- Kør hard refresh (`Ctrl+F5`) for at rydde cache.
-- Bekræft at nyeste frontend build ligger i `wwwroot/app/assets`.
+- Symptomer: `:` bliver `æ`, `-` bliver `+`, uventede prefix (`]E0`, `]C1`).
+- Systemet håndterer støj i parseren, men verificer scannerprofil alligevel.
+- Se `docs/SCANNER_VALIDATION.md`.
 
-### Build/test hænger
-- Luk hængende `node`, `vitest`, `dotnet` processer.
-- Kør derefter kun nødvendige kommandoer én ad gangen.
+### Holdbarhed bliver afvist
 
-## Endpoint-oversigt
-- Drift: `GET /health`, `GET /metrics`
-- Dataeksport: `GET /export/csv`, `GET /export/excel`, `GET /backup/db`
-- Lageroperationer: `/api/warehouse/*`
+- Gyldige formater: `YYYYMMDD` eller gyldig `YYMMDD`.
+- Ugyldige kalenderdatoer afvises.
+
+### Build-fejl pga. fil-lås (`*.dswa.cache.json`)
+
+- Kør build/test sekventielt i stedet for parallelle kommandoer.
+- Luk eventuelle hængende `dotnet`/`testhost` processer.
+
+## Kritiske operationer
+
+- `Ryd database`: kræver aktiv bekræftelse.
+- `Gendan database`: brug kun valideret backup.
+- Tag backup før restore/rydning.

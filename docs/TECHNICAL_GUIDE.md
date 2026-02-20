@@ -1,50 +1,75 @@
 # Teknisk Guide
+
 Sidst opdateret: 2026-02-20.
 
-## Arkitekturoversigt
-- `frontend/`
-  - React SPA under `/app`
-  - modes: `NewPalletSortingPage` og `WarehousePage`
-  - print-ruter i samme SPA
+## Formål
+
+Dokumentet beskriver systemets struktur, vigtigste interfaces og hvor ændringer bør placeres.
+
+## Lagdeling
+
 - `Api/`
-  - `WarehouseApiEndpoints`: lageroperationer
-  - `OperationalApiEndpoints`: export/backup/health/metrics
+  - Minimal API endpoints
+  - ansvar: HTTP-kontrakter og mapping til services
 - `Application/`
-  - `WarehouseDataService`, `WarehouseExportService`
+  - use-cases (`WarehouseDataService`, `WarehouseExportService`)
+  - ansvar: orkestrering af forretningsregler
 - `Domain/`
-  - barcode-normalisering/parsing + regler
+  - normalisering/parsing/forretningsregler
+  - ansvar: rene regler uden infrastrukturafhængigheder
 - `Infrastructure/`
-  - `SqliteWarehouseRepository` (partial classes)
+  - repository og databaseintegration
+- `frontend/`
+  - React SPA med feature-opdeling
 
-## Frontend refaktorering (vedligehold)
-- `src/features/warehouse/constants.ts`
-  - fælles storage keys, defaults og barcode-regex
-- `src/features/warehouse/warehouseRouting.ts`
-  - parsing og opbygning af print-ruter
-- `src/features/warehouse/hooks/useNewPalletSorting.ts`
-  - state samlet i form-interface + API client injection via kontrakt
-- `src/features/warehouse/components/PalletContentsOverviewCard.tsx`
-  - opdaterer indhold via `refreshToken` fra relevante brugerhandlinger
-- `src/features/warehouse/utils/gs1Parser.ts`
-  - parser GS1 payloads (både parenthesized og compact) for `AI(01)` + `AI(17)`
-- `src/features/warehouse/utils/expiryNormalization.ts`
-  - normaliserer dato-input (`YYMMDD` -> `YYYYMMDD`) når datoen er gyldig
-- `src/features/warehouse/hooks/usePrintOnMount.ts`
-  - genbrugelig print-sideeffekt
-- `src/features/warehouse/api/warehouseApiClient.ts`
-  - centraliserede endpoint-stier
+## Vigtige backend interfaces
 
-## Backend refaktorering (vedligehold)
-- `Api/WarehouseOperationTypes.cs`
-  - centraliserede operationstyper (`success`, `warning`, `error`)
-- `Program.cs`
-  - endpoint-mapping flyttet ud i dedikeret endpoint-klasse
+- `Application/Abstractions/IWarehouseRepository.cs`
+- `Application/Abstractions/IWarehouseDataService.cs`
+- `Infrastructure/Repositories/IWarehouseDatabaseProvider.cs`
 
-## Kontrakter og interfaces
-- Frontend: `WarehouseApiClientContract`, view-model interfaces i hooks
-- Backend: application abstractions (`IWarehouseDataService`, `IWarehouseRepository`, osv.)
+`IWarehouseDatabaseProvider` er migrations-seamet for storage. Skift database ved at levere en ny provider og registrere den i DI.
 
-## Teststatus
-- Frontend tests kører med Vitest i `forks`-pool med `maxWorkers=1` og `fileParallelism=false` for stabil kørsel i CI/lokalt.
-- Testsuite fokuserer på stabile enhedstests (routing, formattering, App-view routing/state).
-- C# tests og e2e kører fortsat som normalt.
+## Vigtige frontend interfaces
+
+- `frontend/src/features/warehouse/api/warehouseApiClientContract.ts`
+- `frontend/src/features/warehouse/api/warehouseApiInfrastructure.ts`
+- `frontend/src/features/warehouse/hooks/newSortingStateStore.ts`
+
+Migrations-seams i frontend:
+- API transport/routes via `createWarehouseApiClient(...)`
+- UI state persistence via `NewSortingStateStore`
+
+## Ny pallesortering: struktur
+
+- `useNewPalletSorting.ts`: hook orchestration
+- `newSortingWorkflow.ts`: validering + payload-regler
+- `newSortingStateStore.ts`: storage abstrahering
+
+Princip: hold sideeffekter i hook, hold regler i rene utility-moduler.
+
+## Barcode og scanner-kompatibilitet
+
+- Backend:
+  - `DefaultProductBarcodeNormalizer`
+  - `DefaultPalletBarcodeService`
+- Frontend:
+  - `utils/palletBarcodePayload.ts`
+
+Tests:
+- `tests/LagerPalleSortering.Tests/BarcodeScannerCompatibilityTests.cs`
+- `frontend/src/features/warehouse/utils/palletBarcodePayload.test.ts`
+- `docs/SCANNER_VALIDATION.md`
+
+## Teststrategi
+
+- Backend: `dotnet test`
+- Frontend unit/integration: `npm --prefix frontend run test -- --run`
+- Frontend lint/build: `npm --prefix frontend run lint`, `npm --prefix frontend run build`
+
+## Best practices i repoet
+
+- Brug interfaces til integration points.
+- Undgå duplikeret valideringslogik; del via fælles utilities.
+- Hold endpoints tynde; læg logik i services.
+- Tilføj tests når parser/validering ændres.
