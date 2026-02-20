@@ -144,6 +144,27 @@ export function useNewPalletSorting(
     stateStore.setStarted(started);
   }, [started, stateStore]);
 
+  useEffect(() => {
+    if (!started || loading || submitting) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      if (activeStep === 'register') {
+        productInputRef.current?.focus();
+        productInputRef.current?.select();
+        return;
+      }
+
+      palletInputRef.current?.focus();
+      palletInputRef.current?.select();
+    }, warehouseDefaults.focusDelayMs);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [activeStep, loading, started, submitting]);
+
   const reportClientError = useCallback((error: unknown) => {
     setStatus({ type: 'error', message: toErrorMessage(error) });
   }, []);
