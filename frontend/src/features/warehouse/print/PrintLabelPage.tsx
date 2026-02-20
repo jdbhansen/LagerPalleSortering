@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import JsBarcode from 'jsbarcode';
 import { navigateTo } from '../../../navigation';
 import { usePrintOnMount } from '../hooks/usePrintOnMount';
+import { toPalletBarcodePayload } from '../utils/palletBarcodePayload';
 
 interface PrintLabelPageProps {
   palletId: string;
@@ -20,7 +21,8 @@ function createBarcodeSvg(value: string, width = 2, height = 88): string {
 }
 
 export function PrintLabelPage({ palletId }: PrintLabelPageProps) {
-  const barcodeMarkup = useMemo(() => createBarcodeSvg(`PALLET:${palletId}`), [palletId]);
+  const payload = useMemo(() => toPalletBarcodePayload(palletId), [palletId]);
+  const barcodeMarkup = useMemo(() => createBarcodeSvg(payload), [payload]);
   usePrintOnMount();
 
   return (
@@ -29,7 +31,7 @@ export function PrintLabelPage({ palletId }: PrintLabelPageProps) {
         <h1 className="print-title">PALLE</h1>
         <div className="print-pallet-id">{palletId}</div>
         <div className="print-barcode" dangerouslySetInnerHTML={{ __html: barcodeMarkup }} />
-        <div className="print-code">PALLET:{palletId}</div>
+        <div className="print-code">{payload}</div>
         <div className="print-timestamp">Udskrevet: {new Date().toLocaleString('da-DK')}</div>
       </section>
 
