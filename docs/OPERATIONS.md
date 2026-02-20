@@ -1,5 +1,5 @@
 # Drift og Fejlsøgning
-Sidst opdateret: 2026-02-19.
+Sidst opdateret: 2026-02-20.
 
 ## Drift
 Start app:
@@ -26,6 +26,7 @@ npm run test:e2e
 - Tjek browser console for netværksfejl til `/api/warehouse/*`.
 - Tjek `/health` og `/metrics`.
 - Verificer at databasen ikke er låst (`App_Data/lager.db`).
+- `Indhold på paller` bruger event-baseret opdatering (ikke konstant polling), så opdatering sker ved relevante handlinger.
 
 ### Print åbner ny fane
 - Kør hard refresh (`Ctrl+F5`) for at rydde cache.

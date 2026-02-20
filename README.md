@@ -2,7 +2,7 @@
 
 Intern app til varemodtagelse og palle-styring i lagerdrift.
 Stack: React frontend + ASP.NET backend + SQLite.
-Sidst opdateret: 2026-02-19.
+Sidst opdateret: 2026-02-20.
 
 ## Start her
 - Kør app lokalt: `dotnet run`
@@ -23,6 +23,7 @@ Sidst opdateret: 2026-02-19.
 - Auto-print af pallelabel, når en ny palle oprettes
 - Luk palle og auto-print palle-indholdslabel (`190x100`)
 - Sektion `Indhold på paller` i begge visninger (inkl. genprint af lukkede paller)
+- Event-baseret opdatering af `Indhold på paller` efter relevante handlinger (ingen konstant polling)
 - API under `/api/warehouse/*`, eksport/backup/health under egne endpoints
 
 ## Arkitektur

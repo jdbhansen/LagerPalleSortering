@@ -1,5 +1,5 @@
 # Teknisk Guide
-Sidst opdateret: 2026-02-19.
+Sidst opdateret: 2026-02-20.
 
 ## Arkitekturoversigt
 - `frontend/`
@@ -23,6 +23,8 @@ Sidst opdateret: 2026-02-19.
   - parsing og opbygning af print-ruter
 - `src/features/warehouse/hooks/useNewPalletSorting.ts`
   - state samlet i form-interface + API client injection via kontrakt
+- `src/features/warehouse/components/PalletContentsOverviewCard.tsx`
+  - opdaterer indhold via `refreshToken` fra relevante brugerhandlinger
 - `src/features/warehouse/hooks/usePrintOnMount.ts`
   - genbrugelig print-sideeffekt
 - `src/features/warehouse/api/warehouseApiClient.ts`

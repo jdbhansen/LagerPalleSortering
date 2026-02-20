@@ -1,5 +1,5 @@
 # Operator Flow (React)
-Sidst opdateret: 2026-02-19.
+Sidst opdateret: 2026-02-20.
 
 ## Formål
 Dagligt operatørflow i React-frontend (`/app`).
@@ -17,6 +17,7 @@ Dagligt operatørflow i React-frontend (`/app`).
 - `Luk palle + print indholdslabel` lukker foreslået palle og printer automatisk.
 - I `Indhold på paller` kan valgt palle lukkes og indholdslabel printes igen.
 - Lukkede paller fjernes ikke fra listen med det samme, så genprint er muligt.
+- Indholdslisten opdateres event-baseret efter registrering, flyttebekræftelse og pallelukning.
 
 ## Fuld oversigt
 - Viser åbne paller, seneste entries og databaseværktøjer.

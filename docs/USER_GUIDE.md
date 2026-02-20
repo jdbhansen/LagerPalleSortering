@@ -1,5 +1,5 @@
 # Brugerguide
-Sidst opdateret: 2026-02-19.
+Sidst opdateret: 2026-02-20.
 
 ## Formål
 Appen bruges ved varemodtagelse til at styre, hvilken palle hvert kolli flyttes til.
@@ -24,6 +24,7 @@ Appen bruges ved varemodtagelse til at styre, hvilken palle hvert kolli flyttes 
   - se varelinjer
   - lukke palle
   - genprinte indholdslabel
+  - se opdaterede tal efter `Flytning bekræftet` uden at skifte palle manuelt
 
 ## Print
 - Print foregår i samme SPA-forløb (ingen nye faner)

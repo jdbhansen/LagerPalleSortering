@@ -1,7 +1,7 @@
 # Frontend (React)
 
 React-frontend til LagerPalleSortering.
-Sidst opdateret: 2026-02-19.
+Sidst opdateret: 2026-02-20.
 
 ## Struktur
 - `src/App.tsx`
@@ -24,7 +24,7 @@ Sidst opdateret: 2026-02-19.
 - `src/features/warehouse/hooks/usePrintOnMount.ts`
   - genbrugelig auto-print hook
 - `src/features/warehouse/components/PalletContentsOverviewCard.tsx`
-  - palleindhold, lukning og genprint
+  - palleindhold, lukning og genprint (event-baseret refresh via token)
 - `src/features/warehouse/print/*`
   - dedikerede printvisninger
 
