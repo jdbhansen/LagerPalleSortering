@@ -24,7 +24,7 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
         var root = Path.Combine(Path.GetTempPath(), scenarioPrefix, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
-        var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(root));
+        var repository = new SqliteWarehouseRepository(new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(root)));
         var service = new WarehouseDataService(
             repository,
             new DefaultProductBarcodeNormalizer(),
@@ -39,7 +39,7 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
 
     public async Task<WarehouseDataService> CreateNewServiceForSameStorageAsync()
     {
-        var repository = new SqliteWarehouseRepository(new TestWebHostEnvironment(rootPath));
+        var repository = new SqliteWarehouseRepository(new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(rootPath)));
         var service = new WarehouseDataService(
             repository,
             new DefaultProductBarcodeNormalizer(),

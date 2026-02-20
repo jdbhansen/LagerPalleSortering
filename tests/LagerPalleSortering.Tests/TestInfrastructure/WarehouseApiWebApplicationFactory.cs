@@ -32,7 +32,7 @@ internal sealed class WarehouseApiWebApplicationFactory : WebApplicationFactory<
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IWarehouseRepository>();
-            services.AddSingleton<IWarehouseRepository>(_ => new SqliteWarehouseRepository(new TestWebHostEnvironment(_storageRoot)));
+            services.AddSingleton<IWarehouseRepository>(_ => new SqliteWarehouseRepository(new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(_storageRoot))));
         });
     }
 

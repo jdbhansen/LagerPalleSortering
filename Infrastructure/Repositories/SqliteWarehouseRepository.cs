@@ -1,7 +1,6 @@
 using LagerPalleSortering.Application.Abstractions;
 using LagerPalleSortering.Domain;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 
@@ -13,16 +12,10 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
     private readonly IWarehouseDatabaseProvider _databaseProvider;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
-    [ActivatorUtilitiesConstructor]
     public SqliteWarehouseRepository(IWarehouseDatabaseProvider databaseProvider, IOptions<WarehouseRulesOptions>? rules = null)
     {
         _databaseProvider = databaseProvider;
         _maxVariantsPerPallet = Math.Max(1, rules?.Value.MaxVariantsPerPallet ?? 4);
-    }
-
-    public SqliteWarehouseRepository(IWebHostEnvironment env, IOptions<WarehouseRulesOptions>? rules = null)
-        : this(new SqliteWarehouseDatabaseProvider(env), rules)
-    {
     }
 
     public async Task<(string PalletId, bool CreatedNewPallet)> RegisterAsync(string productNumber, string expiryDate, int quantity, CancellationToken cancellationToken = default)

@@ -551,7 +551,7 @@ public sealed class WarehouseDataServiceTests
         try
         {
             var repository = new SqliteWarehouseRepository(
-                new TestWebHostEnvironment(root),
+                new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(root)),
                 Options.Create(new WarehouseRulesOptions
                 {
                     EnableDuplicateScanGuard = true,
