@@ -1,6 +1,7 @@
 using LagerPalleSortering.Application.Abstractions;
 using LagerPalleSortering.Domain;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 
@@ -12,6 +13,7 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
     private readonly IWarehouseDatabaseProvider _databaseProvider;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
+    [ActivatorUtilitiesConstructor]
     public SqliteWarehouseRepository(IWarehouseDatabaseProvider databaseProvider, IOptions<WarehouseRulesOptions>? rules = null)
     {
         _databaseProvider = databaseProvider;
