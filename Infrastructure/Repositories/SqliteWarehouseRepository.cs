@@ -9,17 +9,18 @@ namespace LagerPalleSortering.Infrastructure.Repositories;
 public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, IDisposable
 {
     private readonly int _maxVariantsPerPallet;
-    private readonly string _databasePath;
-    private readonly string _connectionString;
+    private readonly IWarehouseDatabaseProvider _databaseProvider;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
-    public SqliteWarehouseRepository(IWebHostEnvironment env, IOptions<WarehouseRulesOptions>? rules = null)
+    public SqliteWarehouseRepository(IWarehouseDatabaseProvider databaseProvider, IOptions<WarehouseRulesOptions>? rules = null)
     {
-        var dataDir = Path.Combine(env.ContentRootPath, "App_Data");
-        Directory.CreateDirectory(dataDir);
-        _databasePath = Path.Combine(dataDir, "lager.db");
-        _connectionString = $"Data Source={_databasePath}";
+        _databaseProvider = databaseProvider;
         _maxVariantsPerPallet = Math.Max(1, rules?.Value.MaxVariantsPerPallet ?? 4);
+    }
+
+    public SqliteWarehouseRepository(IWebHostEnvironment env, IOptions<WarehouseRulesOptions>? rules = null)
+        : this(new SqliteWarehouseDatabaseProvider(env), rules)
+    {
     }
 
     public async Task<(string PalletId, bool CreatedNewPallet)> RegisterAsync(string productNumber, string expiryDate, int quantity, CancellationToken cancellationToken = default)
@@ -314,12 +315,12 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         await _writeLock.WaitAsync(cancellationToken);
         try
         {
-            if (!File.Exists(_databasePath))
+            if (!File.Exists(_databaseProvider.DatabasePath))
             {
                 return Array.Empty<byte>();
             }
 
-            var backupPath = Path.Combine(Path.GetDirectoryName(_databasePath)!, $"backup-{Guid.NewGuid():N}.db");
+            var backupPath = Path.Combine(Path.GetDirectoryName(_databaseProvider.DatabasePath)!, $"backup-{Guid.NewGuid():N}.db");
             try
             {
                 await using (var connection = OpenConnection())
@@ -360,7 +361,7 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
         await _writeLock.WaitAsync(cancellationToken);
         try
         {
-            var tempPath = Path.Combine(Path.GetDirectoryName(_databasePath)!, $"restore-{Guid.NewGuid():N}.db");
+            var tempPath = Path.Combine(Path.GetDirectoryName(_databaseProvider.DatabasePath)!, $"restore-{Guid.NewGuid():N}.db");
             try
             {
                 await using (var file = File.Create(tempPath))
@@ -381,7 +382,7 @@ public sealed partial class SqliteWarehouseRepository : IWarehouseRepository, ID
                     }
                 }
 
-                File.Copy(tempPath, _databasePath, overwrite: true);
+                File.Copy(tempPath, _databaseProvider.DatabasePath, overwrite: true);
                 await InitializeAsync(cancellationToken);
 
                 await using var connection = OpenConnection();

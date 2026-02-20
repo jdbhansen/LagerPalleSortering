@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using LagerPalleSortering.Api;
 using LagerPalleSortering.Tests.TestInfrastructure;
 
@@ -165,6 +166,40 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task RegisterEndpoint_WithWhitespaceProduct_ReturnsErrorResponse()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/warehouse/register",
+            new RegisterColliApiRequest("   ", "20270101", 1));
+        var payload = await response.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Equal("error", payload.Type);
+        Assert.Contains("Varenummer mangler", payload.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RegisterEndpoint_WithWhitespaceExpiry_AllowsNoExpiryRegistration()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/warehouse/register",
+            new RegisterColliApiRequest("api-noexp", "   ", 1));
+        var payload = await response.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Equal("success", payload.Type);
+        Assert.False(string.IsNullOrWhiteSpace(payload.PalletId));
+    }
+
+    [Fact]
     public async Task RestoreEndpoint_WithoutFile_ReturnsBadRequest()
     {
         using var factory = new WarehouseApiWebApplicationFactory();
@@ -177,6 +212,20 @@ public sealed class WarehouseApiEndpointsTests
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Contains("Vælg en backupfil først", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RestoreEndpoint_WithNonFormPayload_ReturnsBadRequest()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        using var content = new StringContent("""{"file":"not-a-file"}""", Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("/api/warehouse/restore", content);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("multipart/form-data", body, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

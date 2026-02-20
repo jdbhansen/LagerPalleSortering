@@ -5,96 +5,103 @@ import type {
   WarehousePalletRecord,
 } from '../models';
 import type { WarehouseApiClientContract } from './warehouseApiClientContract';
+import { FetchWarehouseHttpClient, type WarehouseApiRoutes, type WarehouseHttpClient } from './warehouseApiInfrastructure';
+import { createWarehouseApiRoutes } from './warehouseApiRoutes';
 
-const warehouseApiRoutes = {
-  dashboard: '/api/warehouse/dashboard',
-  register: '/api/warehouse/register',
-  confirm: '/api/warehouse/confirm',
-  undo: '/api/warehouse/undo',
-  clear: '/api/warehouse/clear',
-  restore: '/api/warehouse/restore',
-  pallet: (palletId: string) => `/api/warehouse/pallets/${encodeURIComponent(palletId)}`,
-  palletContents: (palletId: string) => `/api/warehouse/pallets/${encodeURIComponent(palletId)}/contents`,
-  closePallet: (palletId: string) => `/api/warehouse/pallets/${encodeURIComponent(palletId)}/close`,
-} as const;
-
-async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init);
-  // Some backend failures may return empty/non-JSON bodies, so parsing must be defensive.
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message = payload?.message ?? 'Netværksfejl';
-    throw new Error(message);
-  }
-
-  return payload as T;
+export interface WarehouseApiClientDependencies {
+  routes?: WarehouseApiRoutes;
+  httpClient?: WarehouseHttpClient;
 }
 
-export function fetchWarehouseDashboard(): Promise<WarehouseDashboardResponse> {
-  return requestJson<WarehouseDashboardResponse>(warehouseApiRoutes.dashboard);
+export function createWarehouseApiClient(
+  dependencies: WarehouseApiClientDependencies = {},
+): WarehouseApiClientContract {
+  const routes = dependencies.routes ?? createWarehouseApiRoutes();
+  const httpClient = dependencies.httpClient ?? new FetchWarehouseHttpClient();
+
+  return {
+    fetchWarehouseDashboard: () =>
+      httpClient.requestJson<WarehouseDashboardResponse>(routes.dashboard),
+
+    fetchWarehousePallet: (palletId: string) =>
+      httpClient.requestJson<WarehousePalletRecord>(routes.pallet(palletId)),
+
+    fetchWarehousePalletContents: (palletId: string) =>
+      httpClient.requestJson<WarehousePalletContentsResponse>(routes.palletContents(palletId)),
+
+    registerWarehouseColli: (productNumber: string, expiryDateRaw: string, quantity: number) =>
+      httpClient.requestJson<WarehouseOperationResponse>(routes.register, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productNumber, expiryDateRaw, quantity }),
+      }),
+
+    confirmWarehouseMove: (scannedPalletCode: string, confirmScanCount: number) =>
+      httpClient.requestJson<WarehouseOperationResponse>(routes.confirm, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scannedPalletCode, confirmScanCount }),
+      }),
+
+    closeWarehousePallet: (palletId: string) =>
+      httpClient.requestJson<WarehouseOperationResponse>(routes.closePallet(palletId), {
+        method: 'POST',
+      }),
+
+    undoWarehouseLastEntry: () =>
+      httpClient.requestJson<WarehouseOperationResponse>(routes.undo, {
+        method: 'POST',
+      }),
+
+    clearWarehouseDatabase: () =>
+      httpClient.requestJson<WarehouseOperationResponse>(routes.clear, {
+        method: 'POST',
+      }),
+
+    restoreWarehouseDatabase: (file: File) => {
+      const formData = new FormData();
+      formData.set('file', file);
+
+      return httpClient.requestJson<WarehouseOperationResponse>(routes.restore, {
+        method: 'POST',
+        body: formData,
+      });
+    },
+  };
 }
 
-export function fetchWarehousePallet(palletId: string): Promise<WarehousePalletRecord> {
-  return requestJson<WarehousePalletRecord>(warehouseApiRoutes.pallet(palletId));
-}
+export const warehouseApiClient: WarehouseApiClientContract = createWarehouseApiClient();
 
-export function fetchWarehousePalletContents(palletId: string): Promise<WarehousePalletContentsResponse> {
-  return requestJson<WarehousePalletContentsResponse>(warehouseApiRoutes.palletContents(palletId));
-}
+export const fetchWarehouseDashboard = (): Promise<WarehouseDashboardResponse> =>
+  warehouseApiClient.fetchWarehouseDashboard();
 
-export function registerWarehouseColli(productNumber: string, expiryDateRaw: string, quantity: number): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.register, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productNumber, expiryDateRaw, quantity }),
-  });
-}
+export const fetchWarehousePallet = (palletId: string): Promise<WarehousePalletRecord> =>
+  warehouseApiClient.fetchWarehousePallet(palletId);
 
-export function confirmWarehouseMove(scannedPalletCode: string, confirmScanCount: number): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.confirm, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ scannedPalletCode, confirmScanCount }),
-  });
-}
+export const fetchWarehousePalletContents = (palletId: string): Promise<WarehousePalletContentsResponse> =>
+  warehouseApiClient.fetchWarehousePalletContents(palletId);
 
-export function closeWarehousePallet(palletId: string): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.closePallet(palletId), {
-    method: 'POST',
-  });
-}
+export const registerWarehouseColli = (
+  productNumber: string,
+  expiryDateRaw: string,
+  quantity: number,
+): Promise<WarehouseOperationResponse> =>
+  warehouseApiClient.registerWarehouseColli(productNumber, expiryDateRaw, quantity);
 
-export function undoWarehouseLastEntry(): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.undo, {
-    method: 'POST',
-  });
-}
+export const confirmWarehouseMove = (
+  scannedPalletCode: string,
+  confirmScanCount: number,
+): Promise<WarehouseOperationResponse> =>
+  warehouseApiClient.confirmWarehouseMove(scannedPalletCode, confirmScanCount);
 
-export function clearWarehouseDatabase(): Promise<WarehouseOperationResponse> {
-  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.clear, {
-    method: 'POST',
-  });
-}
+export const closeWarehousePallet = (palletId: string): Promise<WarehouseOperationResponse> =>
+  warehouseApiClient.closeWarehousePallet(palletId);
 
-export function restoreWarehouseDatabase(file: File): Promise<WarehouseOperationResponse> {
-  const formData = new FormData();
-  formData.set('file', file);
+export const undoWarehouseLastEntry = (): Promise<WarehouseOperationResponse> =>
+  warehouseApiClient.undoWarehouseLastEntry();
 
-  return requestJson<WarehouseOperationResponse>(warehouseApiRoutes.restore, {
-    method: 'POST',
-    body: formData,
-  });
-}
+export const clearWarehouseDatabase = (): Promise<WarehouseOperationResponse> =>
+  warehouseApiClient.clearWarehouseDatabase();
 
-export const warehouseApiClient: WarehouseApiClientContract = {
-  fetchWarehouseDashboard,
-  fetchWarehousePallet,
-  fetchWarehousePalletContents,
-  registerWarehouseColli,
-  confirmWarehouseMove,
-  closeWarehousePallet,
-  undoWarehouseLastEntry,
-  clearWarehouseDatabase,
-  restoreWarehouseDatabase,
-};
+export const restoreWarehouseDatabase = (file: File): Promise<WarehouseOperationResponse> =>
+  warehouseApiClient.restoreWarehouseDatabase(file);

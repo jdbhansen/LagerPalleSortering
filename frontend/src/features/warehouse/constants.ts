@@ -3,6 +3,7 @@ export type WarehouseViewMode = 'newSorting' | 'fullOverview';
 export const warehouseStorageKeys = {
   viewMode: 'lagerpallesortering:viewMode',
   newSortingActive: 'lagerpallesortering:new-sorting-active',
+  newSortingPendingPallet: 'lagerpallesortering:new-sorting-pending-pallet',
 } as const;
 
 export const warehouseBarcodeFormats = {

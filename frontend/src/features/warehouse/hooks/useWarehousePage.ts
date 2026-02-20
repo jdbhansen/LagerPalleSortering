@@ -9,6 +9,7 @@ import { toErrorMessage } from '../../../shared/errorMessage';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
 import { normalizeExpiryInput } from '../utils/expiryNormalization';
 import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
+import { resolvePalletCode, validateRegisterPayload } from './newSortingWorkflow';
 
 interface RegisterFormState {
   productNumber: string;
@@ -114,16 +115,29 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
   }
 
   async function submitRegisterColli() {
-    const parsedScan = parseGs1ProductAndExpiry(registerForm.productNumber);
-    const productNumber = (parsedScan?.productNumber ?? registerForm.productNumber).trim();
+    const rawManualExpiry = registerForm.expiryDateRaw.trim();
+    const payloadResult = validateRegisterPayload(registerForm.productNumber, registerForm.expiryDateRaw);
     const manualExpiry = normalizeExpiryInput(registerForm.expiryDateRaw).trim();
-    const expiryDateRaw = /^\d{8}$/.test(manualExpiry)
-      ? manualExpiry
-      : (parsedScan?.expiryDateRaw ?? '');
 
+    if (!payloadResult.success) {
+      setStatus({ type: 'error', message: payloadResult.errorMessage ?? 'Ugyldigt input.' });
+      return;
+    }
+
+    if (registerForm.quantity <= 0) {
+      setStatus({ type: 'error', message: 'Antal kolli skal være mindst 1.' });
+      return;
+    }
+
+    if (rawManualExpiry.length > 0 && !/^\d{8}$/.test(manualExpiry)) {
+      setStatus({ type: 'error', message: 'Holdbarhed skal være 8 cifre i format YYYYMMDD.' });
+      return;
+    }
+
+    const payload = payloadResult.value!;
     const result = await apiClient.registerWarehouseColli(
-      productNumber,
-      expiryDateRaw,
+      payload.product,
+      payload.expiry,
       registerForm.quantity,
     );
 
@@ -144,8 +158,12 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
 
   async function submitConfirmMove() {
     // UX fallback: if operator does not scan pallet code, reuse latest suggested pallet.
-    const fallbackCode = lastSuggestedPalletId ? `PALLET:${lastSuggestedPalletId}` : '';
-    const palletCode = confirmForm.scannedPalletCode.trim() || fallbackCode;
+    const palletCode = resolvePalletCode(confirmForm.scannedPalletCode, lastSuggestedPalletId);
+    if (palletCode.length === 0) {
+      setStatus({ type: 'error', message: 'Scan pallelabel for at sætte kollien på plads.' });
+      return;
+    }
+
     const result = await apiClient.confirmWarehouseMove(palletCode, confirmForm.confirmScanCount);
 
     setStatus(result);

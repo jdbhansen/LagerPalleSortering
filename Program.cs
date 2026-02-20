@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 var disableHttpsRedirection = builder.Configuration.GetValue<bool>("DisableHttpsRedirection");
 
 builder.Services.Configure<WarehouseRulesOptions>(builder.Configuration.GetSection(WarehouseRulesOptions.SectionName));
+builder.Services.AddSingleton<IWarehouseDatabaseProvider, SqliteWarehouseDatabaseProvider>();
 builder.Services.AddSingleton<IWarehouseRepository, SqliteWarehouseRepository>();
 builder.Services.AddSingleton<IProductBarcodeNormalizer, DefaultProductBarcodeNormalizer>();
 builder.Services.AddSingleton<IPalletBarcodeService, DefaultPalletBarcodeService>();

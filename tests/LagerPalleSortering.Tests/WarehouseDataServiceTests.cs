@@ -98,6 +98,32 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task RegisterColliAsync_WhitespaceExpiry_UsesNoExpiryBucket()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var result = await fixture.Service.RegisterColliAsync("item-01", "   ", 1);
+        var openPallets = await fixture.Service.GetOpenPalletsAsync();
+
+        Assert.True(result.Success);
+        Assert.Single(openPallets);
+        Assert.Equal("NOEXP", openPallets[0].ExpiryDate);
+    }
+
+    [Fact]
+    public async Task RegisterColliAsync_WhitespaceProduct_ReturnsValidationError()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var result = await fixture.Service.RegisterColliAsync("   ", "20260101", 1);
+        var openPallets = await fixture.Service.GetOpenPalletsAsync();
+
+        Assert.False(result.Success);
+        Assert.Contains("Varenummer mangler", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(openPallets);
+    }
+
+    [Fact]
     public async Task ClosePalletAsync_ThenRegisterSameGroup_CreatesNewPallet()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");

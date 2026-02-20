@@ -8,6 +8,7 @@ export function NewPalletSortingPage() {
   const {
     loading,
     started,
+    activeStep,
     submitting,
     dashboard,
     status,
@@ -69,75 +70,81 @@ export function NewPalletSortingPage() {
         </div>
       ) : (
         <div className="row g-3">
-          <div className="col-12 col-xl-7">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-header bg-body fw-semibold">Trin 1: Kolli + holdbarhed</div>
-              <div className="card-body">
-                <form onSubmit={(event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void registerOneColli(); }}>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="new-sort-product">Kolli stregkode</label>
-                    <input
-                      id="new-sort-product"
-                      ref={productInputRef}
-                      className="form-control form-control-lg"
-                      value={productNumber}
-                      onChange={(event) => setProductNumber(event.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="new-sort-expiry">Holdbarhed (YYYYMMDD)</label>
-                    <input
-                      id="new-sort-expiry"
-                      className="form-control form-control-lg"
-                      value={expiryDateRaw}
-                      onChange={(event) => setExpiryDateRaw(event.target.value)}
-                      inputMode="numeric"
-                      pattern="\d{8}"
-                      required
-                    />
-                  </div>
-                  <button className="btn btn-primary" type="submit" disabled={submitting}>Registrer kolli</button>
-                </form>
-              </div>
+          <div className="col-12">
+            <div className="mb-2 small text-uppercase text-muted fw-semibold">
+              Aktivt trin: {activeStep === 'register' ? '1 af 2' : '2 af 2'}
             </div>
-          </div>
-
-          <div className="col-12 col-xl-5">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-header bg-body fw-semibold">Trin 2: Scan palle</div>
-              <div className="card-body">
-                <form onSubmit={(event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void confirmMove(); }}>
-                  <div className="mb-2 small text-muted">
-                    Foreslået palle: <strong>{suggestedPalletId || '-'}</strong>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" htmlFor="new-sort-pallet">Palle stregkode</label>
-                    <input
-                      id="new-sort-pallet"
-                      ref={palletInputRef}
-                      className="form-control form-control-lg"
-                      value={scannedPalletCode}
-                      onChange={(event) => setScannedPalletCode(event.target.value)}
-                      placeholder={suggestedPalletId ? `PALLET:${suggestedPalletId}` : 'PALLET:P-001'}
-                    />
-                  </div>
-                  <button className="btn btn-success" type="submit" disabled={submitting || !suggestedPalletId}>
-                    Sæt kolli på plads
-                  </button>
-                  <button
-                    className="btn btn-outline-dark ms-2"
-                    type="button"
-                    disabled={submitting || !suggestedPalletId}
-                    onClick={() => {
-                      void closeCurrentPalletAndPrintLabel();
-                    }}
-                  >
-                    Luk palle + print indholdslabel
-                  </button>
-                </form>
+            {activeStep === 'register' ? (
+              <div className="card border-0 shadow-sm">
+                <div className="card-header bg-body fw-semibold">Trin 1: Kolli + holdbarhed</div>
+                <div className="card-body">
+                  <form onSubmit={(event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void registerOneColli(); }}>
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="new-sort-product">Kolli stregkode</label>
+                      <input
+                        id="new-sort-product"
+                        ref={productInputRef}
+                        className="form-control form-control-lg"
+                        autoComplete="off"
+                        value={productNumber}
+                        onChange={(event) => setProductNumber(event.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="new-sort-expiry">Holdbarhed (YYYYMMDD)</label>
+                      <input
+                        id="new-sort-expiry"
+                        className="form-control form-control-lg"
+                        autoComplete="off"
+                        value={expiryDateRaw}
+                        onChange={(event) => setExpiryDateRaw(event.target.value)}
+                        inputMode="numeric"
+                        pattern="\d{8}"
+                        required
+                      />
+                    </div>
+                    <button className="btn btn-primary" type="submit" disabled={submitting}>Registrer kolli</button>
+                  </form>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="card border-0 shadow-sm">
+                <div className="card-header bg-body fw-semibold">Trin 2: Scan palle</div>
+                <div className="card-body">
+                  <form onSubmit={(event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void confirmMove(); }}>
+                    <div className="mb-2 small text-muted">
+                      Foreslået palle: <strong>{suggestedPalletId || '-'}</strong>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="new-sort-pallet">Palle stregkode</label>
+                      <input
+                        id="new-sort-pallet"
+                        ref={palletInputRef}
+                        className="form-control form-control-lg"
+                        autoComplete="off"
+                        value={scannedPalletCode}
+                        onChange={(event) => setScannedPalletCode(event.target.value)}
+                        placeholder={suggestedPalletId ? `PALLET:${suggestedPalletId}` : 'PALLET:P-001'}
+                      />
+                    </div>
+                    <button className="btn btn-success" type="submit" disabled={submitting || !suggestedPalletId}>
+                      Sæt kolli på plads
+                    </button>
+                    <button
+                      className="btn btn-outline-dark ms-2"
+                      type="button"
+                      disabled={submitting || !suggestedPalletId}
+                      onClick={() => {
+                        void closeCurrentPalletAndPrintLabel();
+                      }}
+                    >
+                      Luk palle + print indholdslabel
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

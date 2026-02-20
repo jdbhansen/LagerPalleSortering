@@ -125,6 +125,11 @@ public static class WarehouseApiEndpoints
         HttpRequest request,
         CancellationToken cancellationToken)
     {
+        if (!request.HasFormContentType)
+        {
+            return Results.BadRequest(new WarehouseOperationApiResponse(WarehouseOperationTypes.Error, "Upload backup som multipart/form-data."));
+        }
+
         var form = await request.ReadFormAsync(cancellationToken);
         var file = form.Files.GetFile("file");
         if (file is null || file.Length == 0)

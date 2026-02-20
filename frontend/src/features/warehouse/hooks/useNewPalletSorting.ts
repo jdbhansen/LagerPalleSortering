@@ -7,10 +7,19 @@ import type { WarehouseApiClientContract } from '../api/warehouseApiClientContra
 import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../models';
 import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
-import { warehouseBarcodeFormats, warehouseDefaults, warehouseStorageKeys } from '../constants';
+import { warehouseDefaults } from '../constants';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
 import { normalizeExpiryInput } from '../utils/expiryNormalization';
 import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
+import {
+  browserNewSortingStateStore,
+  type NewSortingStateStore,
+} from './newSortingStateStore';
+import {
+  resolvePalletCode,
+  type NewPalletSortingStep,
+  validateRegisterPayload,
+} from './newSortingWorkflow';
 
 const emptyDashboard: WarehouseDashboardResponse = {
   openPallets: [],
@@ -34,6 +43,7 @@ const defaultFormState: NewPalletSortingFormState = {
 export interface NewPalletSortingViewModel {
   loading: boolean;
   started: boolean;
+  activeStep: NewPalletSortingStep;
   submitting: boolean;
   dashboard: WarehouseDashboardResponse;
   status: WarehouseOperationResponse | null;
@@ -60,14 +70,22 @@ export interface NewPalletSortingViewModel {
   printPalletContentsLabel: (palletId: string) => void;
 }
 
-export function useNewPalletSorting(apiClient: WarehouseApiClientContract = warehouseApiClient): NewPalletSortingViewModel {
-  const [started, setStarted] = useState(() => window.localStorage.getItem(warehouseStorageKeys.newSortingActive) === '1');
+export function useNewPalletSorting(
+  apiClient: WarehouseApiClientContract = warehouseApiClient,
+  stateStore: NewSortingStateStore = browserNewSortingStateStore,
+): NewPalletSortingViewModel {
+  const initialPendingPalletId = stateStore.getPendingPalletId();
+  const [started, setStarted] = useState(() => stateStore.getStarted());
+  const [activeStep, setActiveStep] = useState<NewPalletSortingStep>(initialPendingPalletId ? 'confirm' : 'register');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [dashboard, setDashboard] = useState<WarehouseDashboardResponse>(emptyDashboard);
   const [status, setStatus] = useState<WarehouseOperationResponse | null>(null);
   const [palletContentsRefreshToken, setPalletContentsRefreshToken] = useState(0);
-  const [formState, setFormState] = useState<NewPalletSortingFormState>(defaultFormState);
+  const [formState, setFormState] = useState<NewPalletSortingFormState>(() => ({
+    ...defaultFormState,
+    suggestedPalletId: initialPendingPalletId,
+  }));
   const { productNumber, expiryDateRaw, scannedPalletCode, suggestedPalletId } = formState;
 
   const productInputRef = useRef<HTMLInputElement | null>(null);
@@ -123,8 +141,8 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
   }, [reloadDashboard]);
 
   useEffect(() => {
-    window.localStorage.setItem(warehouseStorageKeys.newSortingActive, started ? '1' : '0');
-  }, [started]);
+    stateStore.setStarted(started);
+  }, [started, stateStore]);
 
   const reportClientError = useCallback((error: unknown) => {
     setStatus({ type: 'error', message: toErrorMessage(error) });
@@ -137,14 +155,16 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     }
 
     setStarted(true);
+    setActiveStep('register');
     setStatus(null);
     resetFormState();
+    stateStore.clearPendingPalletId();
 
     window.setTimeout(() => {
       productInputRef.current?.focus();
       productInputRef.current?.select();
     }, warehouseDefaults.focusDelayMs);
-  }, [resetFormState, started]);
+  }, [resetFormState, started, stateStore]);
 
   const finishSorting = useCallback(() => {
     if (!started) {
@@ -152,38 +172,34 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     }
 
     setStarted(false);
+    setActiveStep('register');
     setSubmitting(false);
     resetFormState();
+    stateStore.clearPendingPalletId();
     setStatus({ type: 'success', message: 'Pallesortering er afsluttet.' });
-  }, [resetFormState, started]);
+  }, [resetFormState, started, stateStore]);
 
   const registerOneColli = useCallback(async () => {
     if (submitting) {
       return;
     }
 
-    const parsedScan = parseGs1ProductAndExpiry(productNumber);
-    const product = (parsedScan?.productNumber ?? productNumber).trim();
-    const normalizedExpiryInput = normalizeExpiryInput(expiryDateRaw);
-    const manualExpiry = normalizedExpiryInput.trim();
-    const expiry = warehouseBarcodeFormats.expiryDatePattern.test(manualExpiry)
-      ? manualExpiry
-      : (parsedScan?.expiryDateRaw ?? '');
-
-    if (product.length === 0) {
-      setStatus({ type: 'error', message: 'Scan kolli stregkode først.' });
-      productInputRef.current?.focus();
+    if (activeStep !== 'register') {
+      setStatus({ type: 'warning', message: 'Fuldfør først trin 2: scan palle.' });
       return;
     }
 
-    if (!warehouseBarcodeFormats.expiryDatePattern.test(expiry)) {
-      setStatus({ type: 'error', message: 'Holdbarhed skal være 8 cifre i format YYYYMMDD.' });
+    const payloadResult = validateRegisterPayload(productNumber, expiryDateRaw);
+    if (!payloadResult.success) {
+      setStatus({ type: 'error', message: payloadResult.errorMessage ?? 'Ugyldigt input.' });
+      productInputRef.current?.focus();
       return;
     }
 
     setSubmitting(true);
     try {
-      const result = await apiClient.registerWarehouseColli(product, expiry, warehouseDefaults.registerQuantity);
+      const payload = payloadResult.value!;
+      const result = await apiClient.registerWarehouseColli(payload.product, payload.expiry, warehouseDefaults.registerQuantity);
       setStatus(result);
 
       if (result.type !== 'success') {
@@ -191,10 +207,14 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
       }
 
       updateFormField('suggestedPalletId', result.palletId ?? '');
+      if (result.palletId) {
+        stateStore.setPendingPalletId(result.palletId);
+      }
       if (result.createdNewPallet && result.palletId) {
         navigateTo(getPrintLabelPath(result.palletId));
       }
 
+      setActiveStep('confirm');
       updateFormField('scannedPalletCode', '');
       await reloadDashboard();
       setPalletContentsRefreshToken((previous) => previous + 1);
@@ -208,16 +228,19 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     } finally {
       setSubmitting(false);
     }
-  }, [apiClient, expiryDateRaw, productNumber, reloadDashboard, submitting, updateFormField]);
+  }, [activeStep, apiClient, expiryDateRaw, productNumber, reloadDashboard, stateStore, submitting, updateFormField]);
 
   const confirmMove = useCallback(async () => {
     if (submitting) {
       return;
     }
 
-    const fallbackCode = suggestedPalletId ? `PALLET:${suggestedPalletId}` : '';
-    const palletCode = scannedPalletCode.trim() || fallbackCode;
+    if (activeStep !== 'confirm') {
+      setStatus({ type: 'warning', message: 'Start med trin 1: scan kolli og holdbarhed.' });
+      return;
+    }
 
+    const palletCode = resolvePalletCode(scannedPalletCode, suggestedPalletId);
     if (palletCode.length === 0) {
       setStatus({ type: 'error', message: 'Scan pallelabel for at sætte kollien på plads.' });
       palletInputRef.current?.focus();
@@ -233,8 +256,11 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
         return;
       }
 
+      setActiveStep('register');
       updateFormField('productNumber', '');
+      updateFormField('expiryDateRaw', '');
       updateFormField('scannedPalletCode', '');
+      stateStore.clearPendingPalletId();
       await reloadDashboard();
       setPalletContentsRefreshToken((previous) => previous + 1);
 
@@ -247,7 +273,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     } finally {
       setSubmitting(false);
     }
-  }, [apiClient, reloadDashboard, scannedPalletCode, submitting, suggestedPalletId, updateFormField]);
+  }, [activeStep, apiClient, reloadDashboard, scannedPalletCode, stateStore, submitting, suggestedPalletId, updateFormField]);
 
   const closeCurrentPalletAndPrintLabel = useCallback(async () => {
     if (!suggestedPalletId || submitting) {
@@ -287,6 +313,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
 
       if (result.type === 'success' && suggestedPalletId === palletId) {
         updateFormField('suggestedPalletId', '');
+        stateStore.clearPendingPalletId();
       }
 
       if (result.type === 'success') {
@@ -297,7 +324,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     } finally {
       setSubmitting(false);
     }
-  }, [apiClient, reloadDashboard, submitting, suggestedPalletId, updateFormField]);
+  }, [apiClient, reloadDashboard, stateStore, submitting, suggestedPalletId, updateFormField]);
 
   const printPalletContentsLabel = useCallback((palletId: string) => {
     if (!palletId) {
@@ -310,6 +337,7 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
   return {
     loading,
     started,
+    activeStep,
     submitting,
     dashboard,
     status,
