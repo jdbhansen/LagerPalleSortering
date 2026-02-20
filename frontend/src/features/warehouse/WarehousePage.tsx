@@ -1,6 +1,7 @@
 import { ClearDatabaseWarning } from './components/ClearDatabaseWarning';
 import { ConfirmMoveCard } from './components/ConfirmMoveCard';
 import { OpenPalletsCard } from './components/OpenPalletsCard';
+import { PalletContentsOverviewCard } from './components/PalletContentsOverviewCard';
 import { RecentEntriesCard } from './components/RecentEntriesCard';
 import { RegisterColliCard } from './components/RegisterColliCard';
 import { RestoreDatabaseCard } from './components/RestoreDatabaseCard';
@@ -25,6 +26,8 @@ export function WarehousePage() {
     setIsSimpleMode,
     setRestoreFile,
     updateRegisterFormField,
+    setRegisterProductFromScan,
+    setRegisterExpiryRaw,
     updateConfirmFormField,
     reportClientError,
     submitRegisterColli,
@@ -71,8 +74,8 @@ export function WarehousePage() {
             productNumber={registerForm.productNumber}
             expiryDateRaw={registerForm.expiryDateRaw}
             quantity={registerForm.quantity}
-            onProductNumberChange={(value) => updateRegisterFormField('productNumber', value)}
-            onExpiryDateChange={(value) => updateRegisterFormField('expiryDateRaw', value)}
+            onProductNumberChange={setRegisterProductFromScan}
+            onExpiryDateChange={setRegisterExpiryRaw}
             onQuantityChange={(value) => updateRegisterFormField('quantity', value)}
             onSubmit={submitRegisterColli}
             onError={reportClientError}
@@ -97,6 +100,11 @@ export function WarehousePage() {
           <OpenPalletsCard
             pallets={dashboard.openPallets}
             onClosePallet={closePallet}
+            onError={reportClientError}
+          />
+
+          <PalletContentsOverviewCard
+            pallets={dashboard.openPallets}
             onError={reportClientError}
           />
 

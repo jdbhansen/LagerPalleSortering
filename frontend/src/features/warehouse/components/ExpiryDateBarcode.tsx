@@ -35,11 +35,6 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
       return;
     }
 
-    const printWindow = window.open('', '_blank', 'width=380,height=250');
-    if (!printWindow) {
-      return;
-    }
-
     const svgMarkup = svgRef.current.outerHTML;
     const html = `<!doctype html>
 <html lang="da">
@@ -63,9 +58,36 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
 </body>
 </html>`;
 
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument;
+    const win = iframe.contentWindow;
+    if (!doc || !win) {
+      document.body.removeChild(iframe);
+      return;
+    }
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    const cleanup = () => {
+      if (iframe.parentNode) {
+        iframe.parentNode.removeChild(iframe);
+      }
+    };
+
+    win.addEventListener('afterprint', cleanup, { once: true });
+    win.focus();
+    win.print();
+    window.setTimeout(cleanup, 1500);
   }
 
   return (

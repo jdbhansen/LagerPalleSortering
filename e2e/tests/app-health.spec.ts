@@ -1,13 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("home page loads key operator sections", async ({ page }) => {
+test("home page loads new pallet sorting view", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/app$/);
 
-  await expect(page.getByRole("heading", { name: "Palle sortering" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Registrer kolli" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Bekræft flytning" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Skift til simpel scanner-visning" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ny pallesortering" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start ny pallesortering" })).toBeVisible();
 });
 
 test("health and metrics endpoints are reachable", async ({ request }) => {

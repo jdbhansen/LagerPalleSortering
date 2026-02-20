@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   warehouseApiClient,
 } from '../api/warehouseApiClient';
 import type { WarehouseApiClientContract } from '../api/warehouseApiClientContract';
 import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../models';
+import { navigateTo } from '../../../navigation';
+import { toErrorMessage } from '../../../shared/errorMessage';
+import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
+import { normalizeExpiryInput } from '../utils/expiryNormalization';
+import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
 
 interface RegisterFormState {
   productNumber: string;
@@ -35,14 +40,6 @@ const defaultConfirmForm: ConfirmFormState = {
   confirmScanCount: 1,
 };
 
-function asErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return 'Ukendt fejl';
-}
-
 export function useWarehousePage(apiClient: WarehouseApiClientContract = warehouseApiClient) {
   const [dashboard, setDashboard] = useState<WarehouseDashboardResponse>(emptyDashboard);
   const [loading, setLoading] = useState(true);
@@ -65,10 +62,10 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     [dashboard.entries],
   );
 
-  async function reloadDashboard() {
+  const reloadDashboard = useCallback(async () => {
     const latestDashboard = await apiClient.fetchWarehouseDashboard();
     setDashboard(latestDashboard);
-  }
+  }, [apiClient]);
 
   useEffect(() => {
     let isActive = true;
@@ -81,7 +78,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
         }
       } catch (error: unknown) {
         if (isActive) {
-          setStatus({ type: 'error', message: asErrorMessage(error) });
+          setStatus({ type: 'error', message: toErrorMessage(error) });
         }
       } finally {
         if (isActive) {
@@ -98,9 +95,9 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     };
   }, [apiClient]);
 
-  function reportClientError(error: unknown) {
-    setStatus({ type: 'error', message: asErrorMessage(error) });
-  }
+  const reportClientError = useCallback((error: unknown) => {
+    setStatus({ type: 'error', message: toErrorMessage(error) });
+  }, []);
 
   function updateRegisterFormField<TField extends RegisterFormField>(
     field: TField,
@@ -117,9 +114,16 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
   }
 
   async function submitRegisterColli() {
+    const parsedScan = parseGs1ProductAndExpiry(registerForm.productNumber);
+    const productNumber = (parsedScan?.productNumber ?? registerForm.productNumber).trim();
+    const manualExpiry = normalizeExpiryInput(registerForm.expiryDateRaw).trim();
+    const expiryDateRaw = /^\d{8}$/.test(manualExpiry)
+      ? manualExpiry
+      : (parsedScan?.expiryDateRaw ?? '');
+
     const result = await apiClient.registerWarehouseColli(
-      registerForm.productNumber,
-      registerForm.expiryDateRaw,
+      productNumber,
+      expiryDateRaw,
       registerForm.quantity,
     );
 
@@ -130,6 +134,9 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     }
 
     setLastSuggestedPalletId(result.palletId ?? '');
+    if (result.createdNewPallet && result.palletId) {
+      navigateTo(getPrintLabelPath(result.palletId));
+    }
     updateRegisterFormField('productNumber', '');
     updateRegisterFormField('quantity', 1);
     await reloadDashboard();
@@ -160,7 +167,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     await reloadDashboard();
 
     if (printContents) {
-      window.open(`/print-pallet-contents/${encodeURIComponent(palletId)}`, '_blank');
+      navigateTo(getPrintPalletContentsPath(palletId));
     }
   }
 
@@ -218,7 +225,20 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     setConfirmForm,
     setRestoreFile,
     updateRegisterFormField,
+    setRegisterProductFromScan: (value: string) => {
+      const parsedScan = parseGs1ProductAndExpiry(value);
+      if (!parsedScan) {
+        updateRegisterFormField('productNumber', value);
+        return;
+      }
+
+      updateRegisterFormField('productNumber', parsedScan.productNumber ?? value);
+      if (parsedScan.expiryDateRaw) {
+        updateRegisterFormField('expiryDateRaw', parsedScan.expiryDateRaw);
+      }
+    },
     updateConfirmFormField,
+    setRegisterExpiryRaw: (value: string) => updateRegisterFormField('expiryDateRaw', normalizeExpiryInput(value)),
     reportClientError,
     submitRegisterColli,
     submitConfirmMove,

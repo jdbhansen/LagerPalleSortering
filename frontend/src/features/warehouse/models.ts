@@ -27,10 +27,21 @@ export interface WarehouseDashboardResponse {
   entries: WarehouseScanEntryRecord[];
 }
 
+export interface WarehousePalletContentsResponse {
+  items: WarehousePalletContentItemRecord[];
+}
+
+export interface WarehousePalletContentItemRecord {
+  productNumber: string;
+  expiryDate: string;
+  quantity: number;
+}
+
 export interface WarehouseOperationResponse {
   type: 'success' | 'warning' | 'error';
   message: string;
   palletId?: string;
   confirmed?: number;
   requested?: number;
+  createdNewPallet?: boolean;
 }

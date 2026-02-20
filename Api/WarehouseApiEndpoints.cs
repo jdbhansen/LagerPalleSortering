@@ -8,6 +8,8 @@ public static class WarehouseApiEndpoints
     public static IEndpointRouteBuilder MapWarehouseApiEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/api/warehouse/dashboard", GetDashboardAsync);
+        endpoints.MapGet("/api/warehouse/pallets/{palletId}", GetPalletAsync);
+        endpoints.MapGet("/api/warehouse/pallets/{palletId}/contents", GetPalletContentsAsync);
         // Scanner/SPA clients do not post antiforgery tokens; endpoints are same-origin and auth-less by design.
         endpoints.MapPost("/api/warehouse/register", RegisterColliAsync).DisableAntiforgery();
         endpoints.MapPost("/api/warehouse/confirm", ConfirmMoveAsync).DisableAntiforgery();
@@ -39,8 +41,31 @@ public static class WarehouseApiEndpoints
             request.Quantity,
             cancellationToken);
 
-        var type = result.Success ? "success" : "error";
-        return Results.Ok(new WarehouseOperationApiResponse(type, result.Message, result.PalletId));
+        var type = result.Success ? WarehouseOperationTypes.Success : WarehouseOperationTypes.Error;
+        return Results.Ok(new WarehouseOperationApiResponse(type, result.Message, result.PalletId, CreatedNewPallet: result.CreatedNewPallet));
+    }
+
+    private static async Task<IResult> GetPalletAsync(
+        IWarehouseDataService dataService,
+        string palletId,
+        CancellationToken cancellationToken)
+    {
+        var pallet = await dataService.GetPalletForPrintAsync(palletId, cancellationToken);
+        if (pallet is null)
+        {
+            return Results.NotFound(new WarehouseOperationApiResponse(WarehouseOperationTypes.Error, $"Palle {palletId} findes ikke."));
+        }
+
+        return Results.Ok(pallet);
+    }
+
+    private static async Task<IResult> GetPalletContentsAsync(
+        IWarehouseDataService dataService,
+        string palletId,
+        CancellationToken cancellationToken)
+    {
+        var items = await dataService.GetPalletContentsAsync(palletId, cancellationToken);
+        return Results.Ok(new WarehousePalletContentsApiResponse(items));
     }
 
     private static async Task<IResult> ConfirmMoveAsync(
@@ -68,7 +93,7 @@ public static class WarehouseApiEndpoints
         CancellationToken cancellationToken)
     {
         await dataService.ClosePalletAsync(palletId, cancellationToken);
-        return Results.Ok(new WarehouseOperationApiResponse("success", $"Palle {palletId} er lukket.", palletId));
+        return Results.Ok(new WarehouseOperationApiResponse(WarehouseOperationTypes.Success, $"Palle {palletId} er lukket.", palletId));
     }
 
     private static async Task<IResult> UndoLastAsync(
@@ -78,11 +103,11 @@ public static class WarehouseApiEndpoints
         var undo = await dataService.UndoLastAsync(cancellationToken);
         if (undo is null)
         {
-            return Results.Ok(new WarehouseOperationApiResponse("error", "Der er intet at fortryde."));
+            return Results.Ok(new WarehouseOperationApiResponse(WarehouseOperationTypes.Error, "Der er intet at fortryde."));
         }
 
         return Results.Ok(new WarehouseOperationApiResponse(
-            "success",
+            WarehouseOperationTypes.Success,
             $"Fortrudt: {undo.Quantity} kolli fjernet fra {undo.PalletId}.",
             undo.PalletId));
     }
@@ -92,7 +117,7 @@ public static class WarehouseApiEndpoints
         CancellationToken cancellationToken)
     {
         await dataService.ClearAllDataAsync(cancellationToken);
-        return Results.Ok(new WarehouseOperationApiResponse("success", "Databasen er ryddet."));
+        return Results.Ok(new WarehouseOperationApiResponse(WarehouseOperationTypes.Success, "Databasen er ryddet."));
     }
 
     private static async Task<IResult> RestoreDatabaseAsync(
@@ -104,12 +129,12 @@ public static class WarehouseApiEndpoints
         var file = form.Files.GetFile("file");
         if (file is null || file.Length == 0)
         {
-            return Results.BadRequest(new WarehouseOperationApiResponse("error", "Vælg en backupfil først."));
+            return Results.BadRequest(new WarehouseOperationApiResponse(WarehouseOperationTypes.Error, "Vælg en backupfil først."));
         }
 
         await using var stream = file.OpenReadStream();
         await dataService.RestoreDatabaseAsync(stream, cancellationToken);
-        return Results.Ok(new WarehouseOperationApiResponse("success", "Database gendannet fra backup."));
+        return Results.Ok(new WarehouseOperationApiResponse(WarehouseOperationTypes.Success, "Database gendannet fra backup."));
     }
 
     private static WarehouseOperationApiResponse CreateBatchOperationResponse(MoveBatchConfirmationResult result) =>

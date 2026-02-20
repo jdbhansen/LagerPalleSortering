@@ -7,10 +7,12 @@ public sealed record RegisterColliApiRequest(string? ProductNumber, string? Expi
 public sealed record ConfirmMoveApiRequest(string? ScannedPalletCode, int ConfirmScanCount);
 
 public sealed record WarehouseDashboardApiResponse(List<PalletRecord> OpenPallets, List<ScanEntryRecord> Entries);
+public sealed record WarehousePalletContentsApiResponse(List<PalletContentItemRecord> Items);
 
 public sealed record WarehouseOperationApiResponse(
     string Type,
     string Message,
     string? PalletId = null,
     int Confirmed = 0,
-    int Requested = 0);
+    int Requested = 0,
+    bool CreatedNewPallet = false);

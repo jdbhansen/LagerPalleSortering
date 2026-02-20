@@ -1,49 +1,39 @@
 # Brugerguide
-Sidst opdateret: 2026-02-17.
+Sidst opdateret: 2026-02-20.
 
-## Hvad appen bruges til
-LagerPalleSortering bruges ved varemodtagelse til at styre, hvilken palle hvert kolli skal flyttes til.
+## Formål
+Appen bruges ved varemodtagelse til at styre, hvilken palle hvert kolli flyttes til.
 
-## Standard workflow
-1. Registrer kolli
-   Scan/indtast `Varenummer`, `Holdbarhed (YYYYMMDD)` og `Antal kolli`.
-2. Flyt kolli
-   Følg foreslået palle i statusfeltet.
-3. Bekræft flyt
-   Scan pallelabel (`PALLET:P-xxx`) og bekræft.
+## Tilstande
+- `Ny pallesortering`: fokuseret scannerflow med én aktiv sortering ad gangen
+- `Fuld oversigt`: komplet driftsoverblik med tabeller, restore og historik
 
-## UI-funktioner
-- `Skift til simpel scanner-visning`
-- `Eksport CSV` / `Eksport Excel`
-- `Backup DB` / `Gendan database`
-- `Fortryd seneste`
-- `Luk` / `Luk + print`
-- `Print indhold` fra registreringstabellen (kan bruges til lukkede paller)
-- `190x100`-printknap til etiketprinter (SVG-skaleret output)
+## Workflow i ny pallesortering
+1. Tryk `Start ny pallesortering`
+2. Scan/indtast `Kolli stregkode`
+3. Hvis scanner-data er GS1/QR med `AI(01)` og `AI(17)`, udfyldes varenummer + holdbarhed automatisk
+4. Ved dato-input accepteres både `YYYYMMDD` og `YYMMDD` (normaliseres automatisk til `YYYYMMDD` når gyldig)
+5. Tryk `Registrer kolli`
+6. Scan `Palle stregkode`
+7. Tryk `Sæt kolli på plads`
+8. Når du er færdig, tryk `Afslut pallesortering`
 
-## Datostregkode
-- Holdbarhedsfeltet kan generere en **datostregkode**.
-- Datostregkoden er visuelt markeret som `Dato / Holdbarhed` for ikke at forveksles med varestregkode.
-- Datostregkoden kan printes og scannes igen senere.
-- Visningstekst er `YYYY-MM-DD`, mens scanningsdata stadig er `YYYYMMDD`.
+## Lukning og print
+- `Luk palle + print indholdslabel` lukker den foreslåede palle og printer automatisk.
+- I `Indhold på paller` kan du:
+  - vælge palle (åben/lukket)
+  - se varelinjer
+  - lukke palle
+  - genprinte indholdslabel
+  - se opdaterede tal efter `Flytning bekræftet` uden at skifte palle manuelt
 
-## Scannerregler
-- Varescan: EAN-8, EAN-13, UPC-A
-- UPC-A normaliseres til EAN-13
-- Palle-scan tåler scanner-støj (`æ/Æ`, `+`, ekstra tegn)
+## Print
+- Print foregår i samme SPA-forløb (ingen nye faner)
+- Ruter:
+  - `/app/print-label/{palletId}`
+  - `/app/print-pallet-contents/{palletId}?format=label190x100`
 
-## Typiske fejlbeskeder
-- `Scan ignoreret...` (dubletscan)
-- `Ugyldig pallestregkode...`
-- `Ingen u-bekræftede kolli...`
-
-## Gode driftsvaner
-- Brug altid scanner i samme tastaturlayout som Windows-maskinen
-- Tag backup før større ændringer eller nulstilling
-- Bekræft antal i tabellen efter batch-scan
-
-## Relaterede dokumenter
-- Projektoversigt: [`README.md`](../README.md)
-- Operator-flow: [`docs/OPERATOR_FLOW.md`](OPERATOR_FLOW.md)
-- Teknisk guide: [`docs/TECHNICAL_GUIDE.md`](TECHNICAL_GUIDE.md)
-- Drift: [`docs/OPERATIONS.md`](OPERATIONS.md)
+## Typiske fejl
+- `Ugyldig pallestregkode`
+- `Ingen u-bekræftede kolli fundet`
+- `Holdbarhed skal være 8 cifre i format YYYYMMDD`

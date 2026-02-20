@@ -23,5 +23,12 @@ export default defineConfig({
     setupFiles: './src/test/setupTests.ts',
     globals: true,
     css: true,
+    pool: 'forks',
+    maxWorkers: 1,
+    fileParallelism: false,
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    clearMocks: true,
+    restoreMocks: true,
   },
 });
