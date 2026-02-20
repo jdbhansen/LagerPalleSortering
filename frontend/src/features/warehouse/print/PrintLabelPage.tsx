@@ -3,6 +3,7 @@ import JsBarcode from 'jsbarcode';
 import { navigateTo } from '../../../navigation';
 import { usePrintOnMount } from '../hooks/usePrintOnMount';
 import { toPalletBarcodePayload } from '../utils/palletBarcodePayload';
+import { formatPrintTimestamp } from '../utils/printTimestamp';
 
 interface PrintLabelPageProps {
   palletId: string;
@@ -23,6 +24,7 @@ function createBarcodeSvg(value: string, width = 2, height = 88): string {
 export function PrintLabelPage({ palletId }: PrintLabelPageProps) {
   const payload = useMemo(() => toPalletBarcodePayload(palletId), [palletId]);
   const barcodeMarkup = useMemo(() => createBarcodeSvg(payload), [payload]);
+  const printedAt = useMemo(() => formatPrintTimestamp(), []);
   usePrintOnMount();
 
   return (
@@ -32,7 +34,7 @@ export function PrintLabelPage({ palletId }: PrintLabelPageProps) {
         <div className="print-pallet-id">{palletId}</div>
         <div className="print-barcode" dangerouslySetInnerHTML={{ __html: barcodeMarkup }} />
         <div className="print-code">{payload}</div>
-        <div className="print-timestamp">Udskrevet: {new Date().toLocaleString('da-DK')}</div>
+        <div className="print-timestamp">Udskrevet: {printedAt}</div>
       </section>
 
       <div className="screen-only mt-3 d-flex gap-2 justify-content-center">

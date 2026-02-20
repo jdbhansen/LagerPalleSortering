@@ -3,6 +3,7 @@ import type { WarehousePalletContentItemRecord } from '../models';
 import { fetchWarehousePalletContents } from '../api/warehouseApiClient';
 import { ScanBarcodeSvg } from '../components/ScanBarcodeSvg';
 import { formatExpiryDateForDisplay } from '../utils/expiryDate';
+import { formatPrintTimestamp } from '../utils/printTimestamp';
 import { navigateTo } from '../../../navigation';
 import { usePrintOnMount } from '../hooks/usePrintOnMount';
 
@@ -14,6 +15,7 @@ interface PrintPalletContentsPageProps {
 export function PrintPalletContentsPage({ palletId, format }: PrintPalletContentsPageProps) {
   const [items, setItems] = useState<WarehousePalletContentItemRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const printedAt = useMemo(() => formatPrintTimestamp(), []);
 
   const isLabel190x100 = useMemo(
     () => String(format ?? '').toLowerCase() === 'label190x100',
@@ -50,6 +52,7 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
       <section className={`print-sheet text-center ${isLabel190x100 ? 'print-contents-sheet-190x100' : 'print-contents-sheet'}`}>
         <h1 className="print-title">Palle indhold</h1>
         <div className="print-pallet-id">Palle: {palletId}</div>
+        <div className="print-timestamp">Udskrevet: {printedAt}</div>
 
         {error ? (
           <div className="alert alert-danger" role="alert">{error}</div>
