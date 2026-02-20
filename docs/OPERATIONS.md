@@ -28,6 +28,11 @@ npm run test:e2e
 - Verificer at databasen ikke er låst (`App_Data/lager.db`).
 - `Indhold på paller` bruger event-baseret opdatering (ikke konstant polling), så opdatering sker ved relevante handlinger.
 
+### Holdbarhedsdato bliver afvist ved scanning
+- Ved GS1/QR med `AI(17)` konverteres dato automatisk til `YYYYMMDD`.
+- Ved manuel indtastning konverteres gyldig `YYMMDD` automatisk til `YYYYMMDD`.
+- Ugyldige kalenderdatoer normaliseres ikke og bliver afvist af validering.
+
 ### Print åbner ny fane
 - Kør hard refresh (`Ctrl+F5`) for at rydde cache.
 - Bekræft at nyeste frontend build ligger i `wwwroot/app/assets`.

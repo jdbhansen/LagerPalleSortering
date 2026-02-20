@@ -22,6 +22,10 @@ Dette dokument beskriver status for dependency-opdateringer og forsøget på ESL
   - `dotnet test` passerer
   - `dotnet list LagerPalleSortering.csproj package --vulnerable --include-transitive` finder ingen sårbare NuGet-pakker
 
+## Seneste funktionsopdateringer (React)
+- Registreringsflow understøtter GS1/QR parsing af `AI(01)` varenummer og `AI(17)` holdbarhed.
+- Dato-input normaliserer automatisk gyldig `YYMMDD` til `YYYYMMDD`.
+
 ## ESLint 10 spike resultat
 - `eslint@10` kan installeres, men lint fejler i praksis i nuværende plugin-kæde.
 - Reproducerbar fejl:

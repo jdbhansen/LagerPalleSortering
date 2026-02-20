@@ -15,6 +15,10 @@ Sidst opdateret: 2026-02-20.
 ## Warehouse feature
 - `src/features/warehouse/constants.ts`
   - storage keys, defaults og valideringsmønstre
+- `src/features/warehouse/utils/gs1Parser.ts`
+  - udtrækker varenummer/holdbarhed fra GS1 (`AI(01)`, `AI(17)`)
+- `src/features/warehouse/utils/expiryNormalization.ts`
+  - normaliserer gyldig `YYMMDD` til `YYYYMMDD`
 - `src/features/warehouse/warehouseRouting.ts`
   - route parser + route builders for print
 - `src/features/warehouse/hooks/useNewPalletSorting.ts`
@@ -33,6 +37,7 @@ Sidst opdateret: 2026-02-20.
 - Sideeffekter i hooks, UI-komponenter holdes så presentational som muligt
 - API-klient abstraheres via `WarehouseApiClientContract`
 - Undgå magic strings via konstanter og route-builders
+- Registreringsflows (ny sortering + fuld oversigt) deler samme GS1/dato-normaliseringslogik
 
 ## Udvikling
 

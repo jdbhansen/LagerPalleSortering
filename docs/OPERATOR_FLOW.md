@@ -7,11 +7,12 @@ Dagligt operatørflow i React-frontend (`/app`).
 ## Ny pallesortering
 1. Start ny sortering
 2. Scan kolli stregkode
-3. Indtast holdbarhed (YYYYMMDD)
-4. Registrer kolli
-5. Scan palle
-6. Sæt kolli på plads
-7. Afslut pallesortering når batch er færdig
+3. GS1/QR-scans (AI 01 + AI 17) udfylder automatisk varenummer + holdbarhed
+4. Ved manuel dato kan både `YYYYMMDD` og `YYMMDD` bruges (auto-normaliseres når gyldig)
+5. Registrer kolli
+6. Scan palle
+7. Sæt kolli på plads
+8. Afslut pallesortering når batch er færdig
 
 ## Lukning og label
 - `Luk palle + print indholdslabel` lukker foreslået palle og printer automatisk.

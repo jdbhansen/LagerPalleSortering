@@ -25,6 +25,10 @@ Sidst opdateret: 2026-02-20.
   - state samlet i form-interface + API client injection via kontrakt
 - `src/features/warehouse/components/PalletContentsOverviewCard.tsx`
   - opdaterer indhold via `refreshToken` fra relevante brugerhandlinger
+- `src/features/warehouse/utils/gs1Parser.ts`
+  - parser GS1 payloads (både parenthesized og compact) for `AI(01)` + `AI(17)`
+- `src/features/warehouse/utils/expiryNormalization.ts`
+  - normaliserer dato-input (`YYMMDD` -> `YYYYMMDD`) når datoen er gyldig
 - `src/features/warehouse/hooks/usePrintOnMount.ts`
   - genbrugelig print-sideeffekt
 - `src/features/warehouse/api/warehouseApiClient.ts`

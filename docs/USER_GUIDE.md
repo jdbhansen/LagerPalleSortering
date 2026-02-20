@@ -11,11 +11,12 @@ Appen bruges ved varemodtagelse til at styre, hvilken palle hvert kolli flyttes 
 ## Workflow i ny pallesortering
 1. Tryk `Start ny pallesortering`
 2. Scan/indtast `Kolli stregkode`
-3. Indtast `Holdbarhed (YYYYMMDD)`
-4. Tryk `Registrer kolli`
-5. Scan `Palle stregkode`
-6. Tryk `Sæt kolli på plads`
-7. Når du er færdig, tryk `Afslut pallesortering`
+3. Hvis scanner-data er GS1/QR med `AI(01)` og `AI(17)`, udfyldes varenummer + holdbarhed automatisk
+4. Ved dato-input accepteres både `YYYYMMDD` og `YYMMDD` (normaliseres automatisk til `YYYYMMDD` når gyldig)
+5. Tryk `Registrer kolli`
+6. Scan `Palle stregkode`
+7. Tryk `Sæt kolli på plads`
+8. Når du er færdig, tryk `Afslut pallesortering`
 
 ## Lukning og print
 - `Luk palle + print indholdslabel` lukker den foreslåede palle og printer automatisk.

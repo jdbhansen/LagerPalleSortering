@@ -20,6 +20,8 @@ Sidst opdateret: 2026-02-20.
 - React SPA på `/app` med to tilstande: `Ny pallesortering` og `Fuld oversigt`
 - Ét aktivt sorteringsforløb ad gangen med eksplicit `Afslut pallesortering`
 - Scannerflow: registrer kolli -> scan palle -> bekræft flyt
+- GS1/QR parsing i registrering: læser `AI(01)` varenummer og `AI(17)` holdbarhed automatisk
+- Automatisk dato-normalisering: `YYMMDD` konverteres til gyldig `YYYYMMDD` ved registrering
 - Auto-print af pallelabel, når en ny palle oprettes
 - Luk palle og auto-print palle-indholdslabel (`190x100`)
 - Sektion `Indhold på paller` i begge visninger (inkl. genprint af lukkede paller)
