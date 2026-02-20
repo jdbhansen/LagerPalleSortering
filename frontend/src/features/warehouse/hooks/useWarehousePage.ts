@@ -7,6 +7,8 @@ import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../
 import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
+import { normalizeExpiryInput } from '../utils/expiryNormalization';
+import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
 
 interface RegisterFormState {
   productNumber: string;
@@ -112,9 +114,16 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
   }
 
   async function submitRegisterColli() {
+    const parsedScan = parseGs1ProductAndExpiry(registerForm.productNumber);
+    const productNumber = (parsedScan?.productNumber ?? registerForm.productNumber).trim();
+    const manualExpiry = normalizeExpiryInput(registerForm.expiryDateRaw).trim();
+    const expiryDateRaw = /^\d{8}$/.test(manualExpiry)
+      ? manualExpiry
+      : (parsedScan?.expiryDateRaw ?? '');
+
     const result = await apiClient.registerWarehouseColli(
-      registerForm.productNumber,
-      registerForm.expiryDateRaw,
+      productNumber,
+      expiryDateRaw,
       registerForm.quantity,
     );
 
@@ -216,7 +225,20 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     setConfirmForm,
     setRestoreFile,
     updateRegisterFormField,
+    setRegisterProductFromScan: (value: string) => {
+      const parsedScan = parseGs1ProductAndExpiry(value);
+      if (!parsedScan) {
+        updateRegisterFormField('productNumber', value);
+        return;
+      }
+
+      updateRegisterFormField('productNumber', parsedScan.productNumber ?? value);
+      if (parsedScan.expiryDateRaw) {
+        updateRegisterFormField('expiryDateRaw', parsedScan.expiryDateRaw);
+      }
+    },
     updateConfirmFormField,
+    setRegisterExpiryRaw: (value: string) => updateRegisterFormField('expiryDateRaw', normalizeExpiryInput(value)),
     reportClientError,
     submitRegisterColli,
     submitConfirmMove,

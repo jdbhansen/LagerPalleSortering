@@ -47,7 +47,7 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
 
   return (
     <main className="print-page print-contents-page">
-      <section className={`print-sheet ${isLabel190x100 ? 'print-contents-sheet-190x100' : 'print-contents-sheet'}`}>
+      <section className={`print-sheet text-center ${isLabel190x100 ? 'print-contents-sheet-190x100' : 'print-contents-sheet'}`}>
         <h1 className="print-title">Palle indhold</h1>
         <div className="print-pallet-id">Palle: {palletId}</div>
 
@@ -62,7 +62,7 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
               const scannableExpiry = /^\d{8}$/.test(item.expiryDate);
 
               return (
-                <article key={`${item.productNumber}-${item.expiryDate}-${index}`} className="print-item-row">
+                <article key={`${item.productNumber}-${item.expiryDate}-${index}`} className="print-item-row text-center">
                   <div className="fw-semibold">Vare: {item.productNumber}</div>
                   <div>Holdbarhed: {expiryDisplay}</div>
                   <div>Antal: {item.quantity}</div>

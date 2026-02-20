@@ -9,6 +9,8 @@ import { navigateTo } from '../../../navigation';
 import { toErrorMessage } from '../../../shared/errorMessage';
 import { warehouseBarcodeFormats, warehouseDefaults, warehouseStorageKeys } from '../constants';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
+import { normalizeExpiryInput } from '../utils/expiryNormalization';
+import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
 
 const emptyDashboard: WarehouseDashboardResponse = {
   openPallets: [],
@@ -160,8 +162,13 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
       return;
     }
 
-    const product = productNumber.trim();
-    const expiry = expiryDateRaw.trim();
+    const parsedScan = parseGs1ProductAndExpiry(productNumber);
+    const product = (parsedScan?.productNumber ?? productNumber).trim();
+    const normalizedExpiryInput = normalizeExpiryInput(expiryDateRaw);
+    const manualExpiry = normalizedExpiryInput.trim();
+    const expiry = warehouseBarcodeFormats.expiryDatePattern.test(manualExpiry)
+      ? manualExpiry
+      : (parsedScan?.expiryDateRaw ?? '');
 
     if (product.length === 0) {
       setStatus({ type: 'error', message: 'Scan kolli stregkode først.' });
@@ -316,8 +323,19 @@ export function useNewPalletSorting(apiClient: WarehouseApiClientContract = ware
     palletContentsRefreshToken,
     productInputRef,
     palletInputRef,
-    setProductNumber: (value) => updateFormField('productNumber', value),
-    setExpiryDateRaw: (value) => updateFormField('expiryDateRaw', value),
+    setProductNumber: (value) => {
+      const parsedScan = parseGs1ProductAndExpiry(value);
+      if (!parsedScan) {
+        updateFormField('productNumber', value);
+        return;
+      }
+
+      updateFormField('productNumber', parsedScan.productNumber ?? value);
+      if (parsedScan.expiryDateRaw) {
+        updateFormField('expiryDateRaw', parsedScan.expiryDateRaw);
+      }
+    },
+    setExpiryDateRaw: (value) => updateFormField('expiryDateRaw', normalizeExpiryInput(value)),
     setScannedPalletCode: (value) => updateFormField('scannedPalletCode', value),
     startNewSorting,
     finishSorting,

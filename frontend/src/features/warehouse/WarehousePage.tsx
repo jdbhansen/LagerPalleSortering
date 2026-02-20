@@ -26,6 +26,8 @@ export function WarehousePage() {
     setIsSimpleMode,
     setRestoreFile,
     updateRegisterFormField,
+    setRegisterProductFromScan,
+    setRegisterExpiryRaw,
     updateConfirmFormField,
     reportClientError,
     submitRegisterColli,
@@ -72,8 +74,8 @@ export function WarehousePage() {
             productNumber={registerForm.productNumber}
             expiryDateRaw={registerForm.expiryDateRaw}
             quantity={registerForm.quantity}
-            onProductNumberChange={(value) => updateRegisterFormField('productNumber', value)}
-            onExpiryDateChange={(value) => updateRegisterFormField('expiryDateRaw', value)}
+            onProductNumberChange={setRegisterProductFromScan}
+            onExpiryDateChange={setRegisterExpiryRaw}
             onQuantityChange={(value) => updateRegisterFormField('quantity', value)}
             onSubmit={submitRegisterColli}
             onError={reportClientError}
