@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using LagerPalleSortering.Api;
 using LagerPalleSortering.Tests.TestInfrastructure;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace LagerPalleSortering.Tests;
 
@@ -208,6 +209,21 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task UndoEndpoint_WhenNoEntries_ReturnsErrorResponse()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var undoResponse = await client.PostAsync("/api/warehouse/undo", null);
+        var undoPayload = await undoResponse.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, undoResponse.StatusCode);
+        Assert.NotNull(undoPayload);
+        Assert.Equal("error", undoPayload.Type);
+        Assert.Contains("intet at fortryde", undoPayload.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task BackupAndRestoreEndpoints_RestoreDatabaseState()
     {
         using var factory = new WarehouseApiWebApplicationFactory();
@@ -339,6 +355,21 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task HealthEndpoint_AfterRegister_ContainsNonEmptyWarehouseSnapshot()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        await client.PostAsJsonAsync("/api/warehouse/register", new RegisterColliApiRequest("api-health", "20270101", 1));
+
+        var healthResponse = await client.GetAsync("/health");
+        var healthBody = await healthResponse.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
+        Assert.Contains("\"openPallets\":1", healthBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"lastEntryTimestampUtc\":", healthBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task ExportEndpoints_ReturnFilesWithExpectedContentTypes()
     {
         using var factory = new WarehouseApiWebApplicationFactory();
@@ -435,6 +466,49 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task ProtectedNonApiRoute_WhenAuthEnabledAndNotLoggedIn_RedirectsToLogin()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        var response = await client.GetAsync("/health");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/login", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public void AppStartup_WhenAuthRequiredWithoutUsers_ThrowsConfigurationError()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(
+            disableAuth: false,
+            configureAuthUser: false,
+            clearDefaultConfiguration: true);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
+
+        Assert.Contains("Auth er aktiveret", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AppInProductionEnvironment_BootstrapsAndServesRoot()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(environmentName: "Production");
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/app", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
     public async Task AuthEndpoints_Logout_ClearsAuthentication()
     {
         using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");
@@ -450,5 +524,19 @@ public sealed class WarehouseApiEndpointsTests
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, meAfterLogout.StatusCode);
         Assert.Contains("\"authenticated\":false", meBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AuthMe_WhenAuthIsDisabled_ReturnsAnonymousAuthenticated()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(disableAuth: true);
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/auth/me");
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("\"authenticated\":true", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"username\":\"anonymous\"", body, StringComparison.OrdinalIgnoreCase);
     }
 }

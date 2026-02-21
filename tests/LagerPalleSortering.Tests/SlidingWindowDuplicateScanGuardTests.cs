@@ -62,6 +62,46 @@ public sealed class SlidingWindowDuplicateScanGuardTests
         Assert.False(second);
     }
 
+    [Fact]
+    public void IsBlocked_WhenDifferentPalletsAreScanned_DoesNotCrossBlock()
+    {
+        var rules = Options.Create(new WarehouseRulesOptions
+        {
+            EnableDuplicateScanGuard = true,
+            DuplicateScanWindowMs = 5_000
+        });
+        var timeProvider = new MutableTimeProvider(DateTimeOffset.Parse("2026-01-01T00:00:00Z"));
+        var guard = new SlidingWindowDuplicateScanGuard(rules, timeProvider);
+
+        var first = guard.IsBlocked("P-001");
+        var other = guard.IsBlocked("P-002");
+
+        Assert.False(first);
+        Assert.False(other);
+    }
+
+    [Fact]
+    public void IsBlocked_WhenCacheExceedsLimit_PerformsCleanupWithoutBlockingNewScan()
+    {
+        var rules = Options.Create(new WarehouseRulesOptions
+        {
+            EnableDuplicateScanGuard = true,
+            DuplicateScanWindowMs = 1_000
+        });
+        var timeProvider = new MutableTimeProvider(DateTimeOffset.Parse("2026-01-01T00:00:00Z"));
+        var guard = new SlidingWindowDuplicateScanGuard(rules, timeProvider);
+
+        for (var i = 0; i < 520; i++)
+        {
+            Assert.False(guard.IsBlocked($"P-{i:000}"));
+        }
+
+        timeProvider.Advance(TimeSpan.FromSeconds(5));
+        var result = guard.IsBlocked("P-999");
+
+        Assert.False(result);
+    }
+
     private sealed class MutableTimeProvider : TimeProvider
     {
         private DateTimeOffset _utcNow;

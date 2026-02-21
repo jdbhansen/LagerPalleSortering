@@ -414,6 +414,19 @@ public sealed class WarehouseDataServiceTests
     }
 
     [Fact]
+    public async Task ConfirmMoveBatchByPalletScanAsync_WhenFirstScanFails_ReturnsErrorStatus()
+    {
+        using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");
+
+        var result = await fixture.Service.ConfirmMoveBatchByPalletScanAsync("INVALID", 2);
+
+        Assert.Equal("error", result.Status);
+        Assert.Equal(0, result.Confirmed);
+        Assert.Equal(2, result.Requested);
+        Assert.Contains("Ugyldig", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task ConfirmMoveByPalletScanAsync_InvalidCode_ReturnsError()
     {
         using var fixture = await WarehouseTestFixture.CreateAsync("LagerPalleSorteringTests");

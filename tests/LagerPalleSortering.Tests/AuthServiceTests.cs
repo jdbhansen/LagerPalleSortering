@@ -56,6 +56,61 @@ public sealed class AuthServiceTests
     }
 
     [Fact]
+    public void ValidateCredentials_WhenUsernameMissing_ReturnsFalse()
+    {
+        var service = CreateService(new AuthOptions
+        {
+            RequireAuthentication = true,
+            Users =
+            [
+                new AuthUserOptions { Username = "admin", Password = "secret" }
+            ]
+        });
+
+        var valid = service.ValidateCredentials("   ", "secret", out var username);
+
+        Assert.False(valid);
+        Assert.Equal(string.Empty, username);
+    }
+
+    [Fact]
+    public void ValidateCredentials_WhenPasswordMissing_ReturnsFalse()
+    {
+        var service = CreateService(new AuthOptions
+        {
+            RequireAuthentication = true,
+            Users =
+            [
+                new AuthUserOptions { Username = "admin", Password = "secret" }
+            ]
+        });
+
+        var valid = service.ValidateCredentials("admin", string.Empty, out var username);
+
+        Assert.False(valid);
+        Assert.Equal(string.Empty, username);
+    }
+
+    [Fact]
+    public void ValidateCredentials_WhenConfiguredUserIsInvalid_ReturnsFalse()
+    {
+        var service = CreateService(new AuthOptions
+        {
+            RequireAuthentication = true,
+            Users =
+            [
+                new AuthUserOptions { Username = "admin", Password = "secret" },
+                new AuthUserOptions { Username = "broken", Password = "" }
+            ]
+        });
+
+        var valid = service.ValidateCredentials("broken", "anything", out var username);
+
+        Assert.False(valid);
+        Assert.Equal(string.Empty, username);
+    }
+
+    [Fact]
     public void SessionTimeoutMinutes_WhenConfiguredTooLow_UsesMinimum30()
     {
         var service = CreateService(new AuthOptions
@@ -64,6 +119,17 @@ public sealed class AuthServiceTests
         });
 
         Assert.Equal(30, service.SessionTimeoutMinutes);
+    }
+
+    [Fact]
+    public void SessionTimeoutMinutes_WhenConfiguredHigh_UsesConfiguredValue()
+    {
+        var service = CreateService(new AuthOptions
+        {
+            SessionTimeoutMinutes = 240
+        });
+
+        Assert.Equal(240, service.SessionTimeoutMinutes);
     }
 
     private static AuthService CreateService(AuthOptions options)
