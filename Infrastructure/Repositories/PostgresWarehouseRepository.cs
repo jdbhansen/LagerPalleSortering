@@ -446,9 +446,9 @@ public sealed partial class PostgresWarehouseRepository : IWarehouseRepository, 
             {
                 syncSequence.Transaction = tx;
                 syncSequence.CommandText = """
-                    SELECT setval(pg_get_serial_sequence('PalletItems', 'Id'), COALESCE((SELECT MAX(Id) FROM PalletItems), 1), (SELECT COUNT(1) > 0 FROM PalletItems));
-                    SELECT setval(pg_get_serial_sequence('ScanEntries', 'Id'), COALESCE((SELECT MAX(Id) FROM ScanEntries), 1), (SELECT COUNT(1) > 0 FROM ScanEntries));
-                    SELECT setval(pg_get_serial_sequence('AuditEntries', 'Id'), COALESCE((SELECT MAX(Id) FROM AuditEntries), 1), (SELECT COUNT(1) > 0 FROM AuditEntries));
+                    SELECT setval(pg_get_serial_sequence('PalletItems', 'id'), COALESCE((SELECT MAX(Id) FROM PalletItems), 1), (SELECT COUNT(1) > 0 FROM PalletItems));
+                    SELECT setval(pg_get_serial_sequence('ScanEntries', 'id'), COALESCE((SELECT MAX(Id) FROM ScanEntries), 1), (SELECT COUNT(1) > 0 FROM ScanEntries));
+                    SELECT setval(pg_get_serial_sequence('AuditEntries', 'id'), COALESCE((SELECT MAX(Id) FROM AuditEntries), 1), (SELECT COUNT(1) > 0 FROM AuditEntries));
                     """;
                 await syncSequence.ExecuteNonQueryAsync(cancellationToken);
             }
