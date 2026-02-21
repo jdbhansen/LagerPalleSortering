@@ -67,6 +67,57 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task GetPalletEndpoint_WhenPalletExists_ReturnsPallet()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var registerResponse = await client.PostAsJsonAsync(
+            "/api/warehouse/register",
+            new RegisterColliApiRequest("api-pallet", "20270101", 1));
+        var registerPayload = await registerResponse.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        var response = await client.GetAsync($"/api/warehouse/pallets/{registerPayload!.PalletId}");
+        var payload = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("\"palletId\"", payload, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(registerPayload.PalletId!, payload, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GetPalletEndpoint_WhenPalletMissing_ReturnsNotFound()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/warehouse/pallets/P-999");
+        var payload = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains("findes ikke", payload, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GetPalletContentsEndpoint_ReturnsContentsRows()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var registerResponse = await client.PostAsJsonAsync(
+            "/api/warehouse/register",
+            new RegisterColliApiRequest("api-contents", "20270101", 2));
+        var registerPayload = await registerResponse.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        var response = await client.GetAsync($"/api/warehouse/pallets/{registerPayload!.PalletId}/contents");
+        var payload = await response.Content.ReadFromJsonAsync<WarehousePalletContentsApiResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Single(payload.Items);
+        Assert.Equal("API-CONTENTS", payload.Items[0].ProductNumber);
+        Assert.Equal(2, payload.Items[0].Quantity);
+    }
+
+    [Fact]
     public async Task RegisterAndConfirmFlow_UpdatesDashboardAndReturnsExpectedStatus()
     {
         using var factory = new WarehouseApiWebApplicationFactory();
@@ -102,6 +153,29 @@ public sealed class WarehouseApiEndpointsTests
         Assert.NotEmpty(dashboardPayload.Entries);
         Assert.Equal(2, dashboardPayload.Entries[0].ConfirmedQuantity);
         Assert.True(dashboardPayload.Entries[0].ConfirmedMoved);
+    }
+
+    [Fact]
+    public async Task ClosePalletEndpoint_ClosesPalletAndReturnsSuccess()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var registerResponse = await client.PostAsJsonAsync(
+            "/api/warehouse/register",
+            new RegisterColliApiRequest("api-close", "20270101", 1));
+        var registerPayload = await registerResponse.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        var closeResponse = await client.PostAsync($"/api/warehouse/pallets/{registerPayload!.PalletId}/close", null);
+        var closePayload = await closeResponse.Content.ReadFromJsonAsync<WarehouseOperationApiResponse>();
+
+        var dashboardResponse = await client.GetAsync("/api/warehouse/dashboard");
+        var dashboardPayload = await dashboardResponse.Content.ReadFromJsonAsync<WarehouseDashboardApiResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, closeResponse.StatusCode);
+        Assert.NotNull(closePayload);
+        Assert.Equal("success", closePayload.Type);
+        Assert.NotNull(dashboardPayload);
+        Assert.Empty(dashboardPayload.OpenPallets);
     }
 
     [Fact]
@@ -262,6 +336,25 @@ public sealed class WarehouseApiEndpointsTests
 
         Assert.Equal(HttpStatusCode.OK, metricsResponse.StatusCode);
         Assert.Contains("registerAttempts", metricsBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExportEndpoints_ReturnFilesWithExpectedContentTypes()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        await client.PostAsJsonAsync("/api/warehouse/register", new RegisterColliApiRequest("api-export", "20270101", 1));
+
+        var csvResponse = await client.GetAsync("/export/csv");
+        var excelResponse = await client.GetAsync("/export/excel");
+
+        Assert.Equal(HttpStatusCode.OK, csvResponse.StatusCode);
+        Assert.Equal("text/csv; charset=utf-8", csvResponse.Content.Headers.ContentType?.ToString());
+        Assert.Contains("lager-export-", csvResponse.Content.Headers.ContentDisposition?.FileName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Equal(HttpStatusCode.OK, excelResponse.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelResponse.Content.Headers.ContentType?.ToString());
+        Assert.Contains("lager-export-", excelResponse.Content.Headers.ContentDisposition?.FileName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
