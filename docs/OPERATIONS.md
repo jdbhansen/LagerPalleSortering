@@ -2,11 +2,9 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering:
+Fast commit/push tjekliste er oprettet og linket fra centrale docs
+(2026-02-21).
 
 ## Start og stop
 
@@ -17,7 +15,8 @@ dotnet run
 ```
 
 - UI: `/app`
-- Datafil: `App_Data/lager.db`
+- Database: PostgreSQL (default) via `Database` i `appsettings*.json`
+- Test/e2e kan køre med SQLite override (`Database__Provider=Sqlite`)
 - Login styres via `Auth` i `appsettings*.json`
 
 Stop: luk processen i terminalen.
@@ -37,6 +36,7 @@ Valgfrit:
 ```
 
 Driftsnote:
+
 - Browseren skal køres med `--kiosk-printing` for at undgå OK-dialogen på hver udskrift.
 - Printer vælges i UI med `Vælg/skift printer` (typisk én gang pr. station).
 - Printervalg gemmes i kiosk-browserprofilen (`App_Data/browser-kiosk-profile`).
@@ -67,6 +67,7 @@ npm run test:e2e
 ```
 
 Tracked artifact:
+
 - CI artifact: `work-package` (uploades af workflow)
 
 ## Runbook: typiske problemer
@@ -96,5 +97,5 @@ Tracked artifact:
 ## Kritiske handlinger
 
 - `Ryd database`: destruktiv handling, kræver eksplicit bekræftelse
-- `Gendan database`: brug kun valideret backup
+- `Gendan database`: brug kun valideret backup (`.json` for PostgreSQL)
 - Tag backup før restore/rydning

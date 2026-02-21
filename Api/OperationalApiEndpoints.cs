@@ -1,4 +1,5 @@
 using LagerPalleSortering.Application.Abstractions;
+using LagerPalleSortering.Infrastructure.Repositories;
 
 namespace LagerPalleSortering.Api;
 
@@ -31,11 +32,18 @@ public static class OperationalApiEndpoints
             fileName);
     }
 
-    private static async Task<IResult> BackupDatabaseAsync(IWarehouseDataService dataService, CancellationToken cancellationToken)
+    private static async Task<IResult> BackupDatabaseAsync(
+        IWarehouseDataService dataService,
+        IWarehouseRepository repository,
+        CancellationToken cancellationToken)
     {
         var file = await dataService.BackupDatabaseAsync(cancellationToken);
-        var fileName = $"lager-backup-{DateTime.Now:yyyyMMdd-HHmm}.db";
-        return Results.File(file, "application/octet-stream", fileName);
+        var isPostgresBackup = repository is PostgresWarehouseRepository;
+        var fileName = isPostgresBackup
+            ? $"lager-backup-{DateTime.Now:yyyyMMdd-HHmm}.json"
+            : $"lager-backup-{DateTime.Now:yyyyMMdd-HHmm}.db";
+        var contentType = isPostgresBackup ? "application/json" : "application/octet-stream";
+        return Results.File(file, contentType, fileName);
     }
 
     private static async Task<IResult> GetHealthAsync(

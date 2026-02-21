@@ -9,7 +9,7 @@ Intern løsning til varemodtagelse og pallehåndtering.
 
 - Backend: ASP.NET Minimal API
 - Frontend: React (SPA)
-- Data: SQLite
+- Data: PostgreSQL (default) / SQLite (test)
 
 ## Kom hurtigt i gang
 
@@ -38,6 +38,11 @@ Standard (skal ændres med det samme):
 - Adgangskode: `ChangeMe-Now!`
 
 Konfiguration findes i `appsettings.json` under `Auth`.
+
+Database konfigureres under `Database`:
+
+- `Provider`: `Postgres` eller `Sqlite`
+- `ConnectionString`: PostgreSQL-forbindelse (bruges ved `Postgres`)
 
 ## Daglig udvikling
 
@@ -131,6 +136,8 @@ Output:
 - [Operatørflow](docs/OPERATOR_FLOW.md): operatørflow og beslutningspunkter
 - [Drift og Fejlsøgning](docs/OPERATIONS.md): drift, runbook og fejlsøgning
 - [Teknisk Guide](docs/TECHNICAL_GUIDE.md): arkitektur og extension points
+- [DigitalOcean Guide](docs/DIGITALOCEAN_DROPLET_GUIDE.md):
+  deployment på droplet
 - [Migration Notes](docs/MIGRATION_NOTES.md): migrations-seams og playbooks
 - [Scanner Validation](docs/SCANNER_VALIDATION.md): scanner-validering
 - [Branch Policy](docs/BRANCH_POLICY.md): PR-gates og branch-beskyttelse

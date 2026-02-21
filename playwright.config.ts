@@ -10,7 +10,7 @@ export default defineConfig({
     trace: "retain-on-failure"
   },
   webServer: {
-    command: "pwsh -NoProfile -Command \"$env:Auth__RequireAuthentication='false'; dotnet run --project ./LagerPalleSortering.csproj --no-launch-profile --urls http://127.0.0.1:5099\"",
+    command: "pwsh -NoProfile -Command \"$env:Auth__RequireAuthentication='false'; $env:Database__Provider='Sqlite'; dotnet run --project ./LagerPalleSortering.csproj --no-launch-profile --urls http://127.0.0.1:5099\"",
     url: "http://127.0.0.1:5099/health",
     timeout: 120000,
     reuseExistingServer: false

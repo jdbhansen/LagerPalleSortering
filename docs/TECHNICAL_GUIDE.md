@@ -2,11 +2,9 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering:
+Fast commit/push tjekliste er oprettet og linket fra centrale docs
+(2026-02-21).
 
 ## Formål
 
@@ -25,8 +23,9 @@ Overblik over arkitektur, contracts og de steder du udvider systemet sikkert.
 - `Application/Abstractions/IWarehouseRepository.cs`
 - `Application/Abstractions/IWarehouseDataService.cs`
 - `Infrastructure/Repositories/IWarehouseDatabaseProvider.cs`
+- `Infrastructure/Repositories/DatabaseOptions.cs`
 
-Storage-migration sker via `IWarehouseDatabaseProvider` + DI-registrering i `Program.cs`.
+Storage-migration sker via `Database.Provider` + DI-registrering i `Program.cs`.
 
 ## Frontend contracts (primære seams)
 
@@ -35,6 +34,7 @@ Storage-migration sker via `IWarehouseDatabaseProvider` + DI-registrering i `Pro
 - `frontend/src/features/warehouse/hooks/newSortingStateStore.ts`
 
 Frontend-migration sker via:
+
 - `createWarehouseApiClient(...)` for transport/routes
 - `NewSortingStateStore` for UI-persistens
 
@@ -56,6 +56,7 @@ Regel: sideeffekter i hooks, regler i utils.
   - `utils/printTimestamp.ts`
 
 Relaterede tests:
+
 - `tests/LagerPalleSortering.Tests/BarcodeScannerCompatibilityTests.cs`
 - `frontend/src/features/warehouse/utils/palletBarcodePayload.test.ts`
 - `frontend/src/features/warehouse/utils/printTimestamp.test.ts`
@@ -64,7 +65,8 @@ Relaterede tests:
 
 - Backend: `dotnet test`
 - Frontend tests: `npm --prefix frontend run test -- --run`
-- Frontend lint/build: `npm --prefix frontend run lint` og `npm --prefix frontend run build`
+- Frontend lint/build: `npm --prefix frontend run lint`
+  og `npm --prefix frontend run build`
 - E2E: `npm run test:e2e`
 
 ## Kodeprincipper (best practices)

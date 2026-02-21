@@ -17,11 +17,11 @@ export function RestoreDatabaseCard({
       <div className="card-body">
         <div className="row g-2 align-items-end">
           <div className="col-12 col-md-8">
-            <label className="form-label">Vælg backupfil (.db)</label>
+            <label className="form-label">Vælg backupfil (.json eller .db)</label>
             <input
               className="form-control"
               type="file"
-              accept=".db,.sqlite,.sqlite3"
+              accept=".json,.db,.sqlite,.sqlite3"
               onChange={(event) => onRestoreFileChange(event.target.files?.[0] ?? null)}
             />
           </div>
