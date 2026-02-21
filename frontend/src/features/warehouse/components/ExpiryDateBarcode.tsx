@@ -1,6 +1,7 @@
 import JsBarcode from 'jsbarcode';
 import { useEffect, useRef } from 'react';
 import { formatExpiryDateForDisplay } from '../utils/expiryDate';
+import { formatPrintTimestamp } from '../utils/printTimestamp';
 
 interface ExpiryDateBarcodeProps {
   expiryDateRaw: string;
@@ -36,6 +37,7 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
     }
 
     const svgMarkup = svgRef.current.outerHTML;
+    const printedAt = formatPrintTimestamp();
     const html = `<!doctype html>
 <html lang="da">
 <head>
@@ -46,6 +48,7 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
     .label { display: grid; gap: 8px; justify-items: center; }
     .title { font-size: 14px; font-weight: 700; letter-spacing: 0.04rem; text-transform: uppercase; color: #334155; }
     .hint { font-size: 12px; color: #64748b; }
+    .timestamp { font-size: 11px; color: #64748b; }
   </style>
 </head>
 <body>
@@ -53,6 +56,7 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
     <div class="title">Dato / Holdbarhed</div>
     ${svgMarkup}
     <div class="hint">${displayDate}</div>
+    <div class="timestamp">Udskrevet: ${printedAt}</div>
   </div>
   <script>window.print();</script>
 </body>
