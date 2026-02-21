@@ -1,41 +1,29 @@
 # Drift og Fejlsøgning
 
-Sidst opdateret: 2026-02-20.
+Sidst opdateret: 2026-02-21.
 
-## Drift: start og stop
+## Start og stop
 
-Start app lokalt:
+Start lokalt:
 
 ```powershell
 dotnet run
 ```
 
-- Primær UI: `/app`
+- UI: `/app`
 - Datafil: `App_Data/lager.db`
 
-Stop app: luk terminalprocessen.
+Stop: luk processen i terminalen.
 
-## Standard driftschecks
-
-1. Health endpoint svarer:
+## Hurtig driftscheck
 
 ```powershell
 curl http://localhost:5000/health
-```
-
-2. Metrics endpoint svarer:
-
-```powershell
 curl http://localhost:5000/metrics
-```
-
-3. Seneste backup kan downloades:
-
-```powershell
 curl http://localhost:5000/backup/db
 ```
 
-## Verificering før release
+## Release-checkliste
 
 ```powershell
 dotnet build -warnaserror
@@ -43,6 +31,7 @@ dotnet test
 npm --prefix frontend run lint
 npm --prefix frontend run test -- --run
 npm --prefix frontend run build
+npm run test:e2e
 ```
 
 ## Work package
@@ -51,34 +40,35 @@ npm --prefix frontend run build
 ./scripts/package-work.ps1
 ```
 
-Output zip: `work-package/LagerPalleSortering-work.zip`
+Tracked artifact:
+- `work-package/LagerPalleSortering-work.zip`
 
-## Fejlsøgning
+## Runbook: typiske problemer
 
-### Appen reagerer ikke som forventet
+### UI/API fejl
 
-- Tjek browser console for fejl mod `/api/warehouse/*`.
-- Tjek `/health` og `/metrics`.
-- Kør `./scripts/verify.ps1`.
+- Tjek browser console for `/api/warehouse/*`
+- Verificer `health` og `metrics`
+- Kør `./scripts/verify.ps1`
 
-### Scanner-output er forkert
+### Scanner giver forkerte tegn
 
-- Symptomer: `:` bliver `æ`, `-` bliver `+`, uventede prefix (`]E0`, `]C1`).
-- Systemet håndterer støj i parseren, men verificer scannerprofil alligevel.
-- Se `docs/SCANNER_VALIDATION.md`.
+- Symptomer: `:` -> `æ`, `-` -> `+`, prefix som `]E0`/`]C1`
+- Parser håndterer en del støj, men scannerprofil skal valideres
+- Se `docs/SCANNER_VALIDATION.md`
 
-### Holdbarhed bliver afvist
+### Holdbarhed afvises
 
-- Gyldige formater: `YYYYMMDD` eller gyldig `YYMMDD`.
-- Ugyldige kalenderdatoer afvises.
+- Tilladt: `YYYYMMDD` eller gyldig `YYMMDD`
+- Ugyldige kalenderdatoer afvises med vilje
 
-### Build-fejl pga. fil-lås (`*.dswa.cache.json`)
+### Build/test låser filer
 
-- Kør build/test sekventielt i stedet for parallelle kommandoer.
-- Luk eventuelle hængende `dotnet`/`testhost` processer.
+- Kør build/test sekventielt
+- Stop hængende `dotnet`/`testhost` processer
 
-## Kritiske operationer
+## Kritiske handlinger
 
-- `Ryd database`: kræver aktiv bekræftelse.
-- `Gendan database`: brug kun valideret backup.
-- Tag backup før restore/rydning.
+- `Ryd database`: destruktiv handling, kræver eksplicit bekræftelse
+- `Gendan database`: brug kun valideret backup
+- Tag backup før restore/rydning

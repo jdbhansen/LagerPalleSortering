@@ -1,10 +1,8 @@
 # Frontend (React)
 
-Sidst opdateret: 2026-02-20.
+Sidst opdateret: 2026-02-21.
 
-## Formål
-
-React SPA for lagerdrift under `/app`.
+Frontend er en SPA under `/app` til scannerdrevet lagerflow.
 
 ## Hurtig start
 
@@ -22,53 +20,40 @@ npm run test -- --run
 npm run build
 ```
 
-Build-output skrives til `../wwwroot/app`.
+Build output lander i `../wwwroot/app`.
 
-## Struktur
+## Arkitektur i kort form
 
-- `src/App.tsx`
-  - mode-switch mellem `Ny pallesortering` og `Fuld oversigt`
-  - print-route dispatch
-- `src/navigation.ts`
-  - intern SPA navigation
-- `src/shared/errorMessage.ts`
-  - central fejltekst-normalisering
+- `src/App.tsx`: route entry + mode switch
+- `src/navigation.ts`: intern navigation
+- `src/shared/errorMessage.ts`: fælles fejl-normalisering
 
 ### Warehouse feature
 
-- `api/warehouseApiClientContract.ts`
-  - API-kontrakt for UI-laget
-- `api/warehouseApiInfrastructure.ts`
-  - transport-interface (`WarehouseHttpClient`)
-- `api/warehouseApiRoutes.ts`
-  - route-seam (nem endpoint-migration)
-- `api/warehouseApiClient.ts`
-  - adapter/factory (`createWarehouseApiClient`)
-- `hooks/useNewPalletSorting.ts`
-  - sekventielt flow (trin 1 -> trin 2)
-- `hooks/newSortingWorkflow.ts`
-  - ren validerings- og payloadlogik
-- `hooks/newSortingStateStore.ts`
-  - storage-interface for flow-state
-- `hooks/useWarehousePage.ts`
-  - driftsoverblik og operationer
-- `utils/gs1Parser.ts`
-  - GS1 parsing (`AI(01)`, `AI(17)`)
-- `utils/expiryNormalization.ts`
-  - dato-normalisering
-- `utils/palletBarcodePayload.ts`
-  - canonical palle payload + validering
+- `api/warehouseApiClientContract.ts`: kontrakt for UI -> API
+- `api/warehouseApiInfrastructure.ts`: transport interface
+- `api/warehouseApiRoutes.ts`: route factory/seam
+- `api/warehouseApiClient.ts`: adapter/factory
+- `hooks/useNewPalletSorting.ts`: sekventielt flow
+- `hooks/newSortingWorkflow.ts`: ren valideringslogik
+- `hooks/newSortingStateStore.ts`: persistence seam for UI-state
+- `hooks/useWarehousePage.ts`: fuld oversigt use-cases
+- `utils/gs1Parser.ts`: GS1 parsing
+- `utils/expiryNormalization.ts`: dato-normalisering
+- `utils/palletBarcodePayload.ts`: pallepayload normalisering/validering
+- `utils/printTimestamp.ts`: formattering af udskriftstidspunkt
 
-## Best practices i koden
+## Kodeprincipper
 
-- Hold sideeffekter i hooks, regler i rene utils.
-- Genbrug kontrakter/interfaces for integration points.
-- Undgå hardcodede routes i komponenter.
-- Tilføj tests ved ændring af parsing/validering.
+- Hold sideeffekter i hooks.
+- Hold regler og parsing i rene utils.
+- Hold API-kontrakt stabil; udskift implementation via interfaces/factory.
+- Undgå hardcodede endpoints i komponenter.
+- Test altid parser/validering ved ændringer.
 
-## Testdækning
+## Testfokus
 
-- Hook-tests for ny sortering og fuld oversigt.
-- Workflow-tests for valideringsregler.
-- API-klient tests for route/transport adapters.
-- Utility-tests for GS1, dato, routing og payload-validering.
+- Hook-tests for flows og edge-cases
+- Workflow-tests for valideringsregler
+- API-klient tests for route/transport seams
+- Utility-tests for GS1, dato, routing, payload og print-tidspunkt

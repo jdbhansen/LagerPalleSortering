@@ -1,45 +1,63 @@
 # LagerPalleSortering
 
-Sidst opdateret: 2026-02-20.
+Sidst opdateret: 2026-02-21.
 
-LagerPalleSortering er en intern app til varemodtagelse og pallehåndtering.
-Stack: ASP.NET (Minimal API) + React (SPA) + SQLite.
+Intern løsning til varemodtagelse og pallehåndtering.
 
-## Hurtig start
+- Backend: ASP.NET Minimal API
+- Frontend: React (SPA)
+- Data: SQLite
 
-1. Installer .NET 10 SDK og Node.js 20+.
-2. Kør backend:
+## Kom hurtigt i gang
+
+1. Installer:
+- .NET SDK 10
+- Node.js 22+
+
+2. Start app:
 
 ```powershell
 dotnet run
 ```
 
-3. Åbn appen på `http://localhost:5000/app` (eller den URL der vises i terminalen).
+3. Åbn:
+- `http://localhost:5000/app`
 
 ## Daglig udvikling
 
-- Backend build/test:
+Kør disse kommandoer før push:
 
 ```powershell
 dotnet build
 dotnet test
-```
-
-- Frontend lint/test/build:
-
-```powershell
 npm --prefix frontend run lint
 npm --prefix frontend run test -- --run
 npm --prefix frontend run build
 ```
 
-- Samlet verificering:
+Hvis du vil køre standard backend-verifikation:
 
 ```powershell
 ./scripts/verify.ps1
 ```
 
-## Opret work package
+## CI-paritet lokalt
+
+Samme checks som CI (inkl. work package + e2e):
+
+```powershell
+dotnet restore LagerPalleSortering.slnx
+dotnet build LagerPalleSortering.slnx --configuration Release --no-restore
+dotnet format LagerPalleSortering.slnx --verify-no-changes
+dotnet test LagerPalleSortering.slnx --configuration Release --no-build
+npm ci
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+## Work Package
+
+Generer og synkroniser tracked zip:
 
 ```powershell
 ./scripts/package-work.ps1
@@ -48,33 +66,33 @@ npm --prefix frontend run build
 Output:
 - `../LagerPalleSortering-work-package/app`
 - `../LagerPalleSortering-work-package/LagerPalleSortering-work.zip`
-- synkroniseret zip i `work-package/LagerPalleSortering-work.zip`
+- `work-package/LagerPalleSortering-work.zip` (tracked)
 
-## Funktioner
+## Nøglefunktioner
 
-- To driftsvisninger:
-  - `Ny pallesortering` (sekventielt flow: registrer -> bekræft)
-  - `Fuld oversigt`
-- GS1 parsing (`AI(01)` + `AI(17)`) ved scanning.
-- Dato-normalisering (`YYMMDD` -> `YYYYMMDD`, når gyldig).
-- Label-print for palle og palleindhold.
-- Backup, restore, health og metrics endpoints.
+- `Ny pallesortering`: sekventielt scannerflow (ét aktivt trin ad gangen)
+- `Fuld oversigt`: driftsdashboard med historik og værktøjer
+- GS1 parsing (`AI(01)` + `AI(17)`)
+- Dato-normalisering (`YYMMDD` -> `YYYYMMDD` når gyldig)
+- Print af pallelabel, palleindhold og dato-label (med udskriftstidspunkt)
+- Backup, restore, health og metrics endpoints
 
-## Arkitektur (kort)
+## Repo-struktur
 
-- `Api/`: HTTP endpoints
+- `Api/`: HTTP endpoints og contracts
 - `Application/`: use-cases/services
-- `Domain/`: regler, normalisering og parsing
-- `Infrastructure/`: persistence og database-provider
-- `frontend/`: React SPA
-- `tests/`: .NET tests
+- `Domain/`: forretningsregler, parsing, normalisering
+- `Infrastructure/`: persistence, db-provider, repositories
+- `frontend/`: React-klient
+- `tests/`: backend tests
+- `e2e/`: Playwright tests
 
 ## Dokumentation
 
-- Brugerguide: `docs/USER_GUIDE.md`
-- Operatørflow: `docs/OPERATOR_FLOW.md`
-- Drift/fejlsøgning: `docs/OPERATIONS.md`
-- Teknisk guide: `docs/TECHNICAL_GUIDE.md`
-- Migration notes: `docs/MIGRATION_NOTES.md`
-- Scanner-validering: `docs/SCANNER_VALIDATION.md`
-- Frontend-noter: `frontend/README.md`
+- `docs/USER_GUIDE.md`: slutbruger-guide
+- `docs/OPERATOR_FLOW.md`: operatørflow og beslutningspunkter
+- `docs/OPERATIONS.md`: drift, runbook og fejlsøgning
+- `docs/TECHNICAL_GUIDE.md`: arkitektur og extension points
+- `docs/MIGRATION_NOTES.md`: migrations-seams og playbooks
+- `docs/SCANNER_VALIDATION.md`: scanner-validering
+- `frontend/README.md`: frontend-udvikling

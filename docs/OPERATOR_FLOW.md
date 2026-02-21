@@ -1,40 +1,47 @@
 # Operator Flow
 
-Sidst opdateret: 2026-02-20.
+Sidst opdateret: 2026-02-21.
 
 ## Formål
 
-Kort driftsflow til operatører i daglig varemodtagelse.
+Kort, operationel guide til skannere og palleflow i skiftet.
+
+## Start af skift
+
+1. Åbn `/app`.
+2. Scan en kendt pallelabel (fx `PALLET:P-001`) som sanity check.
+3. Bekræft at scanner læser print tydeligt.
 
 ## Standardflow (Ny pallesortering)
 
-1. Start sortering.
+1. Start ny sortering.
 2. Trin 1: scan kolli + holdbarhed.
 3. Registrer kolli.
 4. Trin 2: scan pallelabel.
-5. Bekræft flytning.
-6. Gentag trin 2-5 per kolli.
+5. Sæt kolli på plads.
+6. Gentag fra trin 1.
 7. Afslut sortering.
 
 ## Print-flow
 
-- Ny palle kan udløse automatisk label-print.
-- Efter print kan operatøren stadig gennemføre trin 2 (flytning), fordi ventende palle-id bevares i sessionen.
-- `Luk palle + print indholdslabel` bruges når pallen er færdig.
+- Ny palle kan automatisk åbne label-print.
+- `Luk palle + print indholdslabel` bruges når pallen er komplet.
+- Alle print indeholder udskriftstidspunkt.
+- Ved retur fra print genoptages flowet på aktivt trin.
 
-## Fejlflow (hurtig beslutning)
+## Hurtig fejlafklaring
 
 - `Ugyldig pallestregkode`:
-  - Scan label igen
-  - Tjek scanner-layout (`:`/`æ`, `-`/`+`)
+  - Scan igen
+  - Tjek `:` vs `æ`, `-` vs `+`
 - `Ingen u-bekræftede kolli fundet`:
   - Tjek at korrekt palle er scannet
-  - Tjek om kolli allerede er bekræftet
+  - Tjek om kolli allerede er sat på plads
 - Datofejl:
   - Brug `YYYYMMDD` eller gyldig `YYMMDD`
 
-## Operatør-checkliste pr. skift
+## Slut af skift
 
-- Test én kendt pallelabel (`PALLET:P-001`) ved skiftstart.
-- Bekræft at print er læsbart med scanner.
-- Tag backup før større dataoperationer.
+1. Luk aktive paller efter behov.
+2. Tag backup ved større ændringer.
+3. Notér scanner-afvigelser til næste skift.

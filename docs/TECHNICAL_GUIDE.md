@@ -1,75 +1,70 @@
 # Teknisk Guide
 
-Sidst opdateret: 2026-02-20.
+Sidst opdateret: 2026-02-21.
 
 ## Formål
 
-Dokumentet beskriver systemets struktur, vigtigste interfaces og hvor ændringer bør placeres.
+Overblik over arkitektur, contracts og de steder du udvider systemet sikkert.
 
-## Lagdeling
+## Arkitektur
 
-- `Api/`
-  - Minimal API endpoints
-  - ansvar: HTTP-kontrakter og mapping til services
-- `Application/`
-  - use-cases (`WarehouseDataService`, `WarehouseExportService`)
-  - ansvar: orkestrering af forretningsregler
-- `Domain/`
-  - normalisering/parsing/forretningsregler
-  - ansvar: rene regler uden infrastrukturafhængigheder
-- `Infrastructure/`
-  - repository og databaseintegration
-- `frontend/`
-  - React SPA med feature-opdeling
+- `Api/`: HTTP-kontrakter og endpoint mapping
+- `Application/`: use-cases og orkestrering
+- `Domain/`: rene forretningsregler/parsing/normalisering
+- `Infrastructure/`: databinding, repositories, providers
+- `frontend/`: React feature-moduler
 
-## Vigtige backend interfaces
+## Backend contracts (primære seams)
 
 - `Application/Abstractions/IWarehouseRepository.cs`
 - `Application/Abstractions/IWarehouseDataService.cs`
 - `Infrastructure/Repositories/IWarehouseDatabaseProvider.cs`
 
-`IWarehouseDatabaseProvider` er migrations-seamet for storage. Skift database ved at levere en ny provider og registrere den i DI.
+Storage-migration sker via `IWarehouseDatabaseProvider` + DI-registrering i `Program.cs`.
 
-## Vigtige frontend interfaces
+## Frontend contracts (primære seams)
 
 - `frontend/src/features/warehouse/api/warehouseApiClientContract.ts`
 - `frontend/src/features/warehouse/api/warehouseApiInfrastructure.ts`
 - `frontend/src/features/warehouse/hooks/newSortingStateStore.ts`
 
-Migrations-seams i frontend:
-- API transport/routes via `createWarehouseApiClient(...)`
-- UI state persistence via `NewSortingStateStore`
+Frontend-migration sker via:
+- `createWarehouseApiClient(...)` for transport/routes
+- `NewSortingStateStore` for UI-persistens
 
-## Ny pallesortering: struktur
+## Ny pallesortering: ansvar per modul
 
-- `useNewPalletSorting.ts`: hook orchestration
-- `newSortingWorkflow.ts`: validering + payload-regler
-- `newSortingStateStore.ts`: storage abstrahering
+- `useNewPalletSorting.ts`: sideeffekter og flow-orkestrering
+- `newSortingWorkflow.ts`: ren valideringslogik
+- `newSortingStateStore.ts`: sessions/state persistence
 
-Princip: hold sideeffekter i hook, hold regler i rene utility-moduler.
+Regel: sideeffekter i hooks, regler i utils.
 
-## Barcode og scanner-kompatibilitet
+## Barcode- og scannerlogik
 
 - Backend:
   - `DefaultProductBarcodeNormalizer`
   - `DefaultPalletBarcodeService`
 - Frontend:
   - `utils/palletBarcodePayload.ts`
+  - `utils/printTimestamp.ts`
 
-Tests:
+Relaterede tests:
 - `tests/LagerPalleSortering.Tests/BarcodeScannerCompatibilityTests.cs`
 - `frontend/src/features/warehouse/utils/palletBarcodePayload.test.ts`
-- `docs/SCANNER_VALIDATION.md`
+- `frontend/src/features/warehouse/utils/printTimestamp.test.ts`
 
 ## Teststrategi
 
 - Backend: `dotnet test`
-- Frontend unit/integration: `npm --prefix frontend run test -- --run`
-- Frontend lint/build: `npm --prefix frontend run lint`, `npm --prefix frontend run build`
+- Frontend tests: `npm --prefix frontend run test -- --run`
+- Frontend lint/build: `npm --prefix frontend run lint` og `npm --prefix frontend run build`
+- E2E: `npm run test:e2e`
 
-## Best practices i repoet
+## Kodeprincipper (best practices)
 
-- Brug interfaces til integration points.
-- Undgå duplikeret valideringslogik; del via fælles utilities.
-- Hold endpoints tynde; læg logik i services.
-- Tilføj tests når parser/validering ændres.
+- Hold endpoints tynde; business-logik i services.
+- Brug interfaces på integrationspunkter.
+- Del validering i fælles utilities.
+- Tilføj tests ved parser/valideringsændringer.
+- Hold migrations-seams stabile for nem fremtidig udskiftning.

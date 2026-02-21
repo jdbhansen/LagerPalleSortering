@@ -1,55 +1,55 @@
 # Migration Notes
 
-Sidst opdateret: 2026-02-20.
+Sidst opdateret: 2026-02-21.
 
 ## Formål
 
-Dette dokument beskriver migrations-seams i løsningen, så skift af backend/frontend-integration kan ske kontrolleret.
+Guide til kontrolleret migration af API, transport og database uden at bryde brugerflow.
 
-## Gennemførte migrationsforberedelser
+## Eksisterende migrations-seams
 
 ### Frontend
 
-- API-klient er adapter-baseret:
-  - `createWarehouseApiClient(...)`
-  - transport seam: `WarehouseHttpClient`
-  - route seam: `WarehouseApiRoutes`
-- Ny sortering har state seam:
-  - `NewSortingStateStore`
+- API-factory: `createWarehouseApiClient(...)`
+- Transport seam: `WarehouseHttpClient`
+- Route seam: `WarehouseApiRoutes`
+- UI-state seam: `NewSortingStateStore`
 
 ### Backend
 
-- Persistence seam for database er indført:
-  - `IWarehouseDatabaseProvider`
-  - default: `SqliteWarehouseDatabaseProvider`
+- Storage seam: `IWarehouseDatabaseProvider`
+- Default implementation: `SqliteWarehouseDatabaseProvider`
 
-## Hvordan migrerer vi
+## Migrerings-playbooks
 
-### 1. Ny API-version eller ny gateway
+### 1. Ny API-version / gateway
 
-- Implementér nye routes via `createWarehouseApiRoutes({ basePath })`.
-- Eller injectér custom `WarehouseApiRoutes` direkte i `createWarehouseApiClient(...)`.
-- Hooks behøver ikke ændres, så længe `WarehouseApiClientContract` bevares.
+1. Implementér nye routes i `createWarehouseApiRoutes(...)` eller custom route map.
+2. Bevar `WarehouseApiClientContract`.
+3. Verificér flows via frontend tests + e2e.
 
-### 2. Ny frontend transport (retry, auth, proxy)
+### 2. Ny frontend transport (retry/auth/proxy)
 
-- Implementér ny `WarehouseHttpClient`.
-- Injectér i `createWarehouseApiClient({ httpClient })`.
+1. Implementér ny `WarehouseHttpClient`.
+2. Injectér i `createWarehouseApiClient({ httpClient })`.
+3. Kør API-klient tests og e2e.
 
 ### 3. Ny backend database
 
-- Implementér ny `IWarehouseDatabaseProvider`.
-- Registrér provider i DI (`Program.cs`).
-- Hold `IWarehouseRepository` kontrakten stabil for applikationslaget.
+1. Implementér ny `IWarehouseDatabaseProvider`.
+2. Registrér provider i DI (`Program.cs`).
+3. Hold `IWarehouseRepository` kontrakten stabil.
+4. Kør backend tests + scanner-kompatibilitetstests.
 
-## Checkliste ved migration
+## Gate-checkliste før merge
 
-1. Hold contracts bagudkompatible (`WarehouseApiClientContract`, `IWarehouseRepository`).
-2. Tilføj tests for nye adapters/providers.
-3. Kør fuld verifikation:
-   - `dotnet build -warnaserror`
-   - `dotnet test`
-   - `npm --prefix frontend run lint`
-   - `npm --prefix frontend run test -- --run`
-   - `npm --prefix frontend run build`
-4. Verificer barcode/scanner flow manuelt jf. `docs/SCANNER_VALIDATION.md`.
+1. Contracts er bagudkompatible.
+2. Nye adapters/providers er dækket af tests.
+3. Full verify er grøn:
+- `dotnet build -warnaserror`
+- `dotnet test`
+- `npm --prefix frontend run lint`
+- `npm --prefix frontend run test -- --run`
+- `npm --prefix frontend run build`
+- `npm run test:e2e`
+4. Scanner-flow er manuelt valideret jf. `docs/SCANNER_VALIDATION.md`.
