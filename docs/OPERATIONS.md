@@ -2,6 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
+Seneste dokument-opdatering: App-ikon (`favicon.png`) er nu sat fra brugerens avatarfil (2026-02-21).
+
 ## Start og stop
 
 Start lokalt:

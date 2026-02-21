@@ -2,6 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
+Seneste dokument-opdatering: App-ikon (`favicon.png`) er nu sat fra brugerens avatarfil (2026-02-21).
+
 Frontend er en SPA under `/app` til scannerdrevet lagerflow.
 
 - [Til hoved-README](../README.md)

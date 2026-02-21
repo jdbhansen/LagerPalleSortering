@@ -2,6 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
+Seneste dokument-opdatering: App-ikon (`favicon.png`) er nu sat fra brugerens avatarfil (2026-02-21).
+
 ## Formål
 
 Guide til kontrolleret migration af API, transport og database uden at bryde brugerflow.
