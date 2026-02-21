@@ -54,3 +54,46 @@ export function resolvePalletCode(scannedPalletCode: string, suggestedPalletId: 
   const fallbackCode = suggestedPalletId ? `PALLET:${suggestedPalletId}` : '';
   return scannedPalletCode.trim() || fallbackCode;
 }
+
+function tryExtractPalletIdFromScan(scannedPalletCode: string): string | null {
+  const normalized = scannedPalletCode
+    .trim()
+    .toUpperCase()
+    .replaceAll('+', '-')
+    .replaceAll('Æ', ':')
+    .replaceAll('æ', ':');
+
+  const match = normalized.match(/P-(\d+)/);
+  if (!match) {
+    return null;
+  }
+
+  return `P-${match[1]}`;
+}
+
+export function validateSuggestedPalletMatch(
+  scannedPalletCode: string,
+  suggestedPalletId: string,
+): ValidationResult<void> {
+  const suggested = suggestedPalletId.trim().toUpperCase();
+  const scanned = scannedPalletCode.trim();
+
+  // Empty scan is allowed because resolvePalletCode can fallback to suggested pallet.
+  if (!suggested || !scanned) {
+    return { success: true };
+  }
+
+  const scannedPalletId = tryExtractPalletIdFromScan(scanned);
+  if (!scannedPalletId) {
+    return { success: true };
+  }
+
+  if (scannedPalletId !== suggested) {
+    return {
+      success: false,
+      errorMessage: `Forkert pallelabel scannet (${scannedPalletId}). Forventet PALLET:${suggested}.`,
+    };
+  }
+
+  return { success: true };
+}

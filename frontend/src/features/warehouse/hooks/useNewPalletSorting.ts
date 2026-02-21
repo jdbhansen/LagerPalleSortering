@@ -18,6 +18,7 @@ import {
 import {
   resolvePalletCode,
   type NewPalletSortingStep,
+  validateSuggestedPalletMatch,
   validateRegisterPayload,
 } from './newSortingWorkflow';
 
@@ -258,6 +259,14 @@ export function useNewPalletSorting(
 
     if (activeStep !== 'confirm') {
       setStatus({ type: 'warning', message: 'Start med trin 1: scan kolli og holdbarhed.' });
+      return;
+    }
+
+    const palletMatch = validateSuggestedPalletMatch(scannedPalletCode, suggestedPalletId);
+    if (!palletMatch.success) {
+      setStatus({ type: 'error', message: palletMatch.errorMessage ?? 'Forkert pallelabel scannet.' });
+      palletInputRef.current?.focus();
+      palletInputRef.current?.select();
       return;
     }
 

@@ -27,6 +27,9 @@ Guide til daglig brug i varemodtagelsen.
 6. Gentag trin 2-5 for næste kolli.
 7. Klik `Afslut pallesortering` når batchen er færdig.
 
+Note:
+- Du kan bekræfte flyt i trin 2 med en scannet pallekode, også hvis der ikke vises en foreslået palle.
+
 ## Print
 
 - Ny palle kan udløse label-print automatisk.

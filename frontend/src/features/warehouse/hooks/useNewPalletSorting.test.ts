@@ -181,6 +181,42 @@ describe('useNewPalletSorting', () => {
     expect(apiClient.confirmWarehouseMove).toHaveBeenCalledWith('PALLET:P-321', 1);
   });
 
+  it('afviser forkert pallelabel i trin 2', async () => {
+    const apiClient = createApiClientMock();
+    const registerResponse: WarehouseOperationResponse = {
+      type: 'success',
+      message: 'Ny palle oprettet',
+      palletId: 'P-321',
+      createdNewPallet: false,
+    };
+
+    vi.mocked(apiClient.registerWarehouseColli).mockResolvedValue(registerResponse);
+
+    const { result } = renderHook(() => useNewPalletSorting(apiClient));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.setProductNumber('ITEM-321');
+      result.current.setExpiryDateRaw('20261231');
+    });
+
+    await act(async () => {
+      await result.current.registerOneColli();
+    });
+
+    act(() => {
+      result.current.setScannedPalletCode('PALLET:P-999');
+    });
+
+    await act(async () => {
+      await result.current.confirmMove();
+    });
+
+    expect(result.current.status?.type).toBe('error');
+    expect(result.current.status?.message).toContain('Forkert pallelabel scannet');
+    expect(apiClient.confirmWarehouseMove).not.toHaveBeenCalled();
+  });
+
   it('gemmer started-state i localStorage ved start/stop', async () => {
     const apiClient = createApiClientMock();
     const { result } = renderHook(() => useNewPalletSorting(apiClient));

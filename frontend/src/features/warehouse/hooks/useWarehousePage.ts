@@ -9,7 +9,7 @@ import { toErrorMessage } from '../../../shared/errorMessage';
 import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouting';
 import { normalizeExpiryInput } from '../utils/expiryNormalization';
 import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
-import { resolvePalletCode, validateRegisterPayload } from './newSortingWorkflow';
+import { resolvePalletCode, validateRegisterPayload, validateSuggestedPalletMatch } from './newSortingWorkflow';
 
 interface RegisterFormState {
   productNumber: string;
@@ -158,6 +158,12 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
   }
 
   async function submitConfirmMove() {
+    const palletMatch = validateSuggestedPalletMatch(confirmForm.scannedPalletCode, lastSuggestedPalletId);
+    if (!palletMatch.success) {
+      setStatus({ type: 'error', message: palletMatch.errorMessage ?? 'Forkert pallelabel scannet.' });
+      return;
+    }
+
     // UX fallback: if operator does not scan pallet code, reuse latest suggested pallet.
     const palletCode = resolvePalletCode(confirmForm.scannedPalletCode, lastSuggestedPalletId);
     if (palletCode.length === 0) {

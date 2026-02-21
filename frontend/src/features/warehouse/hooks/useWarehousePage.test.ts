@@ -147,6 +147,41 @@ describe('useWarehousePage', () => {
     expect(apiClient.confirmWarehouseMove).toHaveBeenCalledWith('PALLET:P-222', 1);
   });
 
+  it('afviser forkert pallelabel når foreslået palle findes', async () => {
+    const apiClient = createApiClientMock();
+    const registerResponse: WarehouseOperationResponse = {
+      type: 'success',
+      message: 'ok',
+      palletId: 'P-222',
+      createdNewPallet: false,
+    };
+    vi.mocked(apiClient.registerWarehouseColli).mockResolvedValue(registerResponse);
+
+    const { result } = renderHook(() => useWarehousePage(apiClient));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.updateRegisterFormField('productNumber', 'ITEM-222');
+      result.current.updateRegisterFormField('expiryDateRaw', '20261231');
+    });
+
+    await act(async () => {
+      await result.current.submitRegisterColli();
+    });
+
+    act(() => {
+      result.current.updateConfirmFormField('scannedPalletCode', 'PALLET:P-999');
+    });
+
+    await act(async () => {
+      await result.current.submitConfirmMove();
+    });
+
+    expect(result.current.status?.type).toBe('error');
+    expect(result.current.status?.message).toContain('Forkert pallelabel scannet');
+    expect(apiClient.confirmWarehouseMove).not.toHaveBeenCalled();
+  });
+
   it('restoreDatabase viser fejl hvis fil mangler', async () => {
     const apiClient = createApiClientMock();
     const { result } = renderHook(() => useWarehousePage(apiClient));

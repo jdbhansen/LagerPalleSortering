@@ -29,6 +29,9 @@ Kort, operationel guide til skannere og palleflow i skiftet.
 6. Gentag fra trin 1.
 7. Afslut sortering.
 
+Note:
+- Trin 2 kan bekræftes med scannet pallelabel, selv når der ikke er en foreslået palle i UI.
+
 ## Print-flow
 
 - Ny palle kan automatisk åbne label-print.
