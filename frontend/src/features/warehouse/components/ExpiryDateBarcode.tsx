@@ -1,5 +1,8 @@
 import JsBarcode from 'jsbarcode';
 import { useEffect, useRef } from 'react';
+import { usePrintPreferences } from '../hooks/usePrintPreferences';
+import { openPrinterSetupDialog } from '../print/openPrinterSetupDialog';
+import { printHtmlViaHiddenIframe } from '../print/printHtmlViaHiddenIframe';
 import { formatExpiryDateForDisplay } from '../utils/expiryDate';
 import { formatPrintTimestamp } from '../utils/printTimestamp';
 
@@ -13,6 +16,7 @@ function isValidExpiryDateBarcodeInput(value: string): boolean {
 
 export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const { preferredPrinterName } = usePrintPreferences();
   const isValid = isValidExpiryDateBarcodeInput(expiryDateRaw);
   const displayDate = formatExpiryDateForDisplay(expiryDateRaw);
 
@@ -62,50 +66,33 @@ export function ExpiryDateBarcode({ expiryDateRaw }: ExpiryDateBarcodeProps) {
 </body>
 </html>`;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentDocument;
-    const win = iframe.contentWindow;
-    if (!doc || !win) {
-      document.body.removeChild(iframe);
-      return;
-    }
-
-    doc.open();
-    doc.write(html);
-    doc.close();
-
-    const cleanup = () => {
-      if (iframe.parentNode) {
-        iframe.parentNode.removeChild(iframe);
-      }
-    };
-
-    win.addEventListener('afterprint', cleanup, { once: true });
-    win.focus();
-    win.print();
-    window.setTimeout(cleanup, 1500);
+    printHtmlViaHiddenIframe(html);
   }
 
   return (
     <div className="border border-info-subtle rounded p-2 bg-info-subtle">
       <div className="d-flex justify-content-between align-items-center gap-2 mb-2">
         <span className="small fw-semibold text-info-emphasis">Datostregkode (holdbarhed)</span>
-        <button
-          className="btn btn-sm btn-outline-info"
-          type="button"
-          disabled={!isValid}
-          onClick={printBarcode}
-        >
-          Print dato-label
-        </button>
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            type="button"
+            onClick={openPrinterSetupDialog}
+          >
+            Skift printer
+          </button>
+          <button
+            className="btn btn-sm btn-outline-info"
+            type="button"
+            disabled={!isValid}
+            onClick={printBarcode}
+          >
+            Print dato-label
+          </button>
+        </div>
+      </div>
+      <div className="small text-muted mb-2">
+        Aktiv printer: <strong>{preferredPrinterName.trim() || 'Ikke angivet'}</strong>
       </div>
 
       {!isValid ? (

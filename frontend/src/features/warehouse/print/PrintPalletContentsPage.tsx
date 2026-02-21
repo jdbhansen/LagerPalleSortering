@@ -6,6 +6,9 @@ import { formatExpiryDateForDisplay } from '../utils/expiryDate';
 import { formatPrintTimestamp } from '../utils/printTimestamp';
 import { navigateTo } from '../../../navigation';
 import { usePrintOnMount } from '../hooks/usePrintOnMount';
+import { usePrintPreferences } from '../hooks/usePrintPreferences';
+import { PrinterSetupPanel } from './PrinterSetupPanel';
+import { openPrinterSetupDialog } from './openPrinterSetupDialog';
 
 interface PrintPalletContentsPageProps {
   palletId: string;
@@ -16,6 +19,12 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
   const [items, setItems] = useState<WarehousePalletContentItemRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const printedAt = useMemo(() => formatPrintTimestamp(), []);
+  const {
+    autoPrintEnabled,
+    setAutoPrintEnabled,
+    preferredPrinterName,
+    setPreferredPrinterName,
+  } = usePrintPreferences();
 
   const isLabel190x100 = useMemo(
     () => String(format ?? '').toLowerCase() === 'label190x100',
@@ -45,7 +54,7 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
     };
   }, [palletId]);
 
-  usePrintOnMount(!error);
+  usePrintOnMount(!error && autoPrintEnabled);
 
   return (
     <main className="print-page print-contents-page">
@@ -88,6 +97,16 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
           </div>
         )}
       </section>
+
+      <div className="screen-only mt-3 w-100 print-setup-wrap">
+        <PrinterSetupPanel
+          autoPrintEnabled={autoPrintEnabled}
+          onAutoPrintEnabledChange={setAutoPrintEnabled}
+          preferredPrinterName={preferredPrinterName}
+          onPreferredPrinterNameChange={setPreferredPrinterName}
+          onOpenPrinterDialog={openPrinterSetupDialog}
+        />
+      </div>
 
       <div className="screen-only mt-3 d-flex gap-2 justify-content-center">
         <button className="btn btn-primary" type="button" onClick={() => window.print()}>Print igen</button>

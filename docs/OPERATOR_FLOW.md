@@ -15,8 +15,9 @@ Kort, operationel guide til skannere og palleflow i skiftet.
 ## Start af skift
 
 1. Åbn `/app`.
-2. Scan en kendt pallelabel (fx `PALLET:P-001`) som sanity check.
-3. Bekræft at scanner læser print tydeligt.
+2. Vælg printer via `Vælg/skift printer` i `Ny pallesortering` (én gang pr. station/skift ved behov).
+3. Scan en kendt pallelabel (fx `PALLET:P-001`) som sanity check.
+4. Bekræft at scanner læser print tydeligt.
 
 ## Standardflow (Ny pallesortering)
 
@@ -34,6 +35,7 @@ Kort, operationel guide til skannere og palleflow i skiftet.
 - `Luk palle + print indholdslabel` bruges når pallen er komplet.
 - Alle print indeholder udskriftstidspunkt.
 - Ved retur fra print genoptages flowet på aktivt trin.
+- Kør browseren med kiosk-printing for at undgå OK-dialog på hvert print.
 
 ## Hurtig fejlafklaring
 

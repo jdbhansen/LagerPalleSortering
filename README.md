@@ -47,6 +47,24 @@ Hvis du vil køre standard backend-verifikation:
 ./scripts/verify.ps1
 ```
 
+## Print uden OK-dialog
+
+For at undgå print-OK dialogen på hver udskrift, start browseren i kiosk-printing mode:
+
+```powershell
+./scripts/start-kiosk-print.ps1
+```
+
+Valgfrit:
+
+```powershell
+./scripts/start-kiosk-print.ps1 -Browser chrome -AppUrl "http://localhost:5000/app"
+```
+
+Bemærk:
+- Webappen kan ikke selv tvinge printervalg i browseren.
+- Vælg printer én gang via `Vælg/skift printer` i UI; kiosk-profilen husker normalt valget.
+
 ## CI-paritet lokalt
 
 Samme checks som CI (inkl. work package + e2e):

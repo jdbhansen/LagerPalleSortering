@@ -3,6 +3,8 @@ import { PalletContentsOverviewCard } from './components/PalletContentsOverviewC
 import { WarehouseStatsCards } from './components/WarehouseStatsCards';
 import { WarehouseStatusAlert } from './components/WarehouseStatusAlert';
 import { useNewPalletSorting } from './hooks/useNewPalletSorting';
+import { usePrintPreferences } from './hooks/usePrintPreferences';
+import { openPrinterSetupDialog } from './print/openPrinterSetupDialog';
 
 export function NewPalletSortingPage() {
   const {
@@ -34,6 +36,10 @@ export function NewPalletSortingPage() {
     printPalletContentsLabel,
     reportClientError,
   } = useNewPalletSorting();
+  const {
+    preferredPrinterName,
+    setPreferredPrinterName,
+  } = usePrintPreferences();
 
   if (loading) {
     return <main className="container-xl py-4">Indlæser...</main>;
@@ -44,6 +50,27 @@ export function NewPalletSortingPage() {
       <section className="scanner-flow-header mb-3">
         <h1 className="mb-1">Ny pallesortering</h1>
         <p className="text-muted mb-0">1) Scan kolli stregkode 2) Indtast holdbarhed 3) Scan pallelabel for at sætte kollien på plads.</p>
+        <div className="mt-3 p-3 border rounded bg-body-tertiary">
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <button className="btn btn-outline-primary" type="button" onClick={openPrinterSetupDialog}>
+              Vælg/skift printer
+            </button>
+            <div className="small text-muted">
+              Aktiv printer: <strong>{preferredPrinterName.trim() || 'Ikke angivet'}</strong>
+            </div>
+          </div>
+          <div className="mt-2">
+            <label htmlFor="preferred-printer-name" className="form-label mb-1">Printer navn (vises for operatøren)</label>
+            <input
+              id="preferred-printer-name"
+              type="text"
+              className="form-control"
+              placeholder="Fx Zebra ZD421"
+              value={preferredPrinterName}
+              onChange={(event) => setPreferredPrinterName(event.target.value)}
+            />
+          </div>
+        </div>
         {started && (
           <div className="mt-2">
             <button className="btn btn-outline-danger" type="button" onClick={finishSorting} disabled={submitting}>

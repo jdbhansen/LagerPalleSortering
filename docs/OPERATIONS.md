@@ -21,6 +21,25 @@ dotnet run
 
 Stop: luk processen i terminalen.
 
+## Print uden OK-dialog (kiosk-printing)
+
+Start app i browser med kiosk-printing:
+
+```powershell
+./scripts/start-kiosk-print.ps1
+```
+
+Valgfrit:
+
+```powershell
+./scripts/start-kiosk-print.ps1 -Browser chrome -AppUrl "http://localhost:5000/app"
+```
+
+Driftsnote:
+- Browseren skal køres med `--kiosk-printing` for at undgå OK-dialogen på hver udskrift.
+- Printer vælges i UI med `Vælg/skift printer` (typisk én gang pr. station).
+- Printervalg gemmes i kiosk-browserprofilen (`App_Data/browser-kiosk-profile`).
+
 ## Hurtig driftscheck
 
 ```powershell

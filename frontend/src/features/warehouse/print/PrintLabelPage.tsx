@@ -2,8 +2,11 @@ import { useMemo } from 'react';
 import JsBarcode from 'jsbarcode';
 import { navigateTo } from '../../../navigation';
 import { usePrintOnMount } from '../hooks/usePrintOnMount';
+import { usePrintPreferences } from '../hooks/usePrintPreferences';
 import { toPalletBarcodePayload } from '../utils/palletBarcodePayload';
 import { formatPrintTimestamp } from '../utils/printTimestamp';
+import { PrinterSetupPanel } from './PrinterSetupPanel';
+import { openPrinterSetupDialog } from './openPrinterSetupDialog';
 
 interface PrintLabelPageProps {
   palletId: string;
@@ -25,7 +28,13 @@ export function PrintLabelPage({ palletId }: PrintLabelPageProps) {
   const payload = useMemo(() => toPalletBarcodePayload(palletId), [palletId]);
   const barcodeMarkup = useMemo(() => createBarcodeSvg(payload), [payload]);
   const printedAt = useMemo(() => formatPrintTimestamp(), []);
-  usePrintOnMount();
+  const {
+    autoPrintEnabled,
+    setAutoPrintEnabled,
+    preferredPrinterName,
+    setPreferredPrinterName,
+  } = usePrintPreferences();
+  usePrintOnMount(autoPrintEnabled);
 
   return (
     <main className="print-page print-label-page">
@@ -36,6 +45,16 @@ export function PrintLabelPage({ palletId }: PrintLabelPageProps) {
         <div className="print-code">{payload}</div>
         <div className="print-timestamp">Udskrevet: {printedAt}</div>
       </section>
+
+      <div className="screen-only mt-3 w-100 print-setup-wrap">
+        <PrinterSetupPanel
+          autoPrintEnabled={autoPrintEnabled}
+          onAutoPrintEnabledChange={setAutoPrintEnabled}
+          preferredPrinterName={preferredPrinterName}
+          onPreferredPrinterNameChange={setPreferredPrinterName}
+          onOpenPrinterDialog={openPrinterSetupDialog}
+        />
+      </div>
 
       <div className="screen-only mt-3 d-flex gap-2 justify-content-center">
         <button className="btn btn-primary" type="button" onClick={() => window.print()}>Print igen</button>

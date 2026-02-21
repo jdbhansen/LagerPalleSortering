@@ -4,6 +4,8 @@ export const warehouseStorageKeys = {
   viewMode: 'lagerpallesortering:viewMode',
   newSortingActive: 'lagerpallesortering:new-sorting-active',
   newSortingPendingPallet: 'lagerpallesortering:new-sorting-pending-pallet',
+  printAutoMode: 'lagerpallesortering:print-auto-mode',
+  preferredPrinterName: 'lagerpallesortering:preferred-printer-name',
 } as const;
 
 export const warehouseBarcodeFormats = {

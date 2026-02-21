@@ -99,6 +99,15 @@
   max-width: 760px;
 }
 
+.print-setup-wrap {
+  max-width: 760px;
+}
+
+.print-printer-setup {
+  width: 100%;
+  margin-inline: auto;
+}
+
 @media print {
   .screen-only {
     display: none !important;

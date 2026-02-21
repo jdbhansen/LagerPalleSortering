@@ -33,6 +33,8 @@ Guide til daglig brug i varemodtagelsen.
 - `Luk palle + print indholdslabel` lukker palle og åbner printvisning.
 - Alle print viser nu `Udskrevet: <dato/tid>`.
 - Når du går tilbage fra print, genoptages aktivt flow.
+- Vælg printer via `Vælg/skift printer` i toppen af `Ny pallesortering`.
+- For drift uden OK-dialog på hvert print skal stationen starte browseren med kiosk-printing (`./scripts/start-kiosk-print.ps1`).
 
 ## Inputregler
 
