@@ -2,9 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering:
-hooks/metrics-opdeling og duplicate-scan interface er dokumenteret
-(2026-02-21).
+Seneste dokument-opdatering: Work package og markdown-kommandoer er synkroniseret (2026-02-21).
 
 ## Formål
 

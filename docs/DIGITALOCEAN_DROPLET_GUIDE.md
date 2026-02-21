@@ -2,6 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
+Seneste dokument-opdatering: Work package og markdown-kommandoer er synkroniseret (2026-02-21).
+
 Formål:
 Driftsguide til deployment på en Ubuntu droplet med PostgreSQL, systemd,
 Nginx og HTTPS.

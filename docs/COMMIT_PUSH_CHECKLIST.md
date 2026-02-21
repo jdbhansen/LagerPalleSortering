@@ -2,7 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
+Seneste dokument-opdatering: Work package og markdown-kommandoer er synkroniseret (2026-02-21).
 
 Fast arbejdsgang ved `commit push`.
 

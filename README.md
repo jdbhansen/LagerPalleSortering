@@ -1,10 +1,8 @@
-# LagerPalleSortering
+﻿# LagerPalleSortering
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering:
-hooks/metrics-opdeling og duplicate-scan interface er dokumenteret
-(2026-02-21).
+Seneste dokument-opdatering: Work package og markdown-kommandoer er synkroniseret (2026-02-21).
 Intern løsning til varemodtagelse og pallehåndtering.
 
 - Backend: ASP.NET Minimal API
@@ -160,4 +158,3 @@ Nye refaktor-seams:
 - [Branch Policy](docs/BRANCH_POLICY.md): PR-gates og branch-beskyttelse
 - [Commit Push Checklist](docs/COMMIT_PUSH_CHECKLIST.md): fast commit/push arbejdsgang
 - [Frontend README](frontend/README.md): frontend-udvikling
-

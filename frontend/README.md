@@ -2,7 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: hooks og metrics-opdeling er dokumenteret (2026-02-21).
+Seneste dokument-opdatering: Work package og markdown-kommandoer er synkroniseret (2026-02-21).
 
 Frontend er en SPA under `/app` til scannerdrevet lagerflow.
 
