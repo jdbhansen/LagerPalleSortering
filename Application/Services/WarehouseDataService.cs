@@ -11,6 +11,9 @@ namespace LagerPalleSortering.Application.Services;
 /// </summary>
 public sealed class WarehouseDataService : IWarehouseDataService
 {
+    private const string InvalidPalletBarcodeMetricError = "Ugyldig pallestregkode.";
+    private const string NoUnconfirmedColliMetricError = "Ingen u-bekræftede kolli fundet for palle.";
+
     private readonly IWarehouseRepository _repository;
     private readonly IProductBarcodeNormalizer _productBarcodeNormalizer;
     private readonly IPalletBarcodeService _palletBarcodeService;
@@ -81,7 +84,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
         _metrics.IncrementConfirmAttempt();
         if (!_palletBarcodeService.TryParsePalletCode(scannedPalletCode, out var palletId))
         {
-            _metrics.IncrementConfirmFailure("Ugyldig pallestregkode.");
+            _metrics.IncrementConfirmFailure(InvalidPalletBarcodeMetricError);
             return MoveConfirmationResult.Fail("Ugyldig pallestregkode. Forventet format: PALLET:P-001.");
         }
 
@@ -94,7 +97,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
         var confirmedId = await _repository.ConfirmLatestUnconfirmedByPalletIdAsync(palletId, DateTime.UtcNow, cancellationToken);
         if (confirmedId is null)
         {
-            _metrics.IncrementConfirmFailure($"Ingen u-bekræftede kolli fundet for palle {palletId}.");
+            _metrics.IncrementConfirmFailure(NoUnconfirmedColliMetricError);
             return MoveConfirmationResult.Fail($"Ingen u-bekræftede kolli fundet for palle {palletId}.");
         }
 
