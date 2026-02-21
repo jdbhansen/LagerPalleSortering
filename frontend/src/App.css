@@ -116,6 +116,18 @@
     width: 100%;
     max-width: none;
   }
+
+  .print-items-list {
+    display: block !important;
+  }
+
+  .print-no-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    page-break-before: auto;
+    page-break-after: auto;
+    margin-bottom: 0.75rem;
+  }
 }
 
 @media (max-width: 640px) {

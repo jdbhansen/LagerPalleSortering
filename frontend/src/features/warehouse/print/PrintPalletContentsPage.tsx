@@ -59,13 +59,13 @@ export function PrintPalletContentsPage({ palletId, format }: PrintPalletContent
         ) : items.length === 0 ? (
           <div className="text-muted">Ingen indholdslinjer fundet.</div>
         ) : (
-          <div className="d-grid gap-3">
+          <div className="d-grid gap-3 print-items-list">
             {items.map((item, index) => {
               const expiryDisplay = formatExpiryDateForDisplay(item.expiryDate);
               const scannableExpiry = /^\d{8}$/.test(item.expiryDate);
 
               return (
-                <article key={`${item.productNumber}-${item.expiryDate}-${index}`} className="print-item-row text-center">
+                <article key={`${item.productNumber}-${item.expiryDate}-${index}`} className="print-item-row print-no-break text-center">
                   <div className="fw-semibold">Vare: {item.productNumber}</div>
                   <div>Holdbarhed: {expiryDisplay}</div>
                   <div>Antal: {item.quantity}</div>
