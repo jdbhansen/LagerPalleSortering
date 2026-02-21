@@ -155,7 +155,7 @@ export function NewPalletSortingPage() {
                         placeholder={suggestedPalletId ? `PALLET:${suggestedPalletId}` : 'PALLET:P-001'}
                       />
                     </div>
-                    <button className="btn btn-success" type="submit" disabled={submitting || !suggestedPalletId}>
+                    <button className="btn btn-success" type="submit" disabled={submitting}>
                       Sæt kolli på plads
                     </button>
                     <button
