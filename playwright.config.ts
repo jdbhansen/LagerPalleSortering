@@ -11,6 +11,7 @@ export default defineConfig({
   },
   webServer: {
     command: "dotnet run --project ./LagerPalleSortering.csproj --no-launch-profile --urls http://127.0.0.1:5099",
+    url: "http://127.0.0.1:5099/health",
     timeout: 120000,
     reuseExistingServer: false
   }
