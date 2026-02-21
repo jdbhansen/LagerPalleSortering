@@ -55,7 +55,7 @@ curl http://localhost:5000/backup/db
 dotnet build -warnaserror
 dotnet test
 npm --prefix frontend run lint
-npm --prefix frontend run test -- --run
+npm --prefix frontend exec vitest -- run --reporter=verbose
 npm --prefix frontend run build
 npm run test:e2e
 ```
@@ -99,3 +99,4 @@ Tracked artifact:
 - `Ryd database`: destruktiv handling, kræver eksplicit bekræftelse
 - `Gendan database`: brug kun valideret backup (`.json` for PostgreSQL)
 - Tag backup før restore/rydning
+

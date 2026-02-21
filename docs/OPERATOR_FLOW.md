@@ -2,11 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering: test- og arkitektursektioner er opdateret (2026-02-21).
 
 ## Formål
 
@@ -56,3 +52,4 @@ Note:
 1. Luk aktive paller efter behov.
 2. Tag backup ved større ændringer.
 3. Notér scanner-afvigelser til næste skift.
+

@@ -195,3 +195,4 @@ journalctl -u lager -n 200 --no-pager
 1. Upload ny release til `/opt/lager/app`.
 1. Start service: `systemctl start lager`.
 1. Verificér `/health` og login.
+

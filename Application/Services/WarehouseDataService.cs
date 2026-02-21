@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Collections.Concurrent;
 using LagerPalleSortering.Application.Abstractions;
 using LagerPalleSortering.Domain;
 using Microsoft.Extensions.Options;
@@ -17,22 +16,22 @@ public sealed class WarehouseDataService : IWarehouseDataService
     private readonly IWarehouseRepository _repository;
     private readonly IProductBarcodeNormalizer _productBarcodeNormalizer;
     private readonly IPalletBarcodeService _palletBarcodeService;
+    private readonly IDuplicateScanGuard _duplicateScanGuard;
     private readonly IOperationalMetrics _metrics;
-    private readonly WarehouseRulesOptions _rules;
-    private readonly ConcurrentDictionary<string, DateTime> _recentConfirmScans = new(StringComparer.Ordinal);
 
     public WarehouseDataService(
         IWarehouseRepository repository,
         IProductBarcodeNormalizer productBarcodeNormalizer,
         IPalletBarcodeService palletBarcodeService,
+        IDuplicateScanGuard duplicateScanGuard,
         IOperationalMetrics metrics,
-        IOptions<WarehouseRulesOptions> rules)
+        IOptions<WarehouseRulesOptions> _)
     {
         _repository = repository;
         _productBarcodeNormalizer = productBarcodeNormalizer;
         _palletBarcodeService = palletBarcodeService;
+        _duplicateScanGuard = duplicateScanGuard;
         _metrics = metrics;
-        _rules = rules.Value;
     }
 
     public Task InitializeAsync(CancellationToken cancellationToken = default) => _repository.InitializeAsync(cancellationToken);
@@ -88,7 +87,7 @@ public sealed class WarehouseDataService : IWarehouseDataService
             return MoveConfirmationResult.Fail("Ugyldig pallestregkode. Forventet format: PALLET:P-001.");
         }
 
-        if (!bypassDuplicateGuard && IsDuplicateConfirmScanBlocked(palletId))
+        if (!bypassDuplicateGuard && _duplicateScanGuard.IsBlocked(palletId))
         {
             _metrics.IncrementDuplicateScanBlocked();
             return MoveConfirmationResult.Fail("Scan ignoreret: samme palle blev allerede scannet lige før.");
@@ -221,38 +220,6 @@ public sealed class WarehouseDataService : IWarehouseDataService
             CultureInfo.InvariantCulture,
             DateTimeStyles.None,
             out _);
-    }
-
-    private bool IsDuplicateConfirmScanBlocked(string palletId)
-    {
-        if (!_rules.EnableDuplicateScanGuard || _rules.DuplicateScanWindowMs <= 0)
-        {
-            return false;
-        }
-
-        var now = DateTime.UtcNow;
-        var threshold = now.AddMilliseconds(-_rules.DuplicateScanWindowMs);
-        if (_recentConfirmScans.TryGetValue(palletId, out var previous) && previous >= threshold)
-        {
-            _recentConfirmScans[palletId] = now;
-            return true;
-        }
-
-        _recentConfirmScans[palletId] = now;
-
-        // Lightweight cleanup to avoid unbounded growth.
-        if (_recentConfirmScans.Count > 512)
-        {
-            foreach (var pair in _recentConfirmScans)
-            {
-                if (pair.Value < threshold)
-                {
-                    _recentConfirmScans.TryRemove(pair.Key, out _);
-                }
-            }
-        }
-
-        return false;
     }
 
 }

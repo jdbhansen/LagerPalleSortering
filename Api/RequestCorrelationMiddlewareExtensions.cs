@@ -5,6 +5,7 @@ namespace LagerPalleSortering.Api;
 public static class RequestCorrelationMiddlewareExtensions
 {
     public const string CorrelationHeaderName = "X-Correlation-ID";
+    private const int MaxCorrelationLength = 128;
 
     public static IApplicationBuilder UseRequestCorrelation(this IApplicationBuilder app)
     {
@@ -19,6 +20,10 @@ public static class RequestCorrelationMiddlewareExtensions
             var correlationId = string.IsNullOrWhiteSpace(requestCorrelationId)
                 ? context.TraceIdentifier
                 : requestCorrelationId.Trim();
+            if (correlationId.Length > MaxCorrelationLength)
+            {
+                correlationId = correlationId[..MaxCorrelationLength];
+            }
 
             context.Response.Headers[CorrelationHeaderName] = correlationId;
 

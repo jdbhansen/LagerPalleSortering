@@ -2,11 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering: hooks og metrics-opdeling er dokumenteret (2026-02-21).
 
 Frontend er en SPA under `/app` til scannerdrevet lagerflow.
 
@@ -24,7 +20,7 @@ npm run dev
 
 ```powershell
 npm run lint
-npm run test -- --run
+npm exec vitest -- run --reporter=verbose
 npm run build
 ```
 
@@ -46,6 +42,8 @@ Build output lander i `../wwwroot/app`.
 - `hooks/newSortingWorkflow.ts`: ren valideringslogik
 - `hooks/newSortingStateStore.ts`: persistence seam for UI-state
 - `hooks/useWarehousePage.ts`: fuld oversigt use-cases
+- `hooks/warehousePageState.ts`: typed form-state/defaults
+- `hooks/warehouseDashboardMetrics.ts`: rene dashboard-beregninger
 - `utils/gs1Parser.ts`: GS1 parsing
 - `utils/expiryNormalization.ts`: dato-normalisering
 - `utils/palletBarcodePayload.ts`: pallepayload normalisering/validering
@@ -65,3 +63,4 @@ Build output lander i `../wwwroot/app`.
 - Workflow-tests for valideringsregler
 - API-klient tests for route/transport seams
 - Utility-tests for GS1, dato, routing, payload og print-tidspunkt
+

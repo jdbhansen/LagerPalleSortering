@@ -25,12 +25,14 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
         Directory.CreateDirectory(root);
 
         var repository = new SqliteWarehouseRepository(new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(root)));
+        var rulesOptions = Options.Create(new WarehouseRulesOptions { EnableDuplicateScanGuard = false });
         var service = new WarehouseDataService(
             repository,
             new DefaultProductBarcodeNormalizer(),
             new DefaultPalletBarcodeService(),
+            new SlidingWindowDuplicateScanGuard(rulesOptions, TimeProvider.System),
             new OperationalMetricsService(),
-            Options.Create(new WarehouseRulesOptions { EnableDuplicateScanGuard = false }));
+            rulesOptions);
         var exportService = new WarehouseExportService(repository);
         await service.InitializeAsync();
 
@@ -40,12 +42,14 @@ internal sealed class WarehouseTestFixture : IDisposable, IAsyncDisposable
     public async Task<WarehouseDataService> CreateNewServiceForSameStorageAsync()
     {
         var repository = new SqliteWarehouseRepository(new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(rootPath)));
+        var rulesOptions = Options.Create(new WarehouseRulesOptions { EnableDuplicateScanGuard = false });
         var service = new WarehouseDataService(
             repository,
             new DefaultProductBarcodeNormalizer(),
             new DefaultPalletBarcodeService(),
+            new SlidingWindowDuplicateScanGuard(rulesOptions, TimeProvider.System),
             new OperationalMetricsService(),
-            Options.Create(new WarehouseRulesOptions { EnableDuplicateScanGuard = false }));
+            rulesOptions);
         await service.InitializeAsync();
         return service;
     }

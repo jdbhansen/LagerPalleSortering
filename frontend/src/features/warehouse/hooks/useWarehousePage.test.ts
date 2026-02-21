@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WarehouseApiClientContract } from '../api/warehouseApiClientContract';
 import type { WarehouseDashboardResponse, WarehouseOperationResponse } from '../models';
 import { useWarehousePage } from './useWarehousePage';
+import { getPrintLabelPath } from '../warehouseRouting';
 
 const navigateToMock = vi.fn();
 
@@ -194,5 +195,31 @@ describe('useWarehousePage', () => {
     expect(result.current.status?.type).toBe('error');
     expect(result.current.status?.message).toContain('Vælg en backupfil først');
     expect(apiClient.restoreWarehouseDatabase).not.toHaveBeenCalled();
+  });
+
+  it('navigerer til print-label når register opretter ny palle', async () => {
+    const apiClient = createApiClientMock();
+    const registerResponse: WarehouseOperationResponse = {
+      type: 'success',
+      message: 'ok',
+      palletId: 'P-333',
+      createdNewPallet: true,
+    };
+    vi.mocked(apiClient.registerWarehouseColli).mockResolvedValue(registerResponse);
+    const navigation = { navigateTo: vi.fn() };
+
+    const { result } = renderHook(() => useWarehousePage(apiClient, navigation));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.updateRegisterFormField('productNumber', 'ITEM-333');
+      result.current.updateRegisterFormField('expiryDateRaw', '20261231');
+    });
+
+    await act(async () => {
+      await result.current.submitRegisterColli();
+    });
+
+    expect(navigation.navigateTo).toHaveBeenCalledWith(getPrintLabelPath('P-333'));
   });
 });

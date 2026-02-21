@@ -2,11 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering: test- og arkitektursektioner er opdateret (2026-02-21).
 
 ## Mål
 
@@ -34,3 +30,4 @@ Hold `master` stabil med ensartede kvalitetsgates.
 ## Fast proces
 
 - Brug [Commit Push Checklist](COMMIT_PUSH_CHECKLIST.md) ved hver `commit push`.
+

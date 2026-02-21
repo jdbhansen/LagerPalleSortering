@@ -3,7 +3,7 @@
 Sidst opdateret: 2026-02-21.
 
 Seneste dokument-opdatering:
-Fast commit/push tjekliste er oprettet og linket fra centrale docs
+hooks/metrics-opdeling og duplicate-scan interface er dokumenteret
 (2026-02-21).
 Intern løsning til varemodtagelse og pallehåndtering.
 
@@ -52,7 +52,7 @@ Kør disse kommandoer før push:
 dotnet build
 dotnet test
 npm --prefix frontend run lint
-npm --prefix frontend run test -- --run
+npm --prefix frontend exec vitest -- run --reporter=verbose
 npm --prefix frontend run build
 ```
 
@@ -130,6 +130,13 @@ Output:
 - `tests/`: backend tests
 - `e2e/`: Playwright tests
 
+Nye refaktor-seams:
+
+- `Application/Abstractions/IDuplicateScanGuard.cs`
+- `Application/Services/SlidingWindowDuplicateScanGuard.cs`
+- `frontend/src/features/warehouse/hooks/warehousePageState.ts`
+- `frontend/src/features/warehouse/hooks/warehouseDashboardMetrics.ts`
+
 ## Dokumentation
 
 - [Brugerguide](docs/USER_GUIDE.md): slutbruger-guide
@@ -143,3 +150,4 @@ Output:
 - [Branch Policy](docs/BRANCH_POLICY.md): PR-gates og branch-beskyttelse
 - [Commit Push Checklist](docs/COMMIT_PUSH_CHECKLIST.md): fast commit/push arbejdsgang
 - [Frontend README](frontend/README.md): frontend-udvikling
+

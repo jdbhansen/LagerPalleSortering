@@ -1,5 +1,6 @@
 using LagerPalleSortering.Application.Abstractions;
 using LagerPalleSortering.Infrastructure.Repositories;
+using Microsoft.Extensions.Options;
 
 namespace LagerPalleSortering.Api;
 
@@ -18,14 +19,14 @@ public static class OperationalApiEndpoints
     private static async Task<IResult> ExportCsvAsync(IWarehouseExportService exportService, CancellationToken cancellationToken)
     {
         var file = await exportService.ExportCsvAsync(cancellationToken);
-        var fileName = $"lager-export-{DateTime.Now:yyyyMMdd-HHmm}.csv";
+        var fileName = $"lager-export-{DateTime.UtcNow:yyyyMMdd-HHmm}.csv";
         return Results.File(file, "text/csv; charset=utf-8", fileName);
     }
 
     private static async Task<IResult> ExportExcelAsync(IWarehouseExportService exportService, CancellationToken cancellationToken)
     {
         var file = await exportService.ExportExcelAsync(cancellationToken);
-        var fileName = $"lager-export-{DateTime.Now:yyyyMMdd-HHmm}.xlsx";
+        var fileName = $"lager-export-{DateTime.UtcNow:yyyyMMdd-HHmm}.xlsx";
         return Results.File(
             file,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -34,14 +35,17 @@ public static class OperationalApiEndpoints
 
     private static async Task<IResult> BackupDatabaseAsync(
         IWarehouseDataService dataService,
-        IWarehouseRepository repository,
+        IOptions<DatabaseOptions> databaseOptions,
         CancellationToken cancellationToken)
     {
         var file = await dataService.BackupDatabaseAsync(cancellationToken);
-        var isPostgresBackup = repository is PostgresWarehouseRepository;
+        var isPostgresBackup = string.Equals(
+            databaseOptions.Value.Provider,
+            "Postgres",
+            StringComparison.OrdinalIgnoreCase);
         var fileName = isPostgresBackup
-            ? $"lager-backup-{DateTime.Now:yyyyMMdd-HHmm}.json"
-            : $"lager-backup-{DateTime.Now:yyyyMMdd-HHmm}.db";
+            ? $"lager-backup-{DateTime.UtcNow:yyyyMMdd-HHmm}.json"
+            : $"lager-backup-{DateTime.UtcNow:yyyyMMdd-HHmm}.db";
         var contentType = isPostgresBackup ? "application/json" : "application/octet-stream";
         return Results.File(file, contentType, fileName);
     }

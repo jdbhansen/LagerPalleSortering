@@ -12,8 +12,10 @@ var disableHttpsRedirection = builder.Configuration.GetValue<bool>("DisableHttps
 builder.Services.Configure<WarehouseRulesOptions>(builder.Configuration.GetSection(WarehouseRulesOptions.SectionName));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
 builder.Services.AddWarehouseStorage(builder.Configuration);
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IProductBarcodeNormalizer, DefaultProductBarcodeNormalizer>();
 builder.Services.AddSingleton<IPalletBarcodeService, DefaultPalletBarcodeService>();
+builder.Services.AddSingleton<IDuplicateScanGuard, SlidingWindowDuplicateScanGuard>();
 builder.Services.AddSingleton<IOperationalMetrics, OperationalMetricsService>();
 builder.Services.AddSingleton<IWarehouseDataService, WarehouseDataService>();
 builder.Services.AddSingleton<IWarehouseExportService, WarehouseExportService>();

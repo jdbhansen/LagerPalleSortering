@@ -281,6 +281,25 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task RequestCorrelationHeader_IsTrimmedAndCappedAt128Chars()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var longId = $"   {new string('x', 200)}   ";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/health");
+        request.Headers.Add(RequestCorrelationMiddlewareExtensions.CorrelationHeaderName, longId);
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.TryGetValues(RequestCorrelationMiddlewareExtensions.CorrelationHeaderName, out var values));
+        var value = Assert.Single(values);
+        Assert.Equal(128, value.Length);
+        Assert.Equal(new string('x', 128), value);
+    }
+
+    [Fact]
     public async Task AuthEndpoints_WithValidCredentials_LoginAndMeReturnAuthenticated()
     {
         using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");

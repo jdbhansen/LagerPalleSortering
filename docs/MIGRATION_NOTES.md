@@ -2,11 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering: test- og arkitektursektioner er opdateret (2026-02-21).
 
 ## Formål
 
@@ -25,6 +21,7 @@ Guide til kontrolleret migration af API, transport og database uden at bryde bru
 
 - Storage seam: `IWarehouseDatabaseProvider`
 - Default implementation: `SqliteWarehouseDatabaseProvider`
+- Duplicate scan guard seam: `IDuplicateScanGuard`
 
 ## Migrerings-playbooks
 
@@ -55,7 +52,8 @@ Guide til kontrolleret migration af API, transport og database uden at bryde bru
 - `dotnet build -warnaserror`
 - `dotnet test`
 - `npm --prefix frontend run lint`
-- `npm --prefix frontend run test -- --run`
+- `npm --prefix frontend exec vitest -- run --reporter=verbose`
 - `npm --prefix frontend run build`
 - `npm run test:e2e`
 4. Scanner-flow er manuelt valideret jf. `docs/SCANNER_VALIDATION.md`.
+

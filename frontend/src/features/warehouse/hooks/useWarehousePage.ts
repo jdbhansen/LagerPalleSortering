@@ -10,38 +10,27 @@ import { getPrintLabelPath, getPrintPalletContentsPath } from '../warehouseRouti
 import { normalizeExpiryInput } from '../utils/expiryNormalization';
 import { parseGs1ProductAndExpiry } from '../utils/gs1Parser';
 import { resolvePalletCode, validateRegisterPayload, validateSuggestedPalletMatch } from './newSortingWorkflow';
+import {
+  defaultConfirmForm,
+  defaultRegisterForm,
+  emptyDashboard,
+  type ConfirmFormField,
+  type ConfirmFormState,
+  type RegisterFormField,
+  type RegisterFormState,
+} from './warehousePageState';
+import { countOpenColli, countPendingConfirmations } from './warehouseDashboardMetrics';
 
-interface RegisterFormState {
-  productNumber: string;
-  expiryDateRaw: string;
-  quantity: number;
+export interface WarehouseNavigation {
+  navigateTo(path: string): void;
 }
 
-interface ConfirmFormState {
-  scannedPalletCode: string;
-  confirmScanCount: number;
-}
+const defaultNavigation: WarehouseNavigation = { navigateTo };
 
-type RegisterFormField = keyof RegisterFormState;
-type ConfirmFormField = keyof ConfirmFormState;
-
-const emptyDashboard: WarehouseDashboardResponse = {
-  openPallets: [],
-  entries: [],
-};
-
-const defaultRegisterForm: RegisterFormState = {
-  productNumber: '',
-  expiryDateRaw: '',
-  quantity: 1,
-};
-
-const defaultConfirmForm: ConfirmFormState = {
-  scannedPalletCode: '',
-  confirmScanCount: 1,
-};
-
-export function useWarehousePage(apiClient: WarehouseApiClientContract = warehouseApiClient) {
+export function useWarehousePage(
+  apiClient: WarehouseApiClientContract = warehouseApiClient,
+  navigation: WarehouseNavigation = defaultNavigation,
+) {
   const [dashboard, setDashboard] = useState<WarehouseDashboardResponse>(emptyDashboard);
   const [loading, setLoading] = useState(true);
   const [isSimpleMode, setIsSimpleMode] = useState(false);
@@ -54,13 +43,13 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
 
   // Derived counters keep rendering components dumb and avoid repeated table traversals.
   const openColli = useMemo(
-    () => dashboard.openPallets.reduce((sum, pallet) => sum + pallet.totalQuantity, 0),
-    [dashboard.openPallets],
+    () => countOpenColli(dashboard),
+    [dashboard],
   );
 
   const pendingConfirmations = useMemo(
-    () => dashboard.entries.reduce((sum, entry) => sum + Math.max(0, entry.quantity - entry.confirmedQuantity), 0),
-    [dashboard.entries],
+    () => countPendingConfirmations(dashboard),
+    [dashboard],
   );
 
   const reloadDashboard = useCallback(async () => {
@@ -150,7 +139,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
 
     setLastSuggestedPalletId(result.palletId ?? '');
     if (result.createdNewPallet && result.palletId) {
-      navigateTo(getPrintLabelPath(result.palletId));
+      navigation.navigateTo(getPrintLabelPath(result.palletId));
     }
     updateRegisterFormField('productNumber', '');
     updateRegisterFormField('quantity', 1);
@@ -193,7 +182,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     await reloadDashboard();
 
     if (printContents) {
-      navigateTo(getPrintPalletContentsPath(palletId));
+      navigation.navigateTo(getPrintPalletContentsPath(palletId));
     }
   }
 

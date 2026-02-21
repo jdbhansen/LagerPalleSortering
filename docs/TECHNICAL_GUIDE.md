@@ -3,7 +3,7 @@
 Sidst opdateret: 2026-02-21.
 
 Seneste dokument-opdatering:
-Fast commit/push tjekliste er oprettet og linket fra centrale docs
+hooks/metrics-opdeling og duplicate-scan interface er dokumenteret
 (2026-02-21).
 
 ## Formål
@@ -22,6 +22,7 @@ Overblik over arkitektur, contracts og de steder du udvider systemet sikkert.
 
 - `Application/Abstractions/IWarehouseRepository.cs`
 - `Application/Abstractions/IWarehouseDataService.cs`
+- `Application/Abstractions/IDuplicateScanGuard.cs`
 - `Infrastructure/Repositories/IWarehouseDatabaseProvider.cs`
 - `Infrastructure/Repositories/DatabaseOptions.cs`
 
@@ -32,6 +33,8 @@ Storage-migration sker via `Database.Provider` + DI-registrering i `Program.cs`.
 - `frontend/src/features/warehouse/api/warehouseApiClientContract.ts`
 - `frontend/src/features/warehouse/api/warehouseApiInfrastructure.ts`
 - `frontend/src/features/warehouse/hooks/newSortingStateStore.ts`
+- `frontend/src/features/warehouse/hooks/warehousePageState.ts`
+- `frontend/src/features/warehouse/hooks/warehouseDashboardMetrics.ts`
 
 Frontend-migration sker via:
 
@@ -43,6 +46,8 @@ Frontend-migration sker via:
 - `useNewPalletSorting.ts`: sideeffekter og flow-orkestrering
 - `newSortingWorkflow.ts`: ren valideringslogik
 - `newSortingStateStore.ts`: sessions/state persistence
+- `useWarehousePage.ts`: API-orkestrering for fuld oversigt
+- `warehouseDashboardMetrics.ts`: rene beregninger af KPI'er
 
 Regel: sideeffekter i hooks, regler i utils.
 
@@ -64,7 +69,8 @@ Relaterede tests:
 ## Teststrategi
 
 - Backend: `dotnet test`
-- Frontend tests: `npm --prefix frontend run test -- --run`
+- Backend duplicate scan guard: `tests/LagerPalleSortering.Tests/SlidingWindowDuplicateScanGuardTests.cs`
+- Frontend tests: `npm --prefix frontend exec vitest -- run --reporter=verbose`
 - Frontend lint/build: `npm --prefix frontend run lint`
   og `npm --prefix frontend run build`
 - E2E: `npm run test:e2e`
@@ -76,3 +82,6 @@ Relaterede tests:
 - Del validering i fælles utilities.
 - Tilføj tests ved parser/valideringsændringer.
 - Hold migrations-seams stabile for nem fremtidig udskiftning.
+- Brug UTC i API-genererede timestamps/filnavne.
+- Begræns og normaliser request-correlation IDs før logging/response headers.
+

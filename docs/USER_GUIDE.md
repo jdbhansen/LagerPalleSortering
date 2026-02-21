@@ -2,11 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering: test- og arkitektursektioner er opdateret (2026-02-21).
 
 ## Formål
 
@@ -61,3 +57,4 @@ Note:
 ## Når scanner driller
 
 Se `docs/SCANNER_VALIDATION.md` for testplan og fejlsøgning.
+

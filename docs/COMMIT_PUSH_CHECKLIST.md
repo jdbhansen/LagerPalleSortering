@@ -13,7 +13,7 @@ Fast arbejdsgang ved `commit push`.
   - `dotnet build`
   - `dotnet test`
   - `npm --prefix frontend run lint`
-  - `npm --prefix frontend run test -- --run`
+  - `npm --prefix frontend exec vitest -- run --reporter=verbose`
   - `npm --prefix frontend run build`
   - `npm run test:e2e` (når ændringen kan påvirke flow/print/routing)
 - Verificer `git status`, så kun relevante filer kommer med.
@@ -45,3 +45,4 @@ Fast arbejdsgang ved `commit push`.
 - Opdater work package, hvis ændringen kræver det:
   - `./scripts/package-work.ps1`
 - Bekræft at dokumentation stadig matcher implementeringen.
+

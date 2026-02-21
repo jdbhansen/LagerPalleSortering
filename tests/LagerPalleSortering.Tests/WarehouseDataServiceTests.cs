@@ -550,23 +550,21 @@ public sealed class WarehouseDataServiceTests
         Directory.CreateDirectory(root);
         try
         {
+            var rules = Options.Create(new WarehouseRulesOptions
+            {
+                EnableDuplicateScanGuard = true,
+                DuplicateScanWindowMs = 5_000
+            });
             var repository = new SqliteWarehouseRepository(
                 new SqliteWarehouseDatabaseProvider(new TestWebHostEnvironment(root)),
-                Options.Create(new WarehouseRulesOptions
-                {
-                    EnableDuplicateScanGuard = true,
-                    DuplicateScanWindowMs = 5_000
-                }));
+                rules);
             var service = new WarehouseDataService(
                 repository,
                 new DefaultProductBarcodeNormalizer(),
                 new DefaultPalletBarcodeService(),
+                new SlidingWindowDuplicateScanGuard(rules, TimeProvider.System),
                 new OperationalMetricsService(),
-                Options.Create(new WarehouseRulesOptions
-                {
-                    EnableDuplicateScanGuard = true,
-                    DuplicateScanWindowMs = 5_000
-                }));
+                rules);
             await service.InitializeAsync();
             var register = await service.RegisterColliAsync("DUP-1", "20270101", 2);
 

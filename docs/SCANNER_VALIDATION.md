@@ -2,11 +2,7 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
+Seneste dokument-opdatering: test- og arkitektursektioner er opdateret (2026-02-21).
 
 ## Formål
 
@@ -23,7 +19,7 @@ Kør:
 
 ```powershell
 dotnet test
-npm --prefix frontend run test -- --run
+npm --prefix frontend exec vitest -- run --reporter=verbose
 ```
 
 ## Manuel hardware-validering
@@ -58,3 +54,4 @@ npm --prefix frontend run test -- --run
 - Alle testpayloads kan scannes på alle godkendte scannerprofiler.
 - Ingen parser-fejl i normal drift.
 - Udskrifter er læsbare og indeholder udskriftstidspunkt.
+
