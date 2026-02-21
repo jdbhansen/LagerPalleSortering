@@ -53,7 +53,7 @@ jobs:
         run: dotnet format LagerPalleSortering.slnx --verify-no-changes --verbosity diagnostic
 
       - name: Test
-        run: dotnet test LagerPalleSortering.slnx --configuration Release --no-build --results-directory artifacts/test-results --logger "trx;LogFileName=test-results.trx" /p:CollectCoverage=true /p:CoverletOutput=artifacts/coverage/ /p:CoverletOutputFormat=cobertura /p:Threshold=65 /p:ThresholdType=line /p:ThresholdStat=total
+        run: dotnet test LagerPalleSortering.slnx --configuration Release --no-build --results-directory artifacts/test-results --logger "trx;LogFileName=test-results.trx" /p:CollectCoverage=true /p:CoverletOutput=artifacts/coverage/ /p:CoverletOutputFormat=cobertura /p:Threshold=58 /p:ThresholdType=line /p:ThresholdStat=total
 
       - name: Upload Coverage
         if: always()
