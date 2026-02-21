@@ -2,7 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: `.gitignore` er opdateret (2026-02-21).
+Seneste dokument-opdatering: Frontend test setup stabiliseret (fjernet direkte `vitest` import i setup) (2026-02-21).
+
 
 
 Frontend er en SPA under `/app` til scannerdrevet lagerflow.
