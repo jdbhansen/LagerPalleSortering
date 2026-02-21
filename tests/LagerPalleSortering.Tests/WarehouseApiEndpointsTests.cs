@@ -52,6 +52,21 @@ public sealed class WarehouseApiEndpointsTests
     }
 
     [Fact]
+    public async Task DashboardEndpoint_V1Route_WhenFreshDatabase_ReturnsEmptyCollections()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/warehouse/dashboard");
+        var payload = await response.Content.ReadFromJsonAsync<WarehouseDashboardApiResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Empty(payload.OpenPallets);
+        Assert.Empty(payload.Entries);
+    }
+
+    [Fact]
     public async Task RegisterAndConfirmFlow_UpdatesDashboardAndReturnsExpectedStatus()
     {
         using var factory = new WarehouseApiWebApplicationFactory();
@@ -247,5 +262,21 @@ public sealed class WarehouseApiEndpointsTests
 
         Assert.Equal(HttpStatusCode.OK, metricsResponse.StatusCode);
         Assert.Contains("registerAttempts", metricsBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RequestCorrelationHeader_IsReturnedFromRequests()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/health");
+        request.Headers.Add(RequestCorrelationMiddlewareExtensions.CorrelationHeaderName, "test-correlation-id");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.TryGetValues(RequestCorrelationMiddlewareExtensions.CorrelationHeaderName, out var values));
+        Assert.Contains("test-correlation-id", values);
     }
 }

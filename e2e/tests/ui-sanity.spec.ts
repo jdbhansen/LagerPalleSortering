@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("UI sanity", () => {
-  test("operator can run the new pallet sorting flow end-to-end", async ({ page, request }) => {
-    const clearResponse = await request.post("/api/warehouse/clear");
+  test.beforeEach(async ({ request }) => {
+    const clearResponse = await request.post("/api/v1/warehouse/clear");
     expect(clearResponse.ok()).toBeTruthy();
+  });
 
+  test("operator can run the new pallet sorting flow end-to-end", async ({ page, request }) => {
     // Seed one existing open pallet to avoid auto-navigation to print label when first pallet is created.
-    const seedRegisterResponse = await request.post("/api/warehouse/register", {
+    const seedRegisterResponse = await request.post("/api/v1/warehouse/register", {
       data: { productNumber: "SANITY-ITEM", expiryDateRaw: "20261231", quantity: 1 },
     });
     expect(seedRegisterResponse.ok()).toBeTruthy();

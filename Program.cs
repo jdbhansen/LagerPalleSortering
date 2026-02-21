@@ -40,6 +40,7 @@ if (!disableHttpsRedirection)
 
 // Required so Vite-built React assets in wwwroot/app/assets are served in prod/test.
 app.UseStaticFiles();
+app.UseRequestCorrelation();
 app.MapWarehouseApiEndpoints();
 app.MapOperationalApiEndpoints();
 

@@ -1,7 +1,7 @@
 param(
     [string]$OutputRoot = "",
     [int]$Port = 5050,
-    [bool]$SyncTrackedZip = $true
+    [bool]$SyncTrackedZip = $false
 )
 
 $ErrorActionPreference = "Stop"

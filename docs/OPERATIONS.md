@@ -41,13 +41,13 @@ npm run test:e2e
 ```
 
 Tracked artifact:
-- `work-package/LagerPalleSortering-work.zip`
+- CI artifact: `work-package` (uploades af workflow)
 
 ## Runbook: typiske problemer
 
 ### UI/API fejl
 
-- Tjek browser console for `/api/warehouse/*`
+- Tjek browser console for `/api/v1/warehouse/*`
 - Verificer `health` og `metrics`
 - Kør `./scripts/verify.ps1`
 

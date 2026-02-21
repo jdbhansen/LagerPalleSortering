@@ -37,3 +37,6 @@ Thumbs.db
 node_modules/
 test-results/
 playwright-report/
+
+# Generated work package artifacts
+work-package/*.zip

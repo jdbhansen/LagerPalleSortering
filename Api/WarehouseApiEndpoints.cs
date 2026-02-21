@@ -7,18 +7,25 @@ public static class WarehouseApiEndpoints
 {
     public static IEndpointRouteBuilder MapWarehouseApiEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/api/warehouse/dashboard", GetDashboardAsync);
-        endpoints.MapGet("/api/warehouse/pallets/{palletId}", GetPalletAsync);
-        endpoints.MapGet("/api/warehouse/pallets/{palletId}/contents", GetPalletContentsAsync);
-        // Scanner/SPA clients do not post antiforgery tokens; endpoints are same-origin and auth-less by design.
-        endpoints.MapPost("/api/warehouse/register", RegisterColliAsync).DisableAntiforgery();
-        endpoints.MapPost("/api/warehouse/confirm", ConfirmMoveAsync).DisableAntiforgery();
-        endpoints.MapPost("/api/warehouse/pallets/{palletId}/close", ClosePalletAsync).DisableAntiforgery();
-        endpoints.MapPost("/api/warehouse/undo", UndoLastAsync).DisableAntiforgery();
-        endpoints.MapPost("/api/warehouse/clear", ClearDatabaseAsync).DisableAntiforgery();
-        endpoints.MapPost("/api/warehouse/restore", RestoreDatabaseAsync).DisableAntiforgery();
+        MapWarehouseApiGroup(endpoints, ApiRouteConstants.WarehouseV1Base);
+        // Backwards-compatible alias while clients migrate to versioned route.
+        MapWarehouseApiGroup(endpoints, ApiRouteConstants.WarehouseLegacyBase);
 
         return endpoints;
+    }
+
+    private static void MapWarehouseApiGroup(IEndpointRouteBuilder endpoints, string basePath)
+    {
+        endpoints.MapGet($"{basePath}/dashboard", GetDashboardAsync);
+        endpoints.MapGet($"{basePath}/pallets/{{palletId}}", GetPalletAsync);
+        endpoints.MapGet($"{basePath}/pallets/{{palletId}}/contents", GetPalletContentsAsync);
+        // Scanner/SPA clients do not post antiforgery tokens; endpoints are same-origin and auth-less by design.
+        endpoints.MapPost($"{basePath}/register", RegisterColliAsync).DisableAntiforgery();
+        endpoints.MapPost($"{basePath}/confirm", ConfirmMoveAsync).DisableAntiforgery();
+        endpoints.MapPost($"{basePath}/pallets/{{palletId}}/close", ClosePalletAsync).DisableAntiforgery();
+        endpoints.MapPost($"{basePath}/undo", UndoLastAsync).DisableAntiforgery();
+        endpoints.MapPost($"{basePath}/clear", ClearDatabaseAsync).DisableAntiforgery();
+        endpoints.MapPost($"{basePath}/restore", RestoreDatabaseAsync).DisableAntiforgery();
     }
 
     private static async Task<IResult> GetDashboardAsync(

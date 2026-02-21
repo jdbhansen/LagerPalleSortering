@@ -26,10 +26,11 @@ function Stop-LingeringTestHosts {
 
 try {
     Stop-LingeringTestHosts
-    dotnet build $solutionPath
+    dotnet restore $solutionPath
+    dotnet build $solutionPath --configuration Release --no-restore
 
     if (-not $NoTest) {
-        dotnet test $solutionPath --no-build
+        dotnet test $solutionPath --configuration Release --no-build
     }
 }
 finally {

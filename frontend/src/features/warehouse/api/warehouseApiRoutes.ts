@@ -5,7 +5,7 @@ export interface WarehouseApiRouteOptions {
 }
 
 export function createWarehouseApiRoutes(options: WarehouseApiRouteOptions = {}): WarehouseApiRoutes {
-  const configuredBasePath = options.basePath ?? '/api/warehouse';
+  const configuredBasePath = options.basePath ?? '/api/v1/warehouse';
   const basePath = configuredBasePath.endsWith('/') ? configuredBasePath.slice(0, -1) : configuredBasePath;
 
   return {

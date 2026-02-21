@@ -57,7 +57,7 @@ npm run test:e2e
 
 ## Work Package
 
-Generer og synkroniser tracked zip:
+Generer work package lokalt:
 
 ```powershell
 ./scripts/package-work.ps1
@@ -66,7 +66,7 @@ Generer og synkroniser tracked zip:
 Output:
 - `../LagerPalleSortering-work-package/app`
 - `../LagerPalleSortering-work-package/LagerPalleSortering-work.zip`
-- `work-package/LagerPalleSortering-work.zip` (tracked)
+- `work-package/` (lokal output-mappe, ikke tracket i git)
 
 ## Nøglefunktioner
 
@@ -95,4 +95,5 @@ Output:
 - [Teknisk Guide](docs/TECHNICAL_GUIDE.md): arkitektur og extension points
 - [Migration Notes](docs/MIGRATION_NOTES.md): migrations-seams og playbooks
 - [Scanner Validation](docs/SCANNER_VALIDATION.md): scanner-validering
+- [Branch Policy](docs/BRANCH_POLICY.md): PR-gates og branch-beskyttelse
 - [Frontend README](frontend/README.md): frontend-udvikling
