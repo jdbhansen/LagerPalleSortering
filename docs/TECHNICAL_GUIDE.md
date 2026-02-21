@@ -70,7 +70,7 @@ Relaterede tests:
 
 - Backend: `dotnet test`
 - Backend duplicate scan guard: `tests/LagerPalleSortering.Tests/SlidingWindowDuplicateScanGuardTests.cs`
-- Frontend tests: `npm --prefix frontend exec vitest -- run --reporter=verbose`
+- Frontend tests: `npm --prefix frontend run test`
 - Frontend lint/build: `npm --prefix frontend run lint`
   og `npm --prefix frontend run build`
 - E2E: `npm run test:e2e`

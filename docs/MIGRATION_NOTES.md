@@ -52,7 +52,7 @@ Guide til kontrolleret migration af API, transport og database uden at bryde bru
 - `dotnet build -warnaserror`
 - `dotnet test`
 - `npm --prefix frontend run lint`
-- `npm --prefix frontend exec vitest -- run --reporter=verbose`
+- `npm --prefix frontend run test`
 - `npm --prefix frontend run build`
 - `npm run test:e2e`
 4. Scanner-flow er manuelt valideret jf. `docs/SCANNER_VALIDATION.md`.

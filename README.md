@@ -52,7 +52,7 @@ Kør disse kommandoer før push:
 dotnet build
 dotnet test
 npm --prefix frontend run lint
-npm --prefix frontend exec vitest -- run --reporter=verbose
+npm --prefix frontend run test
 npm --prefix frontend run build
 ```
 

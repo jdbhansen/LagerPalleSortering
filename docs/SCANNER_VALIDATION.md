@@ -19,7 +19,7 @@ Kør:
 
 ```powershell
 dotnet test
-npm --prefix frontend exec vitest -- run --reporter=verbose
+npm --prefix frontend run test
 ```
 
 ## Manuel hardware-validering

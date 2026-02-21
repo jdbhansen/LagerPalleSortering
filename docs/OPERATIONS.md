@@ -55,7 +55,7 @@ curl http://localhost:5000/backup/db
 dotnet build -warnaserror
 dotnet test
 npm --prefix frontend run lint
-npm --prefix frontend exec vitest -- run --reporter=verbose
+npm --prefix frontend run test
 npm --prefix frontend run build
 npm run test:e2e
 ```
