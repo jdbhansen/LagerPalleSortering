@@ -51,6 +51,9 @@ $productionSettings = @"
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "Database": {
+    "Provider": "Sqlite"
+  },
   "AllowedHosts": "*"
 }
 "@

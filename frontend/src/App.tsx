@@ -9,38 +9,7 @@ import { warehouseStorageKeys } from './features/warehouse/constants';
 import type { WarehouseViewMode } from './features/warehouse/constants';
 import { getWarehousePrintRoute } from './features/warehouse/warehouseRouting';
 import { LoginPage } from './features/auth/LoginPage';
-
-interface AuthState {
-  loading: boolean;
-  authenticated: boolean;
-  username: string;
-}
-
-async function fetchAuthState(): Promise<AuthState> {
-  try {
-    const response = await fetch('/auth/me', { credentials: 'include' });
-    if (!response.ok) {
-      return {
-        loading: false,
-        authenticated: false,
-        username: '',
-      };
-    }
-
-    const payload = (await response.json()) as { authenticated?: boolean; username?: string };
-    return {
-      loading: false,
-      authenticated: payload.authenticated === true,
-      username: payload.username ?? '',
-    };
-  } catch {
-    return {
-      loading: false,
-      authenticated: false,
-      username: '',
-    };
-  }
-}
+import { fetchAuthState, logoutCurrentUser, type AuthState } from './features/auth/authApi';
 
 function App() {
   const [locationState, setLocationState] = useState(() => ({
@@ -91,11 +60,7 @@ function App() {
   }, [viewMode]);
 
   async function logout() {
-    await fetch('/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-
+    await logoutCurrentUser();
     await refreshAuthState();
     navigateTo('/login', true);
   }

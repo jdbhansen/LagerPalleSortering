@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace LagerPalleSortering.Api;
 
-public sealed class AuthService
+public sealed class AuthService : IAuthService
 {
     private readonly AuthOptions _options;
 

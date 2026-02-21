@@ -11,25 +11,13 @@ var disableHttpsRedirection = builder.Configuration.GetValue<bool>("DisableHttps
 
 builder.Services.Configure<WarehouseRulesOptions>(builder.Configuration.GetSection(WarehouseRulesOptions.SectionName));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
-builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
-
-var databaseOptions = builder.Configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>() ?? new DatabaseOptions();
-if (string.Equals(databaseOptions.Provider, "Postgres", StringComparison.OrdinalIgnoreCase) ||
-    string.Equals(databaseOptions.Provider, "PostgreSql", StringComparison.OrdinalIgnoreCase))
-{
-    builder.Services.AddSingleton<IWarehouseRepository, PostgresWarehouseRepository>();
-}
-else
-{
-    builder.Services.AddSingleton<IWarehouseDatabaseProvider, SqliteWarehouseDatabaseProvider>();
-    builder.Services.AddSingleton<IWarehouseRepository, SqliteWarehouseRepository>();
-}
+builder.Services.AddWarehouseStorage(builder.Configuration);
 builder.Services.AddSingleton<IProductBarcodeNormalizer, DefaultProductBarcodeNormalizer>();
 builder.Services.AddSingleton<IPalletBarcodeService, DefaultPalletBarcodeService>();
 builder.Services.AddSingleton<IOperationalMetrics, OperationalMetricsService>();
 builder.Services.AddSingleton<IWarehouseDataService, WarehouseDataService>();
 builder.Services.AddSingleton<IWarehouseExportService, WarehouseExportService>();
-builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>

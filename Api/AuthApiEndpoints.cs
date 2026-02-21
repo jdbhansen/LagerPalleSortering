@@ -17,7 +17,7 @@ public static class AuthApiEndpoints
     private static async Task<IResult> LoginAsync(
         HttpContext httpContext,
         LoginApiRequest request,
-        AuthService authService)
+        IAuthService authService)
     {
         if (!authService.ValidateCredentials(request.Username ?? string.Empty, request.Password ?? string.Empty, out var username))
         {
@@ -49,7 +49,7 @@ public static class AuthApiEndpoints
         return Results.Ok(new { authenticated = false });
     }
 
-    private static IResult GetCurrentUser(HttpContext httpContext, AuthService authService)
+    private static IResult GetCurrentUser(HttpContext httpContext, IAuthService authService)
     {
         if (!authService.IsAuthRequired)
         {
