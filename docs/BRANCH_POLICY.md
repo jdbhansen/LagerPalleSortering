@@ -2,7 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Palleindhold print holder nu hver kolli-række samlet på én side (ingen split over sideskift) (2026-02-21).
+Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
+
 
 
 
@@ -29,3 +30,7 @@ Hold `master` stabil med ensartede kvalitetsgates.
 - Kør samme checks som CI.
 - Opdater relevant dokumentation.
 - Beskriv rollback-plan i PR.
+
+## Fast proces
+
+- Brug [Commit Push Checklist](COMMIT_PUSH_CHECKLIST.md) ved hver `commit push`.

@@ -2,7 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Palleindhold print holder nu hver kolli-række samlet på én side (ingen split over sideskift) (2026-02-21).
+Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
+
 
 
 

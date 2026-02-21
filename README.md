@@ -2,7 +2,8 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Palleindhold print holder nu hver kolli-række samlet på én side (ingen split over sideskift) (2026-02-21).
+Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
+
 
 
 
@@ -101,4 +102,5 @@ Output:
 - [Migration Notes](docs/MIGRATION_NOTES.md): migrations-seams og playbooks
 - [Scanner Validation](docs/SCANNER_VALIDATION.md): scanner-validering
 - [Branch Policy](docs/BRANCH_POLICY.md): PR-gates og branch-beskyttelse
+- [Commit Push Checklist](docs/COMMIT_PUSH_CHECKLIST.md): fast commit/push arbejdsgang
 - [Frontend README](frontend/README.md): frontend-udvikling
