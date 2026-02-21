@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("UI sanity", () => {
   test("operator can run the new pallet sorting flow end-to-end", async ({ page, request }) => {
+    const clearResponse = await request.post("/api/warehouse/clear");
+    expect(clearResponse.ok()).toBeTruthy();
+
     // Seed one existing open pallet to avoid auto-navigation to print label when first pallet is created.
     const seedRegisterResponse = await request.post("/api/warehouse/register", {
       data: { productNumber: "SANITY-ITEM", expiryDateRaw: "20261231", quantity: 1 },
@@ -9,11 +12,6 @@ test.describe("UI sanity", () => {
     expect(seedRegisterResponse.ok()).toBeTruthy();
     const seedRegisterPayload = await seedRegisterResponse.json() as { palletId?: string };
     expect(seedRegisterPayload.palletId).toBeTruthy();
-
-    const seedConfirmResponse = await request.post("/api/warehouse/confirm", {
-      data: { scannedPalletCode: `PALLET:${seedRegisterPayload.palletId!}`, confirmScanCount: 1 },
-    });
-    expect(seedConfirmResponse.ok()).toBeTruthy();
 
     await page.goto("/app");
 
