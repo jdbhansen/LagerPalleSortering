@@ -91,11 +91,14 @@ Samme checks som CI (inkl. work package + e2e):
 dotnet restore LagerPalleSortering.slnx
 dotnet build LagerPalleSortering.slnx --configuration Release --no-restore
 dotnet format LagerPalleSortering.slnx --verify-no-changes
-dotnet test LagerPalleSortering.slnx --configuration Release --no-build
+dotnet test LagerPalleSortering.slnx --configuration Release --no-build /p:CollectCoverage=true /p:CoverletOutput=artifacts/coverage/ /p:CoverletOutputFormat=cobertura /p:Exclude="[LagerPalleSortering]LagerPalleSortering.Infrastructure.Repositories.PostgresWarehouseRepository*" /p:Threshold=75 /p:ThresholdType=line /p:ThresholdStat=total
 npm ci
 npx playwright install --with-deps chromium
 npm run test:e2e
 ```
+
+Bemærk: unit-coverage-gaten ekskluderer Postgres-repositoryet, som dækkes via
+integration/deployment-tests.
 
 ## Work Package
 

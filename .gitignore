@@ -19,6 +19,7 @@ TestResults/
 *.trx
 *.coverage
 *.coveragexml
+**/coverage.cobertura.xml
 
 # Runtime/local data
 App_Data/
