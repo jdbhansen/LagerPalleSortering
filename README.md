@@ -2,12 +2,9 @@
 
 Sidst opdateret: 2026-02-21.
 
-Seneste dokument-opdatering: Fast commit/push tjekliste er oprettet og linket fra centrale docs (2026-02-21).
-
-
-
-
-
+Seneste dokument-opdatering:
+Fast commit/push tjekliste er oprettet og linket fra centrale docs
+(2026-02-21).
 Intern løsning til varemodtagelse og pallehåndtering.
 
 - Backend: ASP.NET Minimal API
@@ -17,17 +14,30 @@ Intern løsning til varemodtagelse og pallehåndtering.
 ## Kom hurtigt i gang
 
 1. Installer:
-- .NET SDK 10
-- Node.js 22+
 
-2. Start app:
+   - .NET SDK 10
+   - Node.js 22+
+
+1. Start app:
 
 ```powershell
 dotnet run
 ```
 
-3. Åbn:
-- `http://localhost:5000/app`
+1. Åbn:
+
+   - `http://localhost:5000/app`
+
+## Login
+
+Applikationen kræver login før brug.
+
+Standard (skal ændres med det samme):
+
+- Brugernavn: `admin`
+- Adgangskode: `ChangeMe-Now!`
+
+Konfiguration findes i `appsettings.json` under `Auth`.
 
 ## Daglig udvikling
 
@@ -49,7 +59,8 @@ Hvis du vil køre standard backend-verifikation:
 
 ## Print uden OK-dialog
 
-For at undgå print-OK dialogen på hver udskrift, start browseren i kiosk-printing mode:
+For at undgå print-OK dialogen på hver udskrift, start browseren i
+kiosk-printing mode:
 
 ```powershell
 ./scripts/start-kiosk-print.ps1
@@ -62,8 +73,10 @@ Valgfrit:
 ```
 
 Bemærk:
+
 - Webappen kan ikke selv tvinge printervalg i browseren.
-- Vælg printer én gang via `Vælg/skift printer` i UI; kiosk-profilen husker normalt valget.
+- Vælg printer én gang via `Vælg/skift printer` i UI; kiosk-profilen
+  husker normalt valget.
 
 ## CI-paritet lokalt
 
@@ -88,6 +101,7 @@ Generer work package lokalt:
 ```
 
 Output:
+
 - `../LagerPalleSortering-work-package/app`
 - `../LagerPalleSortering-work-package/LagerPalleSortering-work.zip`
 - `work-package/` (lokal output-mappe, ikke tracket i git)

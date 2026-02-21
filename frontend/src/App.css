@@ -16,6 +16,7 @@
   gap: 0.75rem;
   align-items: center;
   padding-block: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .mode-switcher-label {
@@ -29,6 +30,18 @@
 
 .scanner-flow-start {
   background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: linear-gradient(160deg, #f8fbff 0%, #edf5ff 100%);
+}
+
+.auth-card {
+  width: min(440px, 100%);
 }
 
 .print-page {

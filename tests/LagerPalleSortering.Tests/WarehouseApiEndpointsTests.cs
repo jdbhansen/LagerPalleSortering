@@ -279,4 +279,64 @@ public sealed class WarehouseApiEndpointsTests
         Assert.True(response.Headers.TryGetValues(RequestCorrelationMiddlewareExtensions.CorrelationHeaderName, out var values));
         Assert.Contains("test-correlation-id", values);
     }
+
+    [Fact]
+    public async Task AuthEndpoints_WithValidCredentials_LoginAndMeReturnAuthenticated()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");
+        using var client = factory.CreateClient();
+
+        var loginResponse = await client.PostAsJsonAsync("/auth/login", new { username = "tester", password = "secret-123" });
+        var meResponse = await client.GetAsync("/auth/me");
+        var meBody = await meResponse.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Contains("\"authenticated\":true", meBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"username\":\"tester\"", meBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AuthEndpoints_WithInvalidCredentials_ReturnUnauthorized()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");
+        using var client = factory.CreateClient();
+
+        var loginResponse = await client.PostAsJsonAsync("/auth/login", new { username = "tester", password = "wrong" });
+        var meResponse = await client.GetAsync("/auth/me");
+        var meBody = await meResponse.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, loginResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Contains("\"authenticated\":false", meBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ProtectedApi_WhenAuthEnabledAndNotLoggedIn_ReturnsUnauthorized()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/warehouse/dashboard");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AuthEndpoints_Logout_ClearsAuthentication()
+    {
+        using var factory = new WarehouseApiWebApplicationFactory(disableAuth: false, testUsername: "tester", testPassword: "secret-123");
+        using var client = factory.CreateClient();
+
+        var loginResponse = await client.PostAsJsonAsync("/auth/login", new { username = "tester", password = "secret-123" });
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+
+        var logoutResponse = await client.PostAsync("/auth/logout", null);
+        var meAfterLogout = await client.GetAsync("/auth/me");
+        var meBody = await meAfterLogout.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, meAfterLogout.StatusCode);
+        Assert.Contains("\"authenticated\":false", meBody, StringComparison.OrdinalIgnoreCase);
+    }
 }

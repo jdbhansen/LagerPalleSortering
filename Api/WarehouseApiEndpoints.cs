@@ -20,7 +20,7 @@ public static class WarehouseApiEndpoints
         endpoints.MapGet($"{basePath}/dashboard", GetDashboardAsync);
         endpoints.MapGet($"{basePath}/pallets/{{palletId}}", GetPalletAsync);
         endpoints.MapGet($"{basePath}/pallets/{{palletId}}/contents", GetPalletContentsAsync);
-        // Scanner/SPA clients do not post antiforgery tokens; endpoints are same-origin and auth-less by design.
+        // Scanner/SPA clients do not post antiforgery tokens; endpoints are same-origin and protected by auth cookie.
         endpoints.MapPost($"{basePath}/register", RegisterColliAsync).DisableAntiforgery();
         endpoints.MapPost($"{basePath}/confirm", ConfirmMoveAsync).DisableAntiforgery();
         endpoints.MapPost($"{basePath}/pallets/{{palletId}}/close", ClosePalletAsync).DisableAntiforgery();

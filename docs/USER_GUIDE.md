@@ -17,6 +17,10 @@ Guide til daglig brug i varemodtagelsen.
 - `Ny pallesortering`: anbefalet flow med ét aktivt trin ad gangen
 - `Fuld oversigt`: driftsdashboard med tabeller og værktøjer
 
+## Login
+
+Du skal logge ind før brug af systemet.
+
 ## Standardflow: Ny pallesortering
 
 1. Klik `Start ny pallesortering`.

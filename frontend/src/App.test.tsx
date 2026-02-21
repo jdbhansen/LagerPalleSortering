@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { warehouseStorageKeys } from './features/warehouse/constants';
 import App from './App';
 
@@ -23,32 +23,40 @@ vi.mock('./features/warehouse/print/PrintPalletContentsPage', () => ({
 
 describe('App', () => {
   beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ authenticated: true, username: 'tester' }),
+    }));
     window.localStorage.clear();
     window.history.replaceState({}, '', '/app');
   });
 
-  it('viser ny pallesortering som default', () => {
-    render(<App />);
-    expect(screen.getByText('new-sorting-view')).toBeInTheDocument();
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it('bruger gemt visningstilstand fra localStorage', () => {
+  it('viser ny pallesortering som default', async () => {
+    render(<App />);
+    expect(await screen.findByText('new-sorting-view')).toBeInTheDocument();
+  });
+
+  it('bruger gemt visningstilstand fra localStorage', async () => {
     window.localStorage.setItem(warehouseStorageKeys.viewMode, 'fullOverview');
     render(<App />);
-    expect(screen.getByText('full-overview-view')).toBeInTheDocument();
+    expect(await screen.findByText('full-overview-view')).toBeInTheDocument();
   });
 
-  it('kan skifte tilstand og gemmer valget', () => {
+  it('kan skifte tilstand og gemmer valget', async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Fuld oversigt' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Fuld oversigt' }));
 
-    expect(screen.getByText('full-overview-view')).toBeInTheDocument();
+    expect(await screen.findByText('full-overview-view')).toBeInTheDocument();
     expect(window.localStorage.getItem(warehouseStorageKeys.viewMode)).toBe('fullOverview');
   });
 
-  it('renderer print label route i stedet for hovedvisning', () => {
+  it('renderer print label route i stedet for hovedvisning', async () => {
     window.history.replaceState({}, '', '/app/print-label/P-100');
     render(<App />);
-    expect(screen.getByText('print-label:P-100')).toBeInTheDocument();
+    expect(await screen.findByText('print-label:P-100')).toBeInTheDocument();
   });
 });

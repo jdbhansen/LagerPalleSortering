@@ -11,10 +11,20 @@ namespace LagerPalleSortering.Tests.TestInfrastructure;
 
 internal sealed class WarehouseApiWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly bool _disableAuth;
+    private readonly string _testUsername;
+    private readonly string _testPassword;
     private readonly string _storageRoot = Path.Combine(
         Path.GetTempPath(),
         "LagerPalleSorteringApiTests",
         Guid.NewGuid().ToString("N"));
+
+    public WarehouseApiWebApplicationFactory(bool disableAuth = true, string testUsername = "admin", string testPassword = "ChangeMe-Now!")
+    {
+        _disableAuth = disableAuth;
+        _testUsername = testUsername;
+        _testPassword = testPassword;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -25,7 +35,10 @@ internal sealed class WarehouseApiWebApplicationFactory : WebApplicationFactory<
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DisableHttpsRedirection"] = "true"
+                ["DisableHttpsRedirection"] = "true",
+                ["Auth:RequireAuthentication"] = _disableAuth ? "false" : "true",
+                ["Auth:Users:0:Username"] = _testUsername,
+                ["Auth:Users:0:Password"] = _testPassword
             });
         });
 

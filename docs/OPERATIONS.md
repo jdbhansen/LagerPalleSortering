@@ -18,6 +18,7 @@ dotnet run
 
 - UI: `/app`
 - Datafil: `App_Data/lager.db`
+- Login styres via `Auth` i `appsettings*.json`
 
 Stop: luk processen i terminalen.
 

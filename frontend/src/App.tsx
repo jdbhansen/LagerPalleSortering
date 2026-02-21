@@ -4,16 +4,54 @@ import { WarehousePage } from './features/warehouse/WarehousePage';
 import { PrintLabelPage } from './features/warehouse/print/PrintLabelPage';
 import { PrintPalletContentsPage } from './features/warehouse/print/PrintPalletContentsPage';
 import { useEffect, useState } from 'react';
-import { subscribeNavigation } from './navigation';
+import { navigateTo, subscribeNavigation } from './navigation';
 import { warehouseStorageKeys } from './features/warehouse/constants';
 import type { WarehouseViewMode } from './features/warehouse/constants';
 import { getWarehousePrintRoute } from './features/warehouse/warehouseRouting';
+import { LoginPage } from './features/auth/LoginPage';
+
+interface AuthState {
+  loading: boolean;
+  authenticated: boolean;
+  username: string;
+}
+
+async function fetchAuthState(): Promise<AuthState> {
+  try {
+    const response = await fetch('/auth/me', { credentials: 'include' });
+    if (!response.ok) {
+      return {
+        loading: false,
+        authenticated: false,
+        username: '',
+      };
+    }
+
+    const payload = (await response.json()) as { authenticated?: boolean; username?: string };
+    return {
+      loading: false,
+      authenticated: payload.authenticated === true,
+      username: payload.username ?? '',
+    };
+  } catch {
+    return {
+      loading: false,
+      authenticated: false,
+      username: '',
+    };
+  }
+}
 
 function App() {
   const [locationState, setLocationState] = useState(() => ({
     pathname: window.location.pathname,
     search: window.location.search,
   }));
+  const [authState, setAuthState] = useState<AuthState>({
+    loading: true,
+    authenticated: false,
+    username: '',
+  });
 
   useEffect(() => {
     return subscribeNavigation(() => {
@@ -22,6 +60,24 @@ function App() {
         search: window.location.search,
       });
     });
+  }, []);
+
+  async function refreshAuthState() {
+    const nextState = await fetchAuthState();
+    setAuthState(nextState);
+  }
+
+  useEffect(() => {
+    let active = true;
+    void fetchAuthState().then((nextState) => {
+      if (active) {
+        setAuthState(nextState);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const printRoute = getWarehousePrintRoute(locationState.pathname, locationState.search);
@@ -33,6 +89,31 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem(warehouseStorageKeys.viewMode, viewMode);
   }, [viewMode]);
+
+  async function logout() {
+    await fetch('/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    await refreshAuthState();
+    navigateTo('/login', true);
+  }
+
+  if (authState.loading) {
+    return <main className="container-xl py-4">Indlæser...</main>;
+  }
+
+  if (!authState.authenticated) {
+    return (
+      <LoginPage
+        onLoginSuccess={async () => {
+          await refreshAuthState();
+          navigateTo('/app', true);
+        }}
+      />
+    );
+  }
 
   if (printRoute?.type === 'label') {
     return <PrintLabelPage palletId={printRoute.palletId} />;
@@ -61,6 +142,12 @@ function App() {
               onClick={() => setViewMode('fullOverview')}
             >
               Fuld oversigt
+            </button>
+          </div>
+          <div className="ms-auto d-flex align-items-center gap-2">
+            <span className="small text-muted">Logget ind som {authState.username}</span>
+            <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => { void logout(); }}>
+              Log ud
             </button>
           </div>
         </div>
