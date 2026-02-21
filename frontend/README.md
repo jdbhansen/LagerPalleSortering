@@ -4,6 +4,8 @@ Sidst opdateret: 2026-02-21.
 
 Frontend er en SPA under `/app` til scannerdrevet lagerflow.
 
+- [Til hoved-README](../README.md)
+
 ## Hurtig start
 
 ```powershell

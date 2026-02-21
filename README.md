@@ -89,10 +89,10 @@ Output:
 
 ## Dokumentation
 
-- `docs/USER_GUIDE.md`: slutbruger-guide
-- `docs/OPERATOR_FLOW.md`: operatørflow og beslutningspunkter
-- `docs/OPERATIONS.md`: drift, runbook og fejlsøgning
-- `docs/TECHNICAL_GUIDE.md`: arkitektur og extension points
-- `docs/MIGRATION_NOTES.md`: migrations-seams og playbooks
-- `docs/SCANNER_VALIDATION.md`: scanner-validering
-- `frontend/README.md`: frontend-udvikling
+- [Brugerguide](docs/USER_GUIDE.md): slutbruger-guide
+- [Operatørflow](docs/OPERATOR_FLOW.md): operatørflow og beslutningspunkter
+- [Drift og Fejlsøgning](docs/OPERATIONS.md): drift, runbook og fejlsøgning
+- [Teknisk Guide](docs/TECHNICAL_GUIDE.md): arkitektur og extension points
+- [Migration Notes](docs/MIGRATION_NOTES.md): migrations-seams og playbooks
+- [Scanner Validation](docs/SCANNER_VALIDATION.md): scanner-validering
+- [Frontend README](frontend/README.md): frontend-udvikling
