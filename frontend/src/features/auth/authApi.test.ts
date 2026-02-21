@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchAuthState, logoutCurrentUser } from './authApi';
+import { fetchAuthState, loginUser, logoutCurrentUser } from './authApi';
+import { authApiRoutes } from './authApiRoutes';
 
 describe('authApi', () => {
   afterEach(() => {
@@ -36,9 +37,26 @@ describe('authApi', () => {
 
     await logoutCurrentUser();
 
-    expect(fetchMock).toHaveBeenCalledWith('/auth/logout', {
+    expect(fetchMock).toHaveBeenCalledWith(authApiRoutes.logout, {
       method: 'POST',
       credentials: 'include',
+    });
+  });
+
+  it('loginUser sender login payload og returnerer response.ok', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const success = await loginUser({ username: 'admin', password: 'secret' });
+
+    expect(success).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(authApiRoutes.login, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ username: 'admin', password: 'secret' }),
     });
   });
 });

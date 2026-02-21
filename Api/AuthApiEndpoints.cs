@@ -40,34 +40,28 @@ public static class AuthApiEndpoints
         };
 
         await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-        return Results.Ok(new { authenticated = true, username });
+        return Results.Ok(new AuthStateApiResponse(Authenticated: true, Username: username));
     }
 
     private static async Task<IResult> LogoutAsync(HttpContext httpContext)
     {
         await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Results.Ok(new { authenticated = false });
+        return Results.Ok(new AuthStateApiResponse(Authenticated: false));
     }
 
     private static IResult GetCurrentUser(HttpContext httpContext, IAuthService authService)
     {
         if (!authService.IsAuthRequired)
         {
-            return Results.Ok(new { authenticated = true, username = "anonymous" });
+            return Results.Ok(new AuthStateApiResponse(Authenticated: true, Username: "anonymous"));
         }
 
         var user = httpContext.User;
         if (user?.Identity?.IsAuthenticated != true)
         {
-            return Results.Ok(new { authenticated = false });
+            return Results.Ok(new AuthStateApiResponse(Authenticated: false));
         }
 
-        return Results.Ok(new
-        {
-            authenticated = true,
-            username = user.Identity.Name ?? string.Empty,
-        });
+        return Results.Ok(new AuthStateApiResponse(Authenticated: true, Username: user.Identity.Name ?? string.Empty));
     }
 }
-
-public sealed record LoginApiRequest(string? Username, string? Password);

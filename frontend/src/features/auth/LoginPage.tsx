@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { loginUser } from './authApi';
 
 interface LoginPageProps {
   onLoginSuccess: () => Promise<void> | void;
@@ -17,19 +18,12 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setSubmitting(true);
 
     try {
-      const response = await fetch('/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: username.trim(),
-          password,
-        }),
+      const success = await loginUser({
+        username: username.trim(),
+        password,
       });
 
-      if (!response.ok) {
+      if (!success) {
         setError('Forkert brugernavn eller adgangskode.');
         return;
       }
