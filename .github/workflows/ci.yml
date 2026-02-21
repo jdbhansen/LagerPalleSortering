@@ -112,12 +112,65 @@ jobs:
         run: npm run build
         working-directory: frontend
 
+  postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: lagerpallesortering_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lagerpallesortering_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/packages.lock.json
+            global.json
+
+      - name: Restore
+        run: dotnet restore LagerPalleSortering.slnx
+
+      - name: Build
+        run: dotnet build LagerPalleSortering.slnx --configuration Release --no-restore
+
+      - name: Run Postgres Integration Tests
+        env:
+          POSTGRES_TEST_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=lagerpallesortering_ci;Username=postgres;Password=postgres;SSL Mode=Disable;Timeout=15;Command Timeout=15
+        run: dotnet test tests/LagerPalleSortering.Tests/LagerPalleSortering.Tests.csproj --configuration Release --no-build --filter "Category=PostgresIntegration" --logger "trx;LogFileName=postgres-integration.trx" --results-directory artifacts/test-results
+
+      - name: Upload Postgres Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-integration-test-results
+          path: artifacts/test-results/*.trx
+          if-no-files-found: ignore
+
   e2e:
     runs-on: windows-latest
     timeout-minutes: 15
     needs:
       - backend
       - frontend
+      - postgres-integration
 
     steps:
       - name: Checkout

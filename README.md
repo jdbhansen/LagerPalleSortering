@@ -100,6 +100,13 @@ npm run test:e2e
 Bemærk: unit-coverage-gaten ekskluderer Postgres-repositoryet, som dækkes via
 integration/deployment-tests.
 
+Kør Postgres-integrationstest lokalt (kræver kørende PostgreSQL):
+
+```powershell
+$env:POSTGRES_TEST_CONNECTION_STRING = "Host=127.0.0.1;Port=5432;Database=lagerpallesortering_dev;Username=postgres;Password=postgres;SSL Mode=Disable"
+dotnet test tests/LagerPalleSortering.Tests/LagerPalleSortering.Tests.csproj --configuration Release --filter "Category=PostgresIntegration"
+```
+
 ## Work Package
 
 Generer work package lokalt:
