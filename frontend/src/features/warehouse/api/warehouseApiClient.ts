@@ -16,6 +16,7 @@ export interface WarehouseApiClientDependencies {
 export function createWarehouseApiClient(
   dependencies: WarehouseApiClientDependencies = {},
 ): WarehouseApiClientContract {
+  // Injected seams keep API migration/test setup isolated from UI business logic.
   const routes = dependencies.routes ?? createWarehouseApiRoutes();
   const httpClient = dependencies.httpClient ?? new FetchWarehouseHttpClient();
 

@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("UI sanity", () => {
   test.beforeEach(async ({ request }) => {
+    // Isolate test state so scanner-flow assertions are deterministic across retries.
     const clearResponse = await request.post("/api/v1/warehouse/clear");
     expect(clearResponse.ok()).toBeTruthy();
   });

@@ -45,6 +45,7 @@ public static class OperationalApiEndpoints
     {
         var snapshot = await dataService.GetHealthSnapshotAsync(cancellationToken);
         var metricSnapshot = metrics.GetSnapshot();
+        // "degraded" is intentionally sticky for a short window to surface intermittent failures in monitoring.
         var status = metricSnapshot.LastErrorAtUtc.HasValue &&
                      metricSnapshot.LastErrorAtUtc.Value >= DateTime.UtcNow.AddMinutes(-5)
             ? "degraded"

@@ -1,6 +1,7 @@
 param(
     [string]$OutputRoot = "",
     [int]$Port = 5050,
+    # Keep false by default to avoid committing binary artifacts to git history.
     [bool]$SyncTrackedZip = $false
 )
 

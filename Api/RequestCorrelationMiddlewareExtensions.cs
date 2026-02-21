@@ -15,6 +15,7 @@ public static class RequestCorrelationMiddlewareExtensions
                 .CreateLogger("RequestCorrelation");
 
             var requestCorrelationId = context.Request.Headers[CorrelationHeaderName].ToString();
+            // Respect upstream correlation IDs (proxy/client) and fallback to server trace id.
             var correlationId = string.IsNullOrWhiteSpace(requestCorrelationId)
                 ? context.TraceIdentifier
                 : requestCorrelationId.Trim();

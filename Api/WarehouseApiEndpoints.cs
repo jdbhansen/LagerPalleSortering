@@ -7,6 +7,7 @@ public static class WarehouseApiEndpoints
 {
     public static IEndpointRouteBuilder MapWarehouseApiEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        // Versioned route is canonical. Legacy alias stays to avoid breaking existing scanners/clients.
         MapWarehouseApiGroup(endpoints, ApiRouteConstants.WarehouseV1Base);
         // Backwards-compatible alias while clients migrate to versioned route.
         MapWarehouseApiGroup(endpoints, ApiRouteConstants.WarehouseLegacyBase);

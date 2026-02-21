@@ -40,6 +40,7 @@ if (!disableHttpsRedirection)
 
 // Required so Vite-built React assets in wwwroot/app/assets are served in prod/test.
 app.UseStaticFiles();
+// Add request correlation early so all downstream logs/endpoints share the same ID.
 app.UseRequestCorrelation();
 app.MapWarehouseApiEndpoints();
 app.MapOperationalApiEndpoints();

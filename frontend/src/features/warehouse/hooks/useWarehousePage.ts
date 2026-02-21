@@ -135,6 +135,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     }
 
     const payload = payloadResult.value!;
+    // Keep request payload normalized centrally to match backend grouping/parsing rules.
     const result = await apiClient.registerWarehouseColli(
       payload.product,
       payload.expiry,
@@ -175,6 +176,7 @@ export function useWarehousePage(apiClient: WarehouseApiClientContract = warehou
     }
 
     if (result.type === 'warning') {
+      // Warning may still indicate partial confirmations; refresh keeps dashboard state truthful.
       await reloadDashboard();
     }
   }

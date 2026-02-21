@@ -26,6 +26,7 @@ function Stop-LingeringTestHosts {
 
 try {
     Stop-LingeringTestHosts
+    # Match CI configuration so local verify catches Release-only issues before push.
     dotnet restore $solutionPath
     dotnet build $solutionPath --configuration Release --no-restore
 

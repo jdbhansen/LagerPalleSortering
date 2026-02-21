@@ -5,6 +5,7 @@ export interface WarehouseApiRouteOptions {
 }
 
 export function createWarehouseApiRoutes(options: WarehouseApiRouteOptions = {}): WarehouseApiRoutes {
+  // Keep default aligned with backend versioned contract.
   const configuredBasePath = options.basePath ?? '/api/v1/warehouse';
   const basePath = configuredBasePath.endsWith('/') ? configuredBasePath.slice(0, -1) : configuredBasePath;
 
