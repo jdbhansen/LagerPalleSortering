@@ -24,9 +24,17 @@ New-Item -ItemType Directory -Path $publishDir | Out-Null
 
 Push-Location $projectRoot
 try {
+    dotnet restore ".\LagerPalleSortering.csproj" `
+        -r win-x64
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet restore (win-x64) fejlede."
+    }
+
     dotnet publish ".\LagerPalleSortering.csproj" `
         -c Release `
         -r win-x64 `
+        --no-restore `
         --self-contained true `
         /p:PublishSingleFile=true `
         /p:IncludeNativeLibrariesForSelfExtract=true `
